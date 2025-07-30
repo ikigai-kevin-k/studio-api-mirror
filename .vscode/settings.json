@@ -1,0 +1,29 @@
+{
+  "github-actions.workflows.pinned.workflows": [
+    "build.yml",
+    "deploy.yml"
+  ],
+  "editor.formatOnSave": true,
+  "[typescript]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit",
+    "source.fixAll.eslint": "explicit"
+  },
+  "editor.linkedEditing": true,
+  "eslint.validate": [
+    "typescript"
+  ],
+  "cSpell.words": [
+    "Awilix",
+    "fastify",
+    "Ikigai",
+    "ikigaians",
+    "openapi",
+    "typebox"
+  ],
+  "prettier.requireConfig": true,
+  "typescript.referencesCodeLens.enabled": true,
+  "javascript.referencesCodeLens.enabled": true
+}

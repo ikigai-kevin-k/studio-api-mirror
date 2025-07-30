@@ -1,0 +1,11 @@
+name: "Build"
+
+on:
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    uses: Ikigaians/workflow-templates/.github/workflows/build-to-ci.yml@main
+    with:
+      app-name: 'api-hub'

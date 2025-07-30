@@ -1,0 +1,39 @@
+# App image for production/real environment run
+ARG NODE_VERSION
+
+FROM node:${NODE_VERSION}-alpine AS development
+
+ARG NPM_AUTH_TOKEN
+ENV NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN}
+
+WORKDIR /usr/src/app
+
+COPY ./package*.json ./
+
+RUN echo "//npm.pkg.github.com/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc && \
+    npm install
+
+COPY ../.. .
+
+RUN npm run build
+
+FROM node:20-alpine as production
+
+USER node
+
+ARG NODE_ENV=production
+ENV NODE_ENV=${NODE_ENV}
+ARG NPM_AUTH_TOKEN
+ENV NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN}
+ENV NODE_PATH=/usr/src/app/build
+
+WORKDIR /usr/src/app
+
+COPY --chown=node:node package*.json ./
+
+RUN echo "//npm.pkg.github.com/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc && \
+        npm install --omit=dev
+
+COPY --from=development --chown=node:node /usr/src/app/build ./build
+
+CMD ["node", "build/index.js"]

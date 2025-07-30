@@ -1,0 +1,18 @@
+services:
+  redis:
+    image: redis:7.0
+    volumes:
+      - ./.docker/redis/data:/data
+    ports:
+      - '6381:6379'
+
+  db:
+    image: postgres:16.2
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: secret
+      POSTGRES_DB: studio
+    volumes:
+      - ./.docker/db/data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
