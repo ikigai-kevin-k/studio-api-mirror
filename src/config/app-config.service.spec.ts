@@ -22,6 +22,10 @@ describe('AppConfigService', () => {
     process.env.REDIS_USERNAME = 'redisuser';
     process.env.REDIS_TLS = '0';
     process.env.REDIS_IS_CLUSTER = '0';
+    process.env.DB_SLAVE_HOST = 'slavehost';
+    process.env.DB_SLAVE_PORT = '1234';
+    process.env.DB_SLAVE_USER = 'slaveuser';
+    process.env.DB_SLAVE_PASSWORD = 'slavepass';
     appConfigService = new AppConfigService();
   });
 
@@ -52,5 +56,16 @@ describe('AppConfigService', () => {
     expect(appConfigService.cacheConfig.username).toBe('redisuser');
     expect(appConfigService.cacheConfig.tls).toBe(false);
     expect(appConfigService.cacheConfig.isCluster).toBe(false);
+  });
+  it('should cover slave dbConfig properties', () => {
+    appConfigService = new AppConfigService();
+    expect(appConfigService.dbConfig).toHaveProperty('master');
+    expect(appConfigService.dbConfig).toHaveProperty('slaves');
+    expect(appConfigService.dbConfig).toHaveProperty('logger');
+    const slave = appConfigService.dbConfig.slaves[0];
+    expect(slave.host).toBe('slavehost');
+    expect(slave.port).toBe(1234);
+    expect(slave.user).toBe('slaveuser');
+    expect(slave.password).toBe('slavepass');
   });
 });
