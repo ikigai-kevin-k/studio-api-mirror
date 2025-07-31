@@ -1,0 +1,93 @@
+name: CD Workflow
+run-name: CD Deploy ${{ inputs.environment || 'CIT' }} ${{ inputs.git-tag || 'cit-latest'}} ${{ inputs.region || 'us-east-1' }}
+
+on:
+  push:
+    branches:
+      - main
+
+
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Choose environment: CIT or QAT or UAT or STG or PRD'
+        required: true
+        default: CIT
+        type: choice
+        options:
+          - CIT
+          - QAT
+          - UAT
+          - STG
+          - PRD
+      region:
+        description: 'Choose AWS region to deploy'
+        required: true
+        default: us-east-1
+        type: choice
+        options:
+          - us-east-1
+          - us-west-2
+          - eu-central-1
+      git-tag:
+        description: 'Git tag (optional, only for QAT and above)'
+        required: false
+
+permissions:
+  id-token: write # Grant permission to request OIDC token
+  contents: read # Standard permission to access repository content
+  packages: read # Allow reading organization packages (npm)
+  issues: write
+
+jobs:
+  call_CIT_on_push:
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      app-name: 'studio-api'
+      env-name: CIT
+      region: us-east-1
+
+  manual_dispatch_CIT:
+    if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'CIT' && github.ref == 'refs/heads/main'  }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      app-name: 'studio-api'
+      env-name: CIT
+      region: ${{ inputs.region }}
+
+  manual_dispatch_QAT:
+    if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'qat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'QAT' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      git-tag: ${{ inputs.git-tag || 'no-tag' }}
+      app-name: 'studio-api'
+      env-name: QAT
+      region: ${{ inputs.region }}
+      
+  manual_dispatch_UAT:
+    if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'uat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'UAT' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      git-tag: ${{ inputs.git-tag || 'no-tag' }}
+      app-name: 'studio-api'
+      env-name: UAT
+      region: ${{ inputs.region }}
+
+  manual_dispatch_STG:
+    if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'stg-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'STG' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      git-tag: ${{ inputs.git-tag || 'no-tag' }}
+      app-name: 'studio-api'
+      env-name: STG
+      region: ${{ inputs.region }}  
+
+  manual_dispatch_PRD:
+    if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'prd-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'PRD' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      git-tag: ${{ inputs.git-tag || 'no-tag' }}
+      app-name: 'studio-api'
+      env-name: PRD
+      region: ${{ inputs.region }}
