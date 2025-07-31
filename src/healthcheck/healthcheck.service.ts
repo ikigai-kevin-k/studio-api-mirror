@@ -13,7 +13,7 @@ export class HealthcheckService {
       uptime: process.uptime(),
       timestamp: Date.now(),
       maintenance: false,
-      services: {},
+      version: appEnv,
     };
   }
 }

@@ -18,7 +18,7 @@ describe('HealthcheckService', () => {
     expect(typeof result.uptime).toBe('number');
     expect(typeof result.timestamp).toBe('number');
     expect(result.maintenance).toBe(false);
-    expect(result.services).toEqual({});
+    expect(result.version).toEqual('test');
   });
 
   it('should set uptime and timestamp dynamically', async () => {

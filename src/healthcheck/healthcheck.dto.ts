@@ -6,7 +6,7 @@ export const Healthcheck = Type.Object({
   uptime: Type.Integer(),
   timestamp: Type.Integer(),
   maintenance: Type.Boolean(),
-  services: Type.Object({}),
+  version: Type.String(),
 });
 
 export type HealthcheckType = Static<typeof Healthcheck>;
