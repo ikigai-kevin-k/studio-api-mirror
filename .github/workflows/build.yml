@@ -8,4 +8,4 @@ jobs:
   build:
     uses: Ikigaians/workflow-templates/.github/workflows/build-to-ci.yml@main
     with:
-      app-name: 'api-hub'
+      app-name: 'studio-api'

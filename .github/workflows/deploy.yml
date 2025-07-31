@@ -44,7 +44,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: CIT
       region: us-east-1
 
@@ -52,7 +52,7 @@ jobs:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'CIT' && github.ref == 'refs/heads/main'  }}
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: CIT
       region: ${{ inputs.region }}
 
@@ -61,7 +61,7 @@ jobs:
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: QAT
       region: ${{ inputs.region }}
       
@@ -70,7 +70,7 @@ jobs:
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: UAT
       region: ${{ inputs.region }}
 
@@ -79,7 +79,7 @@ jobs:
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: STG
       region: ${{ inputs.region }}  
 
@@ -88,6 +88,6 @@ jobs:
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
     with:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
-      app-name: 'api-hub'
+      app-name: 'studio-api'
       env-name: PRD
       region: ${{ inputs.region }}
