@@ -47,6 +47,8 @@ jobs:
       app-name: 'studio-api'
       env-name: CIT
       region: us-east-1
+    secrets: inherit
+
 
   manual_dispatch_CIT:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'CIT' && github.ref == 'refs/heads/main'  }}
@@ -55,6 +57,8 @@ jobs:
       app-name: 'studio-api'
       env-name: CIT
       region: ${{ inputs.region }}
+    secrets: inherit
+
 
   manual_dispatch_QAT:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'qat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'QAT' }}
@@ -73,6 +77,8 @@ jobs:
       app-name: 'studio-api'
       env-name: UAT
       region: ${{ inputs.region }}
+    secrets: inherit
+
 
   manual_dispatch_STG:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'stg-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'STG' }}
@@ -82,6 +88,8 @@ jobs:
       app-name: 'studio-api'
       env-name: STG
       region: ${{ inputs.region }}  
+    secrets: inherit
+
 
   manual_dispatch_PRD:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'prd-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'PRD' }}
@@ -91,3 +99,5 @@ jobs:
       app-name: 'studio-api'
       env-name: PRD
       region: ${{ inputs.region }}
+    secrets: inherit
+
