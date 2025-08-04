@@ -36,9 +36,9 @@ describe('DbService', () => {
         master: {
           host: 'host',
           port: 123,
-          user: 'user',
+          username: 'user',
           password: 'password',
-          dbName: 'dbName',
+          database: 'dbName',
         },
         slaves: [],
         logger: { level: LogLevelsEnum.DEBUG },

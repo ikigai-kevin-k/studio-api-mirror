@@ -43,10 +43,22 @@ describe('AppConfigService', () => {
   it('should provide dbConfig', () => {
     expect(appConfigService.dbConfig.master.host).toBe('localhost');
     expect(appConfigService.dbConfig.master.port).toBe(5432);
-    expect(appConfigService.dbConfig.master.dbName).toBe('testdb');
-    expect(appConfigService.dbConfig.master.user).toBe('user');
+    expect(appConfigService.dbConfig.master.database).toBe('testdb');
+    expect(appConfigService.dbConfig.master.username).toBe('user');
     expect(appConfigService.dbConfig.master.password).toBe('pass');
     expect(appConfigService.dbConfig.master.ssl).toBe(false);
+  });
+
+  it('should cover slave dbConfig properties', () => {
+    appConfigService = new AppConfigService();
+    expect(appConfigService.dbConfig).toHaveProperty('master');
+    expect(appConfigService.dbConfig).toHaveProperty('slaves');
+    expect(appConfigService.dbConfig).toHaveProperty('logger');
+    const slave = appConfigService.dbConfig.slaves[0];
+    expect(slave.host).toBe('slavehost');
+    expect(slave.port).toBe(1234);
+    expect(slave.username).toBe('slaveuser');
+    expect(slave.password).toBe('slavepass');
   });
 
   it('should provide cacheConfig', () => {
@@ -56,16 +68,5 @@ describe('AppConfigService', () => {
     expect(appConfigService.cacheConfig.username).toBe('redisuser');
     expect(appConfigService.cacheConfig.tls).toBe(false);
     expect(appConfigService.cacheConfig.isCluster).toBe(false);
-  });
-  it('should cover slave dbConfig properties', () => {
-    appConfigService = new AppConfigService();
-    expect(appConfigService.dbConfig).toHaveProperty('master');
-    expect(appConfigService.dbConfig).toHaveProperty('slaves');
-    expect(appConfigService.dbConfig).toHaveProperty('logger');
-    const slave = appConfigService.dbConfig.slaves[0];
-    expect(slave.host).toBe('slavehost');
-    expect(slave.port).toBe(1234);
-    expect(slave.user).toBe('slaveuser');
-    expect(slave.password).toBe('slavepass');
   });
 });

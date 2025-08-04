@@ -23,16 +23,16 @@ export class AppConfigService {
       master: {
         host: process.env.DB_HOST,
         port: Number(process.env.DB_PORT),
-        dbName: process.env.DB_NAME,
-        user: process.env.DB_USER,
+        username: process.env.DB_USER,
         password: process.env.DB_PASSWORD,
+        database: process.env.DB_NAME,
         ssl: process.env.DB_SSL === 'true',
       },
       slaves: [
         {
           host: process.env.DB_SLAVE_HOST,
           port: Number(process.env.DB_SLAVE_PORT),
-          user: process.env.DB_SLAVE_USER,
+          username: process.env.DB_SLAVE_USER,
           password: process.env.DB_SLAVE_PASSWORD,
         },
       ],

@@ -17,7 +17,7 @@ export class DbService implements ModuleLifecycle {
 
   async connect() {
     const {
-      master: { host, port, user: username, password, dbName: database, ssl },
+      master: { host, port, username, password, database, ssl },
       slaves,
       logger,
     } = this.appConfigService.dbConfig;
