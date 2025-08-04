@@ -20,9 +20,9 @@ export type DbConfig = {
   port?: number;
   username?: string;
   password?: string;
+  database?: string;
 };
 
 export type MasterDbConfig = DbConfig & {
-  database?: string;
   ssl: boolean;
 };

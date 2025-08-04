@@ -34,6 +34,7 @@ export class AppConfigService {
           port: Number(process.env.DB_SLAVE_PORT),
           username: process.env.DB_SLAVE_USER,
           password: process.env.DB_SLAVE_PASSWORD,
+          database: process.env.DB_NAME,
         },
       ],
       logger: this.logger,
