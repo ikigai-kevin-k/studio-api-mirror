@@ -59,6 +59,7 @@ describe('AppConfigService', () => {
     expect(slave.port).toBe(1234);
     expect(slave.username).toBe('slaveuser');
     expect(slave.password).toBe('slavepass');
+    expect(slave.database).toBe('testdb');
   });
 
   it('should provide cacheConfig', () => {
