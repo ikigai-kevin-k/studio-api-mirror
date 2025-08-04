@@ -32,6 +32,7 @@ export class DbService implements ModuleLifecycle {
 
       this.connection = new DataSource({
         type: 'postgres',
+        entities: ['build/**/*.entity.{ts,js}'],
         replication: {
           master: {
             host,

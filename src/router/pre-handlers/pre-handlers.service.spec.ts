@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { ServiceAuthStrategyService } from '@ikigaians/auth';
+import { AuthErrorsEnum, ServiceAuthStrategyService } from '@ikigaians/auth';
 import { LoggerService } from 'src/log/logger.service';
 import { PreHandlersService } from './pre-handlers.service';
 
@@ -26,7 +26,10 @@ describe('PreHandlersService', () => {
     );
     expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('FAILED'));
     expect(reply.code).toHaveBeenCalledWith(401);
-    expect(reply.send).toHaveBeenCalledWith({ message: 'Unauthorized' });
+    expect(reply.send).toHaveBeenCalledWith({
+      code: AuthErrorsEnum.UNAUTHORIZED_ERROR,
+      message: 'Unauthorized',
+    });
   });
 
   it('should log success if signature is valid', async () => {

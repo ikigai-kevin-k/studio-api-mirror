@@ -81,6 +81,7 @@ describe('DbService', () => {
 
       expect(DataSource).toHaveBeenCalledWith({
         type: 'postgres',
+        entities: ['build/**/*.entity.{ts,js}'],
         replication: {
           master: {
             host: 'host',
