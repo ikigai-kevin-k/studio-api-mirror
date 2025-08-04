@@ -5,7 +5,7 @@ import { AppConfigService } from './src/config/app-config.service';
 dotenv.config();
 
 const {
-  master: { host, port, password, user, dbName, ssl },
+  master: { host, port, password, username, database, ssl },
 } = new AppConfigService().dbConfig;
 
 const sslConfig = ssl
@@ -23,9 +23,9 @@ export default new DataSource({
   type: 'postgres',
   host,
   port,
-  username: user,
+  username,
   password,
-  database: dbName,
+  database,
   entities: ['src/**/*.entity.{ts,js}'],
   migrations: ['src/**/migrations/*.{ts,js}'],
   subscribers: ['src/**/subscribers/*.{ts,js}'],

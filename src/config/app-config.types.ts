@@ -18,11 +18,11 @@ export type AuthConfig = {
 export type DbConfig = {
   host?: string;
   port?: number;
-  user?: string;
+  username?: string;
   password?: string;
 };
 
 export type MasterDbConfig = DbConfig & {
-  dbName?: string;
+  database?: string;
   ssl: boolean;
 };
