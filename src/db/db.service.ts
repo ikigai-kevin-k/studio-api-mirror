@@ -25,20 +25,6 @@ export class DbService implements ModuleLifecycle {
     const extra = ssl ? { ssl: { rejectUnauthorized: false } } : undefined;
 
     this.logger.info('connecting to DB');
-    console.log(
-      JSON.stringify({
-        master: {
-          host,
-          port,
-          database,
-        },
-        slaves: slaves.map(({ host, port, database }) => ({
-          host,
-          port,
-          database,
-        })),
-      }),
-    );
 
     try {
       const dbLoggerLevel: DbLogLevel[] =
