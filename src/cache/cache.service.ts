@@ -10,6 +10,7 @@ export class CacheService extends RedisService implements ModuleLifecycle {
     super(logger);
   }
   async onInit(): Promise<void> {
+    console.log(JSON.stringify(this.appConfigService.cacheConfig));
     await this.connect(this.appConfigService.cacheConfig);
   }
 
