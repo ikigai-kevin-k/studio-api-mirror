@@ -1,10 +1,13 @@
 import { CacheConnectParams } from '@ikigaians/cache';
 import { AppEnvsEnum } from '@ikigaians/common';
 import { LogLevelsEnum } from '@ikigaians/logger';
+import dotenv from 'dotenv';
 import { AppConfig, AuthConfig, DbConfig, MasterDbConfig } from './app-config.types';
 
 export class AppConfigService {
   constructor() {
+    dotenv.config();
+
     this.logger = {
       level: process.env.LOG_LEVEL as LogLevelsEnum,
     };
