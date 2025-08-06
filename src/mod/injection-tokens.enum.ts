@@ -4,5 +4,4 @@ export const InjectionTokensEnum = {
   ...CommonInjectionTokensEnum,
   DB_SERVICE: 'dbService',
   DB_LOGGER_SERVICE: 'dbLoggerService',
-  FASTIFY_SERVICE: 'fastifyService',
 } as const;
