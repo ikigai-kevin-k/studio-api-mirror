@@ -1,19 +1,22 @@
 import { RespSchema } from '@ikigaians/common';
+import { ModuleLifecycle } from '@ikigaians/mod';
 import { UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { Controller, PreHandlersService, RoutesEnum } from 'src/router';
+import { PreHandlersService, RouterService } from 'src/router';
 import { Healthcheck, HealthcheckType } from './healthcheck.dto';
+import { RoutesEnum } from './healthcheck.enum';
 import { HealthcheckService } from './healthcheck.service';
 
-export class HealthcheckController implements Controller {
+export class HealthcheckController implements ModuleLifecycle {
   constructor(
     private readonly preHandlersService: PreHandlersService,
     private readonly healthcheckService: HealthcheckService,
+    private readonly routerService: RouterService,
   ) {}
 
-  async registerRoutes(app: FastifyInstance) {
-    app.register(async (context) => {
+  async onInit(): Promise<void> {
+    this.routerService.app.register(async (context) => {
       this.getStatus(context);
     });
   }

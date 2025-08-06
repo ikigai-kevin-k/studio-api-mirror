@@ -1,31 +1,39 @@
-import { HealthcheckController } from 'src/healthcheck/healthcheck.controller';
-import { FastifyService } from './fastify.service';
+import { AppEnvsEnum } from '@ikigaians/common';
+import { AppConfigService } from 'src/config/app-config.service';
+import { LoggerService } from 'src/log/logger.service';
 import { RouterService } from './router.service';
 
 describe('RouterService', () => {
-  let fastifyService: FastifyService;
-  let healthcheckController: HealthcheckController;
+  let logger: LoggerService;
+  let appConfigService: AppConfigService;
   let routerService: RouterService;
 
   beforeEach(() => {
-    fastifyService = {
-      app: {
-        addHook: jest.fn(),
-      },
-    } as unknown as FastifyService;
-    healthcheckController = {
-      registerRoutes: jest.fn(),
-    } as unknown as HealthcheckController;
-    routerService = new RouterService(fastifyService, healthcheckController);
+    logger = new LoggerService();
+    appConfigService = {
+      config: { logger: { level: 'info' }, appEnv: AppEnvsEnum.DEV },
+    } as AppConfigService;
+    routerService = new RouterService(logger, appConfigService);
   });
 
-  it('should instantiate and add healthcheckController', () => {
-    expect(routerService).toBeDefined();
+  afterAll(async () => {
+    await routerService.onDispose();
   });
 
-  it('should call addHook and registerRoutes on onInit', async () => {
+  it('should instantiate routerService and create app', () => {
+    expect(routerService.app).toBeDefined();
+  });
+
+  it('should call onInit and register hooks/plugins', async () => {
+    const registerSpy = jest.spyOn(routerService.app, 'register');
     await routerService.onInit();
-    expect(fastifyService.app.addHook).toHaveBeenCalledWith('onRoute', expect.any(Function));
-    expect(healthcheckController.registerRoutes).toHaveBeenCalledWith(fastifyService.app);
+    expect(registerSpy).toHaveBeenCalled();
+  });
+
+  it('should process the lifecycle of router registration', async () => {
+    routerService.app.get('/some/url', async () => {});
+
+    await routerService.onStart();
+    await routerService.app.inject('/some/url');
   });
 });

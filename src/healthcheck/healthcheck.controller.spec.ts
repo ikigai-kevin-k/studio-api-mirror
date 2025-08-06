@@ -1,14 +1,14 @@
-import { FastifyInstance } from 'fastify';
+import { RouterService } from 'src/router';
 import { PreHandlersService } from '../router/pre-handlers/pre-handlers.service';
-import { RoutesEnum } from '../router/routes.enum';
 import { HealthcheckController } from './healthcheck.controller';
+import { RoutesEnum } from './healthcheck.enum';
 import { HealthcheckService } from './healthcheck.service';
 
 describe('HealthcheckController', () => {
   let controller: HealthcheckController;
   let preHandlersService: jest.Mocked<PreHandlersService>;
   let healthcheckService: jest.Mocked<HealthcheckService>;
-  let fastify: { register: jest.Mock; get: jest.Mock };
+  let routerService: jest.Mocked<RouterService>;
 
   beforeEach(() => {
     preHandlersService = {
@@ -17,11 +17,14 @@ describe('HealthcheckController', () => {
     healthcheckService = {
       getStatus: jest.fn().mockResolvedValue({ status: 'ok' }),
     } as unknown as jest.Mocked<HealthcheckService>;
-    fastify = {
-      register: jest.fn((fn) => fn(fastify)),
-      get: jest.fn(),
-    };
-    controller = new HealthcheckController(preHandlersService, healthcheckService);
+
+    routerService = {
+      app: {
+        register: jest.fn(),
+        get: jest.fn(),
+      },
+    } as unknown as jest.Mocked<RouterService>;
+    controller = new HealthcheckController(preHandlersService, healthcheckService, routerService);
   });
 
   it('should instantiate', () => {
@@ -29,21 +32,13 @@ describe('HealthcheckController', () => {
   });
 
   it('should register routes', async () => {
-    await controller.registerRoutes(fastify as unknown as FastifyInstance);
-    expect(fastify.register).toHaveBeenCalled();
-    expect(fastify.get).toHaveBeenCalledWith(
-      RoutesEnum.V1_HEALTHCHECK,
-      expect.objectContaining({
-        schema: expect.any(Object),
-        preHandler: [expect.any(Function)],
-      }),
-      expect.any(Function),
-    );
+    await controller.onInit();
+    expect(routerService.app.register).toHaveBeenCalled();
   });
 
   it('should set up getStatus route with correct preHandler and schema', () => {
-    controller.getStatus(fastify as unknown as FastifyInstance);
-    expect(fastify.get).toHaveBeenCalledWith(
+    controller.getStatus(routerService.app);
+    expect(routerService.app.get).toHaveBeenCalledWith(
       RoutesEnum.V1_HEALTHCHECK,
       expect.objectContaining({
         schema: expect.any(Object),
@@ -55,10 +50,10 @@ describe('HealthcheckController', () => {
 
   it('should call healthcheckService.getStatus in route handler', async () => {
     let handler: (() => Promise<import('./healthcheck.dto').HealthcheckType>) | undefined;
-    fastify.get.mockImplementation((route, opts, fn) => {
+    (<jest.Mock>routerService.app.get).mockImplementation((route, opts, fn) => {
       handler = fn;
     });
-    controller.getStatus(fastify as unknown as FastifyInstance);
+    controller.getStatus(routerService.app);
     await handler!();
     expect(healthcheckService.getStatus).toHaveBeenCalled();
   });
