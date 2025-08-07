@@ -1,4 +1,4 @@
-import { AuthErrorsEnum, ServiceAuthStrategyService } from '@ikigaians/auth';
+import { ServiceAuthStrategyService } from '@ikigaians/auth';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 import { LoggerService } from 'src/log';
@@ -14,9 +14,7 @@ export class PreHandlersService {
 
     if (!signature || !this.serviceAuthStrategyService.validateSignature(String(signature))) {
       this.logger.info(`PreHandler: serviceApisAuthenticator for ${url} FAILED`);
-      reply
-        .code(StatusCodes.UNAUTHORIZED)
-        .send({ code: AuthErrorsEnum.UNAUTHORIZED_ERROR, message: 'Unauthorized' });
+      reply.code(StatusCodes.UNAUTHORIZED).send({ message: 'Unauthorized' });
       return;
     }
 
