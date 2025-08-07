@@ -46,6 +46,12 @@ describe('StudioCdnService', () => {
     jest.clearAllMocks();
   });
 
+  describe('ModuleLifecycle', () => {
+    it('onInit', async () => {
+      await service.onInit();
+    });
+  });
+
   describe('getTableCdnByTableID', () => {
     it('should return a StudioCdn entity if found', async () => {
       const mockCdnEntity: StudioCdn = {

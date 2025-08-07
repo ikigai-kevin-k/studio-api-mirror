@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-null */
+import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import {
   GetTableCdnQuery,
@@ -7,7 +8,7 @@ import {
 import { StudioCdn } from '../../entities/studio-cdn.entity';
 import { UpsertTableCdnResult } from './studio-cdn.repository.type';
 
-export class StudioCdnRepository {
+export class StudioCdnRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
   async getTableCdnByTableID(tableID: string): Promise<StudioCdn | null> {
@@ -43,4 +44,6 @@ export class StudioCdnRepository {
       .execute();
     return result.raw[0] as UpsertTableCdnResult;
   }
+
+  async onInit(): Promise<void> {}
 }

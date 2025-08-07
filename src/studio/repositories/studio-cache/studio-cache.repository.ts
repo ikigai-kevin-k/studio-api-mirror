@@ -1,9 +1,10 @@
 /* eslint-disable unicorn/no-null */
+import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import { Studio } from '../../entities/studio.entity';
 
-export class StudioCacheRepository {
+export class StudioCacheRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
   async getCacheByTableID(tableID: string): Promise<StudioCacheResult | undefined> {
@@ -35,4 +36,6 @@ export class StudioCacheRepository {
 
     return await builder.getRawMany<StudioCacheResult>();
   }
+
+  async onInit(): Promise<void> {}
 }

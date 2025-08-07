@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-null */
+import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import {
   GetStudioTableQuery,
@@ -7,7 +8,7 @@ import {
 import { Studio } from '../../entities/studio.entity';
 import { UpdateStudioTableEntity, UpsertStudioTableResult } from './studio.repository.type';
 
-export class StudioRepository {
+export class StudioRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
   async getStudioTableByTableID(tableID: string): Promise<Studio | null> {
@@ -61,4 +62,6 @@ export class StudioRepository {
 
     return updateResult.affected ?? -1;
   }
+
+  async onInit(): Promise<void> {}
 }

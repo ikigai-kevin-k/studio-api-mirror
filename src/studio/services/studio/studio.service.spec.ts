@@ -41,6 +41,12 @@ describe('StudioService', () => {
     jest.clearAllMocks();
   });
 
+  describe('ModuleLifecycle', () => {
+    it('onInit', async () => {
+      await service.onInit();
+    });
+  });
+
   describe('getStudioTableByTableID', () => {
     it('should return a studio entity if found', async () => {
       const mockStudio: Studio = {

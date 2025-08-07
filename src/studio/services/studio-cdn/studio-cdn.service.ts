@@ -1,4 +1,5 @@
 import { LoggerService } from '@ikigaians/logger';
+import { ModuleLifecycle } from '@ikigaians/mod';
 import {
   GetStudioTableCdnRequestType,
   UpsertStudioTableCdnRequestType,
@@ -15,7 +16,7 @@ import { StudioCacheService } from '../studio-cache/studio-cache.service';
 
 import { isFieldsEqual } from 'src/studio/utilities/cache.utility';
 
-export class StudioCdnService {
+export class StudioCdnService implements ModuleLifecycle {
   constructor(
     private readonly studioCdnRepository: StudioCdnRepository,
     private readonly studioCacheService: StudioCacheService,
@@ -68,4 +69,6 @@ export class StudioCdnService {
       cdnDst: data.cdnDst,
     };
   }
+
+  async onInit(): Promise<void> {}
 }

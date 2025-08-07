@@ -1,4 +1,5 @@
 import { LoggerService } from '@ikigaians/logger';
+import { ModuleLifecycle } from '@ikigaians/mod';
 import {
   GetStudioTableRequestType,
   UpsertStudioTableRequestType,
@@ -15,7 +16,7 @@ import { Studio } from '../../entities/studio.entity';
 import { StudioRepository } from '../../repositories/studio/studio.repository';
 import { StudioCacheService } from '../studio-cache/studio-cache.service';
 
-export class StudioService {
+export class StudioService implements ModuleLifecycle {
   constructor(
     private readonly studioRepository: StudioRepository,
     private readonly studioCacheService: StudioCacheService,
@@ -74,4 +75,6 @@ export class StudioService {
       tableStatus: data.tableStatus,
     };
   }
+
+  async onInit(): Promise<void> {}
 }

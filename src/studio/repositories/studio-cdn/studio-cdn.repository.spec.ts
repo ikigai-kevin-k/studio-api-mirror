@@ -43,6 +43,12 @@ describe('StudioCdnRepository', () => {
     jest.clearAllMocks();
   });
 
+  describe('ModuleLifecycle', () => {
+    it('onInit', async () => {
+      await repository.onInit();
+    });
+  });
+
   describe('getTableCdnByTableID', () => {
     it('should return a studioCdn object when found', async () => {
       const mockStudio: StudioCdn = {

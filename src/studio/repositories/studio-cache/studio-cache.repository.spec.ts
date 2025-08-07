@@ -44,6 +44,12 @@ describe('StudioCacheRepository', () => {
     jest.clearAllMocks();
   });
 
+  describe('ModuleLifecycle', () => {
+    it('onInit', async () => {
+      await repository.onInit();
+    });
+  });
+
   describe('getCacheByTableID', () => {
     it('should return a StudioCacheResult object when found', async () => {
       const mockStudio: StudioCacheResult = {
