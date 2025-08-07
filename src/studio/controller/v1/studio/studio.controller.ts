@@ -38,11 +38,11 @@ export class StudioController implements ModuleLifecycle {
       this.preHandlersService,
     );
 
-    return app.post<{ Body: GetStudioTableRequestType }>(
+    return app.get<{ Querystring: GetStudioTableRequestType }>(
       RoutesEnum.V1_GET_STUDIO_TABLE,
       {
         schema: {
-          body: GetStudioTableRequest,
+          querystring: GetStudioTableRequest,
           response: {
             [StatusCodes.OK]: RespSchema.Ok(GetStudioTableResponse),
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
@@ -53,8 +53,8 @@ export class StudioController implements ModuleLifecycle {
         },
         preHandler: [serviceAuth],
       },
-      async (req): Promise<GetStudioTableResponseType | void> => {
-        return await this.studioService.getStudioTable(req.body);
+      async (req): Promise<GetStudioTableResponseType> => {
+        return await this.studioService.getStudioTable(req.query);
       },
     );
   }

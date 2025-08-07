@@ -1,10 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
-import { StudioTableStatusType } from '../enums/studio.enums';
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import { StudioTableStatusEnum } from '../enums/studio.enums';
 
 @Entity('studio', {
   comment: 'This table contains studio game table.',
 })
-@Unique(['tableId'])
+@Index('idx_table_id', ['tableId'], { unique: true })
 export class Studio {
   @PrimaryGeneratedColumn({
     name: 'ID',
@@ -25,8 +25,8 @@ export class Studio {
     name: 'TABLE_STATUS',
     type: 'varchar',
     length: 255,
-    default: StudioTableStatusType.INACTIVE,
+    default: StudioTableStatusEnum.INACTIVE,
     comment: 'The status of game table: inactive, active, and failure Default value is inactive.',
   })
-  tableStatus!: StudioTableStatusType;
+  tableStatus!: string;
 }

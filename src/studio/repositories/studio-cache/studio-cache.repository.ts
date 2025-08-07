@@ -1,6 +1,6 @@
 /* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
-import { StudioCacheResult } from 'src/studio/model/studio-cache/studio-cache.model';
+import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import { Studio } from '../../entities/studio.entity';
 
 export class StudioCacheRepository {
@@ -15,14 +15,7 @@ export class StudioCacheRepository {
       .select([
         'studio."TABLE_ID" as "tableId"',
         'studio."TABLE_STATUS" as "tableStatus"',
-        'sc."PRIMARY_HD" as "primaryHd"',
-        'sc."PRIMARY_HI" as "primaryHi"',
-        'sc."PRIMARY_ME" as "primaryMe"',
-        'sc."PRIMARY_LO" as "primaryLo"',
-        'sc."SECONDARY_HD" as "secondaryHd"',
-        'sc."SECONDARY_HI" as "secondaryHi"',
-        'sc."SECONDARY_ME" as "secondaryMe"',
-        'sc."SECONDARY_LO" as "secondaryLo"',
+        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
       ])
       .where('studio.TABLE_ID = :tableID', { tableID: tableID });
 
@@ -37,14 +30,7 @@ export class StudioCacheRepository {
       .select([
         'studio."TABLE_ID" as "tableId"',
         'studio."TABLE_STATUS" as "tableStatus"',
-        'sc."PRIMARY_HD" as "primaryHd"',
-        'sc."PRIMARY_HI" as "primaryHi"',
-        'sc."PRIMARY_ME" as "primaryMe"',
-        'sc."PRIMARY_LO" as "primaryLo"',
-        'sc."SECONDARY_HD" as "secondaryHd"',
-        'sc."SECONDARY_HI" as "secondaryHi"',
-        'sc."SECONDARY_ME" as "secondaryMe"',
-        'sc."SECONDARY_LO" as "secondaryLo"',
+        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
       ]);
 
     return await builder.getRawMany<StudioCacheResult>();

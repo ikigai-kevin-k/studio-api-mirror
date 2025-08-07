@@ -17,7 +17,7 @@ describe('StudioNotFoundError', () => {
 
   it('should have the correct code property', () => {
     const error = new StudioNotFoundError('Test message');
-    expect(error.code).toBe(StudioErrorsEnum.STUDIO_NOT_FOUND);
+    expect(error.code).toBe(StudioErrorsEnum.STUDIO_TABLE_NOT_FOUND);
     expect(error.code).toBe(17_000);
   });
 

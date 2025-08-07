@@ -1,9 +1,10 @@
-import { Column, Entity, PrimaryGeneratedColumn, Unique } from 'typeorm';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('studio-cdn', {
   comment: 'The cdn path of game table.',
 })
-@Unique(['tableId'])
+@Index('idx_cdn_table_id', ['tableId'], { unique: true })
 export class StudioCdn {
   @PrimaryGeneratedColumn({
     name: 'ID',
@@ -21,74 +22,9 @@ export class StudioCdn {
   tableId!: string;
 
   @Column({
-    name: 'PRIMARY_HD',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Primary hd stream path',
+    name: 'CDN',
+    type: 'jsonb',
+    comment: 'CDN Destination',
   })
-  primaryHd!: string;
-
-  @Column({
-    name: 'PRIMARY_HI',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Primary hi stream path',
-  })
-  primaryHi!: string;
-
-  @Column({
-    name: 'PRIMARY_ME',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Primary me stream path',
-  })
-  primaryMe!: string;
-
-  @Column({
-    name: 'PRIMARY_LO',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Primary lo stream path',
-  })
-  primaryLo!: string;
-
-  @Column({
-    name: 'SECONDARY_HD',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Secondary hd stream path',
-  })
-  secondaryHd!: string;
-
-  @Column({
-    name: 'SECONDARY_HI',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Secondary hi stream path',
-  })
-  secondaryHi!: string;
-
-  @Column({
-    name: 'SECONDARY_ME',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Secondary me stream path',
-  })
-  secondaryMe!: string;
-
-  @Column({
-    name: 'SECONDARY_LO',
-    type: 'varchar',
-    length: 255,
-    default: '',
-    comment: 'Secondary lo stream path',
-  })
-  secondaryLo!: string;
+  cdnDst!: Record<string, any>;
 }

@@ -1,3 +1,3 @@
 export enum StudioErrorsEnum {
-  STUDIO_NOT_FOUND = 17_000,
+  STUDIO_TABLE_NOT_FOUND = 17_000,
 }

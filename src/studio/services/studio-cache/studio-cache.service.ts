@@ -1,7 +1,7 @@
 import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
-import { StudioCacheResult } from 'src/studio/model/studio-cache/studio-cache.model';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
+import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 
 export class StudioCacheService {
   constructor(

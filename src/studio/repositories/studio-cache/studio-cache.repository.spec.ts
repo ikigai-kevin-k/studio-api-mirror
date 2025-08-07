@@ -2,9 +2,9 @@
 /* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
 import { Studio } from 'src/studio/entities/studio.entity';
-import { StudioTableStatusType } from 'src/studio/enums/studio.enums';
-import { StudioCacheResult } from 'src/studio/model/studio-cache/studio-cache.model';
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
+import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
@@ -48,15 +48,21 @@ describe('StudioCacheRepository', () => {
     it('should return a StudioCacheResult object when found', async () => {
       const mockStudio: StudioCacheResult = {
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusType.INACTIVE,
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockStudio);
@@ -75,14 +81,7 @@ describe('StudioCacheRepository', () => {
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([
         'studio."TABLE_ID" as "tableId"',
         'studio."TABLE_STATUS" as "tableStatus"',
-        'sc."PRIMARY_HD" as "primaryHd"',
-        'sc."PRIMARY_HI" as "primaryHi"',
-        'sc."PRIMARY_ME" as "primaryMe"',
-        'sc."PRIMARY_LO" as "primaryLo"',
-        'sc."SECONDARY_HD" as "secondaryHd"',
-        'sc."SECONDARY_HI" as "secondaryHi"',
-        'sc."SECONDARY_ME" as "secondaryMe"',
-        'sc."SECONDARY_LO" as "secondaryLo"',
+        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
       ]);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
         tableID: 'uniTest',
@@ -108,14 +107,7 @@ describe('StudioCacheRepository', () => {
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([
         'studio."TABLE_ID" as "tableId"',
         'studio."TABLE_STATUS" as "tableStatus"',
-        'sc."PRIMARY_HD" as "primaryHd"',
-        'sc."PRIMARY_HI" as "primaryHi"',
-        'sc."PRIMARY_ME" as "primaryMe"',
-        'sc."PRIMARY_LO" as "primaryLo"',
-        'sc."SECONDARY_HD" as "secondaryHd"',
-        'sc."SECONDARY_HI" as "secondaryHi"',
-        'sc."SECONDARY_ME" as "secondaryMe"',
-        'sc."SECONDARY_LO" as "secondaryLo"',
+        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
       ]);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
         tableID: 'non-existent-table',
@@ -132,15 +124,21 @@ describe('StudioCacheRepository', () => {
       const mockResult = [
         {
           tableId: 'uniTest',
-          tableStatus: StudioTableStatusType.INACTIVE,
-          primaryHd: 'http://ikg-cit.io/hd.flv',
-          primaryHi: 'http://ikg-cit.io/hi.flv',
-          primaryMe: 'http://ikg-cit.io/me.flv',
-          primaryLo: 'http://ikg-cit.io/lo.flv',
-          secondaryHd: 'http://ikg-cit.io/hd.flv',
-          secondaryHi: 'http://ikg-cit.io/hi.flv',
-          secondaryMe: 'http://ikg-cit.io/me.flv',
-          secondaryLo: 'http://ikg-cit.io/lo.flv',
+          tableStatus: StudioTableStatusEnum.INACTIVE,
+          cdnDst: {
+            primary: {
+              lo: 'http://ikg-cit.io/hd.flv',
+              me: 'http://ikg-cit.io/hd.flv',
+              hi: 'http://ikg-cit.io/hd.flv',
+              hd: 'http://ikg-cit.io/hd.flv',
+            },
+            secondary: {
+              lo: 'http://ikg-cit.io/hd.flv',
+              me: 'http://ikg-cit.io/hd.flv',
+              hi: 'http://ikg-cit.io/hd.flv',
+              hd: 'http://ikg-cit.io/hd.flv',
+            },
+          },
         },
       ];
 
@@ -157,14 +155,7 @@ describe('StudioCacheRepository', () => {
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([
         'studio."TABLE_ID" as "tableId"',
         'studio."TABLE_STATUS" as "tableStatus"',
-        'sc."PRIMARY_HD" as "primaryHd"',
-        'sc."PRIMARY_HI" as "primaryHi"',
-        'sc."PRIMARY_ME" as "primaryMe"',
-        'sc."PRIMARY_LO" as "primaryLo"',
-        'sc."SECONDARY_HD" as "secondaryHd"',
-        'sc."SECONDARY_HI" as "secondaryHi"',
-        'sc."SECONDARY_ME" as "secondaryMe"',
-        'sc."SECONDARY_LO" as "secondaryLo"',
+        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
       ]);
       expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockResult);

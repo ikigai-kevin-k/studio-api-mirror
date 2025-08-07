@@ -6,10 +6,11 @@ import {
   UpsertStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
-import { StudioCacheResult } from 'src/studio/model/studio-cache/studio-cache.model';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import { StudioCacheService } from 'src/studio/services/studio-cache/studio-cache.service';
+import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { isFieldsEqual } from 'src/studio/utilities/cache.utility';
 
@@ -50,14 +51,20 @@ describe('StudioCdnService', () => {
       const mockCdnEntity: StudioCdn = {
         id: 1,
         tableId: 'uniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
 
       (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCdnEntity);
@@ -83,14 +90,21 @@ describe('StudioCdnService', () => {
       const mockCacheMap = new Map<string, StudioCacheResult>();
       mockCacheMap.set('UniTest', {
         tableId: 'UniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/lo.flv',
+            me: 'http://ikg-cit.io/me.flv',
+            hi: 'http://ikg-cit.io/hi.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/lo.flv',
+            me: 'http://ikg-cit.io/me.flv',
+            hi: 'http://ikg-cit.io/hi.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       } as StudioCacheResult);
 
       (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
@@ -102,17 +116,19 @@ describe('StudioCdnService', () => {
       expect(mockStudioCacheService.getCaches).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
         tableId: 'UniTest',
-        primary: {
-          lo: 'http://ikg-cit.io/lo.flv',
-          me: 'http://ikg-cit.io/me.flv',
-          hi: 'http://ikg-cit.io/hi.flv',
-          hd: 'http://ikg-cit.io/hd.flv',
-        },
-        secondary: {
-          lo: 'http://ikg-cit.io/lo.flv',
-          me: 'http://ikg-cit.io/me.flv',
-          hi: 'http://ikg-cit.io/hi.flv',
-          hd: 'http://ikg-cit.io/hd.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/lo.flv',
+            me: 'http://ikg-cit.io/me.flv',
+            hi: 'http://ikg-cit.io/hi.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/lo.flv',
+            me: 'http://ikg-cit.io/me.flv',
+            hi: 'http://ikg-cit.io/hi.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
         },
       });
     });
@@ -136,31 +152,40 @@ describe('StudioCdnService', () => {
       const mockCacheMap = new Map<string, StudioCacheResult>();
       mockCacheMap.set('UniTest', {
         tableId: 'UniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       } as StudioCacheResult);
 
       (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
 
       const request: UpsertStudioTableCdnRequestType = {
         tableId: 'UniTest',
-        primary: {
-          lo: 'http://ikg-cit.io/lo.flv',
-          me: 'http://ikg-cit.io/me.flv',
-          hi: 'http://ikg-cit.io/hi.flv',
-          hd: 'http://ikg-cit.io/hd.flv',
-        },
-        secondary: {
-          lo: 'http://ikg-cit.io/lo.flv',
-          me: 'http://ikg-cit.io/me.flv',
-          hi: 'http://ikg-cit.io/hi.flv',
-          hd: 'http://ikg-cit.io/hd.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
         },
       };
 
@@ -173,8 +198,20 @@ describe('StudioCdnService', () => {
 
       expect(result).toEqual({
         tableId: 'UniTest',
-        primary: request.primary,
-        secondary: request.secondary,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       });
     });
 
@@ -185,44 +222,59 @@ describe('StudioCdnService', () => {
       const mockCacheMap = new Map<string, StudioCacheResult>();
       mockCacheMap.set('UniTest', {
         tableId: 'UniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       } as StudioCacheResult);
 
       (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
 
       const request: UpsertStudioTableCdnRequestType = {
         tableId: 'UniTest',
-        primary: {
-          lo: 'http://ikg-qat.io/lo.flv',
-          me: 'http://ikg-qat.io/me.flv',
-          hi: 'http://ikg-qat.io/hi.flv',
-          hd: 'http://ikg-qat.io/hd.flv',
-        },
-        secondary: {
-          lo: 'http://ikg-qat.io/lo.flv',
-          me: 'http://ikg-qat.io/me.flv',
-          hi: 'http://ikg-qat.io/hi.flv',
-          hd: 'http://ikg-qat.io/hd.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
         },
       };
 
       const mockUpsertResult = {
         TABLE_ID: 'UniTest',
-        PRIMARY_HD: 'http://ikg-qat.io/hd.flv',
-        PRIMARY_HI: 'http://ikg-qat.io/hi.flv',
-        PRIMARY_ME: 'http://ikg-qat.io/me.flv',
-        PRIMARY_LO: 'http://ikg-qat.io/lo.flv',
-        SECONDARY_HD: 'http://ikg-qat.io/hd.flv',
-        SECONDARY_HI: 'http://ikg-qat.io/hi.flv',
-        SECONDARY_ME: 'http://ikg-qat.io/me.flv',
-        SECONDARY_LO: 'http://ikg-qat.io/lo.flv',
+        CDN: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
 
       (mockStudioCdnRepository.upsertTableCdn as jest.Mock).mockResolvedValue(mockUpsertResult);
@@ -236,8 +288,20 @@ describe('StudioCdnService', () => {
 
       expect(result).toEqual({
         tableId: 'UniTest',
-        primary: request.primary,
-        secondary: request.secondary,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       });
     });
   });

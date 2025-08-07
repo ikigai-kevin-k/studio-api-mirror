@@ -9,11 +9,12 @@ import {
   UpsertStudioTableRequestType,
   UpsertStudioTableResponseType,
 } from 'src/studio/controller/v1/studio/studio.type';
-import { StudioTableStatusType } from 'src/studio/enums/studio.enums';
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 
 const mockFastify = {
+  get: jest.fn(),
   post: jest.fn(),
   register: jest.fn((callback) => callback(mockFastify)),
 } as unknown as FastifyInstance;
@@ -50,19 +51,16 @@ describe('StudioController', () => {
   });
 
   describe('onInit', () => {
-    it('should register both getStudioTable and upsertStudioTable routes', async () => {
+    it('should register getStudioTable with app.get and upsertStudioTable with app.post', async () => {
       await controller.onInit();
-
       expect(mockRouterService.app.register).toHaveBeenCalledTimes(1);
-
-      expect(mockFastify.post).toHaveBeenCalledTimes(2);
-
-      expect(mockFastify.post).toHaveBeenCalledWith(
+      expect(mockFastify.get).toHaveBeenCalledTimes(1);
+      expect(mockFastify.post).toHaveBeenCalledTimes(1);
+      expect(mockFastify.get).toHaveBeenCalledWith(
         RoutesEnum.V1_GET_STUDIO_TABLE,
         expect.any(Object),
         expect.any(Function),
       );
-
       expect(mockFastify.post).toHaveBeenCalledWith(
         RoutesEnum.V1_UPSERT_STUDIO_TABLE,
         expect.any(Object),
@@ -70,51 +68,45 @@ describe('StudioController', () => {
       );
     });
 
-    it('should handle the getStudioTable request and return the correct response', async () => {
+    it('should handle getStudioTable request from query and return the correct response', async () => {
       await controller.onInit();
-
-      const mockRequestBody: GetStudioTableRequestType = { tableId: ['uniTest'] };
-      const mockResponse: GetStudioTableResponseType = {
-        list: [{ tableId: 'uniTest', tableStatus: 'inactive' }],
+      const mockRequestQuery: GetStudioTableRequestType = { tableId: ['uniTest'] };
+      const mockServiceResponse: GetStudioTableResponseType = {
+        list: [{ tableId: 'uniTest-1', tableStatus: 'active' }],
       };
 
-      (mockStudioService.getStudioTable as jest.Mock).mockResolvedValue(mockResponse);
+      (mockStudioService.getStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);
+      const getStudioTableHandler = (mockFastify.get as jest.Mock).mock.calls[0][2];
+      const result = await getStudioTableHandler({ query: mockRequestQuery });
 
-      const getStudioTableHandler = (mockFastify.post as jest.Mock).mock.calls[0][2];
-
-      const result = await getStudioTableHandler({ body: mockRequestBody });
-
-      expect(mockStudioService.getStudioTable).toHaveBeenCalledWith(mockRequestBody);
-      expect(result).toEqual(mockResponse);
+      expect(mockStudioService.getStudioTable).toHaveBeenCalledWith(mockRequestQuery);
+      expect(result).toEqual(mockServiceResponse);
     });
 
-    it('should handle the upsertStudioTable request and return the correct response', async () => {
+    it('should handle upsertStudioTable request from body and return the correct response', async () => {
       await controller.onInit();
-
       const mockRequestBody: UpsertStudioTableRequestType = {
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
-      const mockResponse: UpsertStudioTableResponseType = {
+      const mockServiceResponse: UpsertStudioTableResponseType = {
         tableId: 'uniTest',
         tableStatus: 'inactive',
       };
 
-      (mockStudioService.upsertStudioTable as jest.Mock).mockResolvedValue(mockResponse);
-
-      const upsertStudioTableHandler = (mockFastify.post as jest.Mock).mock.calls[1][2];
-
+      (mockStudioService.upsertStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);
+      const upsertStudioTableHandler = (mockFastify.post as jest.Mock).mock.calls[0][2];
       const result = await upsertStudioTableHandler({ body: mockRequestBody });
 
       expect(mockStudioService.upsertStudioTable).toHaveBeenCalledWith(mockRequestBody);
-      expect(result).toEqual(mockResponse);
+      expect(result).toEqual(mockServiceResponse);
     });
   });
 
   describe('getStudioTable', () => {
-    it('should register the correct route with schema and preHandler', () => {
+    it('should register the correct GET route with schema and preHandler', () => {
       controller.getStudioTable(mockFastify);
-      expect(mockFastify.post).toHaveBeenCalledWith(
+      expect(mockFastify.get).toHaveBeenCalledWith(
         RoutesEnum.V1_GET_STUDIO_TABLE,
         expect.objectContaining({
           schema: expect.any(Object),
@@ -126,7 +118,7 @@ describe('StudioController', () => {
   });
 
   describe('upsertStudioTable', () => {
-    it('should register the correct route with schema and preHandler', () => {
+    it('should register the correct POST route with schema and preHandler', () => {
       controller.upsertStudioTable(mockFastify);
       expect(mockFastify.post).toHaveBeenCalledWith(
         RoutesEnum.V1_UPSERT_STUDIO_TABLE,

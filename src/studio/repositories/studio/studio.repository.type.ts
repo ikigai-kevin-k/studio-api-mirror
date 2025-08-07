@@ -1,11 +1,11 @@
-import { StudioTableStatusType } from '../../enums/studio.enums';
+import { StudioTableStatusEnum } from '../../enums/studio.enums';
 
 export type UpsertStudioTableResult = {
   TABLE_ID: string;
-  TABLE_STATUS: StudioTableStatusType;
+  TABLE_STATUS: StudioTableStatusEnum;
 };
 
 export type UpdateStudioTableEntity = {
   tableId: string;
-  tableStatus: StudioTableStatusType;
+  tableStatus: StudioTableStatusEnum;
 };

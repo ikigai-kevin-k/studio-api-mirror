@@ -1,6 +1,9 @@
 /* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
-import { GetStudioTableQuery, StudioTableResult } from 'src/studio/model/studio/studio.model';
+import {
+  GetStudioTableQuery,
+  StudioTableResult,
+} from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import { UpdateStudioTableEntity, UpsertStudioTableResult } from './studio.repository.type';
 

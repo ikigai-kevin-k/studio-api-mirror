@@ -47,4 +47,10 @@ describe('isFieldsEqual', () => {
     const b = { id: 1, value: 1 };
     expect(isFieldsEqual(a, b)).toBe(false);
   });
+
+  it('should return true when nested object', () => {
+    const a = { id: 1, value: { deep: 1 } };
+    const b = { id: 1, value: { deep: 1 } };
+    expect(isFieldsEqual(a, b)).toBe(true);
+  });
 });

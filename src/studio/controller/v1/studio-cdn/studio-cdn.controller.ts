@@ -38,11 +38,11 @@ export class StudioCdnController implements ModuleLifecycle {
       this.preHandlersService,
     );
 
-    return app.post<{ Body: GetStudioTableCdnRequestType }>(
+    return app.get<{ Querystring: GetStudioTableCdnRequestType }>(
       RoutesEnum.V1_GET_STUDIO_TABLE_CDN,
       {
         schema: {
-          body: GetStudioTableCdnRequest,
+          querystring: GetStudioTableCdnRequest,
           response: {
             [StatusCodes.OK]: RespSchema.Ok(GetStudioTableCdnResponse),
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
@@ -54,12 +54,12 @@ export class StudioCdnController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<GetStudioTableCdnResponseType> => {
-        const { tableId, primary, secondary } = await this.studioCdnService.getTableCdn(req.body);
+        const { tableId, cdnDst } = await this.studioCdnService.getTableCdn(req.query);
         return {
           tableId: tableId,
-          cdnDST: {
-            primary: primary,
-            secondary: secondary,
+          cdnDst: {
+            primary: cdnDst['primary'],
+            secondary: cdnDst['secondary'],
           },
         };
       },
@@ -87,13 +87,13 @@ export class StudioCdnController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<UpsertStudioTableCdnResponseType> => {
-        const { tableId, primary, secondary } = await this.studioCdnService.upsertTableCdn(
-          req.body,
-        );
+        const { tableId, cdnDst } = await this.studioCdnService.upsertTableCdn(req.body);
         return {
           tableId: tableId,
-          primary: primary,
-          secondary: secondary,
+          cdnDst: {
+            primary: cdnDst['primary'],
+            secondary: cdnDst['secondary'],
+          },
         };
       },
     );

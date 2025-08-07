@@ -4,14 +4,13 @@ import {
   UpsertStudioTableRequestType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
-import { EmptyStudioCacheResult } from 'src/studio/model/studio-cache/studio-cache.model';
+import { EmptyStudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import {
   GetStudioTableOutput,
   GetStudioTableResult,
   StudioTableResult,
   UpdateStudioTableResult,
-} from 'src/studio/model/studio/studio.model';
-import { isFieldsEqual } from 'src/studio/utilities/cache.utility';
+} from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import { StudioRepository } from '../../repositories/studio/studio.repository';
 import { StudioCacheService } from '../studio-cache/studio-cache.service';
@@ -56,21 +55,14 @@ export class StudioService {
   }
 
   async upsertStudioTable(type: UpsertStudioTableRequestType): Promise<UpdateStudioTableResult> {
-    const studioMap = await this.studioCacheService.getCaches();
-    const data = studioMap.get(type.tableId) ?? EmptyStudioCacheResult();
-
-    if (isFieldsEqual(type, data)) {
-      return {
-        tableId: type.tableId,
-        tableStatus: type.tableStatus,
-      };
-    }
-
     const studio: Studio = new Studio();
     studio.tableId = type.tableId;
     studio.tableStatus = type.tableStatus;
 
     const studioReturning = await this.studioRepository.upsertStudio(studio);
+
+    const studioMap = await this.studioCacheService.getCaches();
+    const data = studioMap.get(type.tableId) ?? EmptyStudioCacheResult();
 
     data.tableId = studioReturning.TABLE_ID;
     data.tableStatus = studioReturning.TABLE_STATUS;

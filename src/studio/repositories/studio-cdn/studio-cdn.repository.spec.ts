@@ -48,14 +48,20 @@ describe('StudioCdnRepository', () => {
       const mockStudio: StudioCdn = {
         id: 1,
         tableId: 'uniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
 
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockStudio);
@@ -92,14 +98,20 @@ describe('StudioCdnRepository', () => {
     it('should return an array of TableCdnResult', async () => {
       const query = { tableId: 'uniTest' };
       const mockResult = {
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockResult);
@@ -108,16 +120,7 @@ describe('StudioCdnRepository', () => {
 
       expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
       expect(mockConnection.createQueryBuilder).toHaveBeenCalledTimes(1);
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
-        'studio."PRIMARY_HD" as "primaryHd"',
-        'studio."PRIMARY_HI" as "primaryHi"',
-        'studio."PRIMARY_ME" as "primaryMe"',
-        'studio."PRIMARY_LO" as "primaryLo"',
-        'studio."SECONDARY_HD" as "secondaryHd"',
-        'studio."SECONDARY_HI" as "secondaryHi"',
-        'studio."SECONDARY_ME" as "secondaryMe"',
-        'studio."SECONDARY_LO" as "secondaryLo"',
-      ]);
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith(['studio."CDN" as "cdn"']);
       expect(mockQueryBuilder.from).toHaveBeenCalledWith(StudioCdn, 'studio');
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableId', {
         tableId: query.tableId,
@@ -132,25 +135,37 @@ describe('StudioCdnRepository', () => {
       const mockStudio: StudioCdn = {
         id: 1,
         tableId: 'uniTest',
-        primaryHd: 'http://ikg-cit.io/hd.flv',
-        primaryHi: 'http://ikg-cit.io/hi.flv',
-        primaryMe: 'http://ikg-cit.io/me.flv',
-        primaryLo: 'http://ikg-cit.io/lo.flv',
-        secondaryHd: 'http://ikg-cit.io/hd.flv',
-        secondaryHi: 'http://ikg-cit.io/hi.flv',
-        secondaryMe: 'http://ikg-cit.io/me.flv',
-        secondaryLo: 'http://ikg-cit.io/lo.flv',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
       const mockRawResult: UpsertTableCdnResult = {
         TABLE_ID: 'uniTest',
-        PRIMARY_HD: 'http://ikg-cit.io/hd.flv',
-        PRIMARY_HI: 'http://ikg-cit.io/hi.flv',
-        PRIMARY_ME: 'http://ikg-cit.io/me.flv',
-        PRIMARY_LO: 'http://ikg-cit.io/lo.flv',
-        SECONDARY_HD: 'http://ikg-cit.io/hd.flv',
-        SECONDARY_HI: 'http://ikg-cit.io/hi.flv',
-        SECONDARY_ME: 'http://ikg-cit.io/me.flv',
-        SECONDARY_LO: 'http://ikg-cit.io/lo.flv',
+        CDN: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
       };
       const mockExecuteResult = { raw: [mockRawResult] };
 
@@ -162,30 +177,8 @@ describe('StudioCdnRepository', () => {
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioCdn);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith(mockStudio);
-      expect(mockQueryBuilder.orUpdate).toHaveBeenCalledWith(
-        [
-          'PRIMARY_HD',
-          'PRIMARY_HI',
-          'PRIMARY_ME',
-          'PRIMARY_LO',
-          'SECONDARY_HD',
-          'SECONDARY_HI',
-          'SECONDARY_ME',
-          'SECONDARY_LO',
-        ],
-        ['TABLE_ID'],
-      );
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith([
-        'tableId',
-        'primaryHd',
-        'primaryHi',
-        'primaryMe',
-        'primaryLo',
-        'secondaryHd',
-        'secondaryHi',
-        'secondaryMe',
-        'secondaryLo',
-      ]);
+      expect(mockQueryBuilder.orUpdate).toHaveBeenCalledWith(['CDN'], ['TABLE_ID']);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith(['tableId', 'cdnDst']);
       expect(result).toEqual(mockRawResult);
     });
   });

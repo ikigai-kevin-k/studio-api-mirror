@@ -2,7 +2,7 @@
 /* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
 import { Studio } from 'src/studio/entities/studio.entity';
-import { StudioTableStatusType } from 'src/studio/enums/studio.enums';
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioRepository } from 'src/studio/repositories/studio/studio.repository';
 import {
   UpdateStudioTableEntity,
@@ -53,7 +53,7 @@ describe('StudioRepository', () => {
       const mockStudio: Studio = {
         id: 1,
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
 
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockStudio);
@@ -115,11 +115,11 @@ describe('StudioRepository', () => {
       const mockStudio: Studio = {
         id: 1,
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
       const mockRawResult: UpsertStudioTableResult = {
         TABLE_ID: 'uniTest',
-        TABLE_STATUS: StudioTableStatusType.INACTIVE,
+        TABLE_STATUS: StudioTableStatusEnum.INACTIVE,
       };
       const mockExecuteResult = { raw: [mockRawResult] };
 
@@ -141,7 +141,7 @@ describe('StudioRepository', () => {
     it('should update the table status and return affected rows count', async () => {
       const updateEntity: UpdateStudioTableEntity = {
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
@@ -167,7 +167,7 @@ describe('StudioRepository', () => {
     it('should return 0 if no rows are affected', async () => {
       const updateEntity: UpdateStudioTableEntity = {
         tableId: 'non-existent-table',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
@@ -185,7 +185,7 @@ describe('StudioRepository', () => {
     it('should return -1 if affected is null', async () => {
       const updateEntity: UpdateStudioTableEntity = {
         tableId: 'non-existent-table',
-        tableStatus: StudioTableStatusType.INACTIVE,
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
       const mockUpdateResult = {
         generatedMaps: [],

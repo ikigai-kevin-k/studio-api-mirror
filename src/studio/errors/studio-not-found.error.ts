@@ -7,7 +7,7 @@ export class StudioNotFoundError extends IkiError {
   constructor(message: string) {
     super(message);
     this.name = 'StudioNotFoundError';
-    this.code = StudioErrorsEnum.STUDIO_NOT_FOUND;
+    this.code = StudioErrorsEnum.STUDIO_TABLE_NOT_FOUND;
     Error.captureStackTrace(this, StudioNotFoundError);
   }
 }
