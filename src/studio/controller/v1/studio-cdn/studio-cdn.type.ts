@@ -24,16 +24,30 @@ export const GetStudioTableCdnResponse = Type.Object({
 
 export type GetStudioTableCdnResponseType = Static<typeof GetStudioTableCdnResponse>;
 
-export const UpsertStudioTableCdnRequest = Type.Object({
+export const InsertStudioTableCdnRequest = Type.Object({
   tableId: Type.String(),
   cdnDst: CdnSet,
 });
 
-export type UpsertStudioTableCdnRequestType = Static<typeof UpsertStudioTableCdnRequest>;
+export type InsertStudioTableCdnRequestType = Static<typeof InsertStudioTableCdnRequest>;
 
-export const UpsertStudioTableCdnResponse = Type.Object({
+export const InsertStudioTableCdnResponse = Type.Object({
   tableId: Type.String(),
   cdnDst: CdnSet,
 });
 
-export type UpsertStudioTableCdnResponseType = Static<typeof UpsertStudioTableCdnResponse>;
+export type InsertStudioTableCdnResponseType = Static<typeof InsertStudioTableCdnResponse>;
+
+export const UpdateStudioTableCdnRequest = Type.Object({
+  tableId: Type.String(),
+  cdnDst: CdnSet,
+});
+
+export type UpdateStudioTableCdnRequestType = Static<typeof UpdateStudioTableCdnRequest>;
+
+export const UpdateStudioTableCdnResponse = Type.Object({
+  tableId: Type.String(),
+  cdnDst: CdnSet,
+});
+
+export type UpdateStudioTableCdnResponseType = Static<typeof UpdateStudioTableCdnResponse>;

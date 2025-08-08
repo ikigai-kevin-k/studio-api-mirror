@@ -16,7 +16,12 @@ export type GetStudioTableResult = {
   list: GetStudioTableOutput[];
 };
 
-export type UpdateStudioTableResult = {
+export type InsertStudioTableResult = {
+  tableId: string;
+  tableStatus: string;
+};
+
+export type UpdateStudioTableStatusResult = {
   tableId: string;
   tableStatus: string;
 };

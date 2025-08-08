@@ -19,16 +19,30 @@ export const GetStudioTableResponse = Type.Object({
 
 export type GetStudioTableResponseType = Static<typeof GetStudioTableResponse>;
 
-export const UpsertStudioTableRequest = Type.Object({
+export const InsertStudioTableRequest = Type.Object({
   tableId: Type.String(),
   tableStatus: StringEnum(StudioTableStatusEnum),
 });
 
-export type UpsertStudioTableRequestType = Static<typeof UpsertStudioTableRequest>;
+export type InsertStudioTableRequestType = Static<typeof InsertStudioTableRequest>;
 
-export const UpsertStudioTableResponse = Type.Object({
+export const InsertStudioTableResponse = Type.Object({
   tableId: Type.String(),
   tableStatus: Type.String(),
 });
 
-export type UpsertStudioTableResponseType = Static<typeof UpsertStudioTableResponse>;
+export type InsertStudioTableResponseType = Static<typeof InsertStudioTableResponse>;
+
+export const UpdateStudioTableStatusRequest = Type.Object({
+  tableId: Type.String(),
+  tableStatus: StringEnum(StudioTableStatusEnum),
+});
+
+export type UpdateStudioTableStatusRequestType = Static<typeof UpdateStudioTableStatusRequest>;
+
+export const UpdateStudioTableStatusResponse = Type.Object({
+  tableId: Type.String(),
+  tableStatus: Type.String(),
+});
+
+export type UpdateStudioTableStatusResponseType = Static<typeof UpdateStudioTableStatusResponse>;

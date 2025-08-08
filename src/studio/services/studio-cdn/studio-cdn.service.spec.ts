@@ -1,27 +1,27 @@
 /* eslint-disable unicorn/no-null */
-// studio-cdn.service.spec.ts
+// studio.service.spec.ts
 import { LoggerService } from '@ikigaians/logger';
 import {
   GetStudioTableCdnRequestType,
-  UpsertStudioTableCdnRequestType,
+  InsertStudioTableCdnRequestType,
+  UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import { StudioCacheService } from 'src/studio/services/studio-cache/studio-cache.service';
-import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
-import { isFieldsEqual } from 'src/studio/utilities/cache.utility';
 
-// Mock 掉所有依賴的服務
 const mockStudioCdnRepository = {
   getTableCdnByTableID: jest.fn(),
-  upsertTableCdn: jest.fn(),
+  insertTableCdn: jest.fn(),
+  updateTableCdn: jest.fn(),
 } as unknown as StudioCdnRepository;
 
 const mockStudioCacheService = {
   getCaches: jest.fn(),
+  getCache: jest.fn(),
   refreshCache: jest.fn(),
 } as unknown as StudioCacheService;
 
@@ -52,11 +52,11 @@ describe('StudioCdnService', () => {
     });
   });
 
-  describe('getTableCdnByTableID', () => {
-    it('should return a StudioCdn entity if found', async () => {
-      const mockCdnEntity: StudioCdn = {
+  describe('getStudioTableByTableID', () => {
+    it('should return a studioCdn entity if found', async () => {
+      const mockStudio: StudioCdn = {
         id: 1,
-        tableId: 'uniTest',
+        tableId: 'UniTest',
         cdnDst: {
           primary: {
             lo: 'http://ikg-cit.io/hd.flv',
@@ -73,12 +73,12 @@ describe('StudioCdnService', () => {
         },
       };
 
-      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCdnEntity);
+      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockStudio);
 
-      const result = await service.getTableCdnByTableID('uniTest');
+      const result = await service.getTableCdnByTableID('UniTest');
 
-      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('uniTest');
-      expect(result).toEqual(mockCdnEntity);
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('UniTest');
+      expect(result).toEqual(mockStudio);
     });
 
     it('should throw StudioNotFoundError if not found', async () => {
@@ -87,97 +87,66 @@ describe('StudioCdnService', () => {
       await expect(service.getTableCdnByTableID('non-existent')).rejects.toThrow(
         StudioNotFoundError,
       );
+      await expect(service.getTableCdnByTableID('non-existent')).rejects.toThrow(
+        `table non-existent not found`,
+      );
       expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('non-existent');
     });
   });
 
   describe('getTableCdn', () => {
-    it('should return CDN data from cache and format it correctly', async () => {
-      const mockCacheMap = new Map<string, StudioCacheResult>();
-      mockCacheMap.set('UniTest', {
+    it('should return a list of cdn from cache', async () => {
+      const mockCacheResult = {
         tableId: 'UniTest',
         tableStatus: StudioTableStatusEnum.INACTIVE,
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/lo.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/lo.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
           },
         },
-      } as StudioCacheResult);
+      };
 
-      (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
+      (mockStudioCacheService.getCache as jest.Mock).mockResolvedValue(mockCacheResult);
 
-      const request: GetStudioTableCdnRequestType = { tableId: 'UniTest' };
+      const request: GetStudioTableCdnRequestType = {
+        tableId: 'UniTest',
+      };
 
       const result = await service.getTableCdn(request);
 
-      expect(mockStudioCacheService.getCaches).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheService.getCache).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
         tableId: 'UniTest',
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/lo.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/lo.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
           },
         },
       });
-    });
-
-    it('should throw StudioNotFoundError if CDN data is not in cache', async () => {
-      const mockCacheMap = new Map<string, StudioCacheResult>();
-      (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
-
-      const request: GetStudioTableCdnRequestType = { tableId: 'non-existent' };
-
-      await expect(service.getTableCdn(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockStudioCacheService.getCaches).toHaveBeenCalledTimes(1);
     });
   });
 
-  describe('upsertTableCdn', () => {
-    it('should return data directly without upserting if it is equal to cache data', async () => {
-      // Mock isFieldsEqual to return true
-      (isFieldsEqual as jest.Mock).mockReturnValue(true);
-
-      const mockCacheMap = new Map<string, StudioCacheResult>();
-      mockCacheMap.set('UniTest', {
-        tableId: 'UniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      } as StudioCacheResult);
-
-      (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
-
-      const request: UpsertStudioTableCdnRequestType = {
+  describe('insertTableCdn', () => {
+    it('should insert data and refresh cache', async () => {
+      const request: InsertStudioTableCdnRequestType = {
         tableId: 'UniTest',
         cdnDst: {
           primary: {
@@ -195,77 +164,7 @@ describe('StudioCdnService', () => {
         },
       };
 
-      const result = await service.upsertTableCdn(request);
-
-      expect(mockStudioCacheService.getCaches).toHaveBeenCalledTimes(1);
-      expect(isFieldsEqual).toHaveBeenCalledTimes(1);
-      expect(mockStudioCdnRepository.upsertTableCdn).not.toHaveBeenCalled();
-      expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
-
-      expect(result).toEqual({
-        tableId: 'UniTest',
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      });
-    });
-
-    it('should upsert data and refresh cache if it is not equal to cache data', async () => {
-      // Mock isFieldsEqual to return false
-      (isFieldsEqual as jest.Mock).mockReturnValue(false);
-
-      const mockCacheMap = new Map<string, StudioCacheResult>();
-      mockCacheMap.set('UniTest', {
-        tableId: 'UniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      } as StudioCacheResult);
-
-      (mockStudioCacheService.getCaches as jest.Mock).mockResolvedValue(mockCacheMap);
-
-      const request: UpsertStudioTableCdnRequestType = {
-        tableId: 'UniTest',
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      };
-
-      const mockUpsertResult = {
+      const mockInsertResult = {
         TABLE_ID: 'UniTest',
         CDN: {
           primary: {
@@ -283,13 +182,12 @@ describe('StudioCdnService', () => {
         },
       };
 
-      (mockStudioCdnRepository.upsertTableCdn as jest.Mock).mockResolvedValue(mockUpsertResult);
+      (mockStudioCdnRepository.insertTableCdn as jest.Mock).mockResolvedValue(mockInsertResult);
 
-      const result = await service.upsertTableCdn(request);
+      const result = await service.insertTableCdn(request);
 
-      expect(mockStudioCacheService.getCaches).toHaveBeenCalledTimes(1);
-      expect(isFieldsEqual).toHaveBeenCalledTimes(1);
-      expect(mockStudioCdnRepository.upsertTableCdn).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheService.getCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCdnRepository.insertTableCdn).toHaveBeenCalledTimes(1);
       expect(mockStudioCacheService.refreshCache).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual({
@@ -309,6 +207,96 @@ describe('StudioCdnService', () => {
           },
         },
       });
+    });
+  });
+
+  describe('updateTableCdn', () => {
+    it('should update data and refresh cache', async () => {
+      const request: UpdateStudioTableCdnRequestType = {
+        tableId: 'UniTest',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+
+      const mockInsertResult = {
+        TABLE_ID: 'UniTest',
+        CDN: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+
+      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(mockInsertResult);
+
+      const result = await service.updateTableCdn(request);
+
+      expect(mockStudioCacheService.getCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCdnRepository.updateTableCdn).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledTimes(1);
+
+      expect(result).toEqual({
+        tableId: 'UniTest',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      });
+    });
+
+    it('should throw StudioNotFoundError if not found', async () => {
+      const request: UpdateStudioTableCdnRequestType = {
+        tableId: 'UniTest',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+
+      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(0);
+
+      await expect(service.updateTableCdn(request)).rejects.toThrow(StudioNotFoundError);
     });
   });
 });

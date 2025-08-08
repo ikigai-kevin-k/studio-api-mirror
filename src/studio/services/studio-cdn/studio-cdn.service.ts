@@ -2,19 +2,19 @@ import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import {
   GetStudioTableCdnRequestType,
-  UpsertStudioTableCdnRequestType,
+  InsertStudioTableCdnRequestType,
+  UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
-import { EmptyStudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
+import { UpdateTableCdnEntity } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import {
   GetTableCdnOutput,
+  InsertTableCdnOutput,
   UpdateTableCdnOutput,
 } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { StudioCacheService } from '../studio-cache/studio-cache.service';
-
-import { isFieldsEqual } from 'src/studio/utilities/cache.utility';
 
 export class StudioCdnService implements ModuleLifecycle {
   constructor(
@@ -33,34 +33,44 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetTableCdnOutput> {
-    const studioMap = await this.studioCacheService.getCaches();
-    const entity = studioMap.get(type.tableId);
-    if (!entity) {
-      throw new StudioNotFoundError(`table ${type.tableId} not found`);
-    }
-
+    const entity = await this.studioCacheService.getCache(type.tableId);
     return {
       tableId: type.tableId,
       cdnDst: entity.cdnDst,
     };
   }
 
-  async upsertTableCdn(type: UpsertStudioTableCdnRequestType): Promise<UpdateTableCdnOutput> {
-    const studioMap = await this.studioCacheService.getCaches();
-    const data = studioMap.get(type.tableId) ?? EmptyStudioCacheResult();
-
-    if (isFieldsEqual(type, data)) {
-      return type;
-    }
-
+  async insertTableCdn(type: InsertStudioTableCdnRequestType): Promise<InsertTableCdnOutput> {
     const studio: StudioCdn = new StudioCdn();
     studio.tableId = type.tableId;
     studio.cdnDst = type.cdnDst;
 
-    const studioReturning = await this.studioCdnRepository.upsertTableCdn(studio);
+    const studioReturning = await this.studioCdnRepository.insertTableCdn(studio);
 
+    const data = await this.studioCacheService.getCache(type.tableId);
     data.tableId = studioReturning.TABLE_ID;
     data.cdnDst = studioReturning.CDN;
+
+    await this.studioCacheService.refreshCache(data);
+
+    return {
+      tableId: data.tableId,
+      cdnDst: data.cdnDst,
+    };
+  }
+
+  async updateTableCdn(type: UpdateStudioTableCdnRequestType): Promise<UpdateTableCdnOutput> {
+    const entity: UpdateTableCdnEntity = {
+      tableId: type.tableId,
+      cdnDst: type.cdnDst,
+    };
+
+    const result = await this.studioCdnRepository.updateTableCdn(entity);
+    if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
+
+    const data = await this.studioCacheService.getCache(type.tableId);
+    data.tableId = type.tableId;
+    data.cdnDst = type.cdnDst;
 
     await this.studioCacheService.refreshCache(data);
 

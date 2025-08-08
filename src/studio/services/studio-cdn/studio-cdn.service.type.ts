@@ -13,6 +13,11 @@ export type GetTableCdnOutput = {
   cdnDst: Record<string, any>;
 };
 
+export type InsertTableCdnOutput = {
+  tableId: string;
+  cdnDst: Record<string, any>;
+};
+
 export type UpdateTableCdnOutput = {
   tableId: string;
   cdnDst: Record<string, any>;

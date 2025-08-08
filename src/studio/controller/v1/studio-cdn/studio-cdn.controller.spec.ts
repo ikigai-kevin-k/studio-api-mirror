@@ -6,8 +6,8 @@ import { StudioCdnController } from 'src/studio/controller/v1/studio-cdn/studio-
 import {
   GetStudioTableCdnRequestType,
   GetStudioTableCdnResponseType,
-  UpsertStudioTableCdnRequestType,
-  UpsertStudioTableCdnResponseType,
+  InsertStudioTableCdnRequestType,
+  InsertStudioTableCdnResponseType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
@@ -15,12 +15,13 @@ import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.serv
 const mockFastify = {
   get: jest.fn(),
   post: jest.fn(),
+  patch: jest.fn(),
   register: jest.fn((callback) => callback(mockFastify)),
 } as unknown as FastifyInstance;
 
 const mockStudioCdnService = {
   getTableCdn: jest.fn(),
-  upsertTableCdn: jest.fn(),
+  insertTableCdn: jest.fn(),
 } as unknown as StudioCdnService;
 
 const mockPreHandlersService = {
@@ -50,7 +51,7 @@ describe('StudioCdnController', () => {
   });
 
   describe('onInit', () => {
-    it('should register both getTableCdn and upsertTableCdn routes', async () => {
+    it('should register both getTableCdn and insertTableCdn routes', async () => {
       await controller.onInit();
 
       expect(mockRouterService.app.register).toHaveBeenCalledTimes(1);
@@ -58,13 +59,13 @@ describe('StudioCdnController', () => {
       expect(mockFastify.get).toHaveBeenCalledTimes(1);
 
       expect(mockFastify.get).toHaveBeenCalledWith(
-        RoutesEnum.V1_GET_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_CDN,
         expect.any(Object),
         expect.any(Function),
       );
 
       expect(mockFastify.post).toHaveBeenCalledWith(
-        RoutesEnum.V1_UPSERT_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_CDN,
         expect.any(Object),
         expect.any(Function),
       );
@@ -104,9 +105,9 @@ describe('StudioCdnController', () => {
       expect(result).toEqual(expectedControllerResponse);
     });
 
-    it('should handle upsertTableCdn request and return the correct response', async () => {
+    it('should handle insertTableCdn request and return the correct response', async () => {
       await controller.onInit();
-      const mockRequestBody: UpsertStudioTableCdnRequestType = {
+      const mockRequestBody: InsertStudioTableCdnRequestType = {
         tableId: 'uniTest',
         cdnDst: {
           primary: {
@@ -123,19 +124,19 @@ describe('StudioCdnController', () => {
           },
         },
       };
-      const expectedControllerResponse: UpsertStudioTableCdnResponseType = {
+      const expectedControllerResponse: InsertStudioTableCdnResponseType = {
         tableId: 'uniTest',
         cdnDst: mockRequestBody.cdnDst,
       };
 
-      (mockStudioCdnService.upsertTableCdn as jest.Mock).mockResolvedValue(
+      (mockStudioCdnService.insertTableCdn as jest.Mock).mockResolvedValue(
         expectedControllerResponse,
       );
 
-      const upsertTableCdnHandler = (mockFastify.post as jest.Mock).mock.calls[0][2];
-      const result = await upsertTableCdnHandler({ body: mockRequestBody });
+      const insertTableCdnHandler = (mockFastify.post as jest.Mock).mock.calls[0][2];
+      const result = await insertTableCdnHandler({ body: mockRequestBody });
 
-      expect(mockStudioCdnService.upsertTableCdn).toHaveBeenCalledWith(mockRequestBody);
+      expect(mockStudioCdnService.insertTableCdn).toHaveBeenCalledWith(mockRequestBody);
       expect(result).toEqual(expectedControllerResponse);
     });
   });
@@ -144,7 +145,7 @@ describe('StudioCdnController', () => {
     it('should register the correct route with schema and preHandler', () => {
       controller.getTableCdn(mockFastify);
       expect(mockFastify.get).toHaveBeenCalledWith(
-        RoutesEnum.V1_GET_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_CDN,
         expect.objectContaining({
           schema: expect.any(Object),
           preHandler: [expect.any(Function)],
@@ -154,11 +155,25 @@ describe('StudioCdnController', () => {
     });
   });
 
-  describe('upsertTableCdn', () => {
+  describe('insertTableCdn', () => {
     it('should register the correct route with schema and preHandler', () => {
-      controller.upsertTableCdn(mockFastify);
+      controller.insertTableCdn(mockFastify);
       expect(mockFastify.post).toHaveBeenCalledWith(
-        RoutesEnum.V1_UPSERT_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_CDN,
+        expect.objectContaining({
+          schema: expect.any(Object),
+          preHandler: [expect.any(Function)],
+        }),
+        expect.any(Function),
+      );
+    });
+  });
+
+  describe('updateTableCdn', () => {
+    it('should register the correct route with schema and preHandler', () => {
+      controller.updateTableCdn(mockFastify);
+      expect(mockFastify.patch).toHaveBeenCalledWith(
+        RoutesEnum.V1_STUDIO_TABLE_CDN,
         expect.objectContaining({
           schema: expect.any(Object),
           preHandler: [expect.any(Function)],

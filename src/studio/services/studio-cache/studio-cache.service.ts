@@ -2,7 +2,10 @@ import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
-import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
+import {
+  EmptyStudioCacheResult,
+  StudioCacheResult,
+} from 'src/studio/services/studio-cache/studio-cache.service.type';
 
 export class StudioCacheService implements ModuleLifecycle {
   constructor(
@@ -28,6 +31,11 @@ export class StudioCacheService implements ModuleLifecycle {
     }
 
     return new Map(JSON.parse(cacheStudios));
+  }
+
+  async getCache(key: string): Promise<StudioCacheResult> {
+    const studioMap = await this.getCaches();
+    return studioMap.get(key) ?? EmptyStudioCacheResult();
   }
 
   async refreshCache(cache: StudioCacheResult): Promise<void> {

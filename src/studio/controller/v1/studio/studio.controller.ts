@@ -12,10 +12,14 @@ import {
   GetStudioTableRequestType,
   GetStudioTableResponse,
   GetStudioTableResponseType,
-  UpsertStudioTableRequest,
-  UpsertStudioTableRequestType,
-  UpsertStudioTableResponse,
-  UpsertStudioTableResponseType,
+  InsertStudioTableRequest,
+  InsertStudioTableRequestType,
+  InsertStudioTableResponse,
+  InsertStudioTableResponseType,
+  UpdateStudioTableStatusRequest,
+  UpdateStudioTableStatusRequestType,
+  UpdateStudioTableStatusResponse,
+  UpdateStudioTableStatusResponseType,
 } from './studio.type';
 
 export class StudioController implements ModuleLifecycle {
@@ -29,7 +33,8 @@ export class StudioController implements ModuleLifecycle {
   async onInit(): Promise<void> {
     this.routerService.app.register(async (context) => {
       this.getStudioTable(context);
-      this.upsertStudioTable(context);
+      this.insertStudioTable(context);
+      this.updateStudioTableStatus(context);
     });
   }
 
@@ -39,7 +44,7 @@ export class StudioController implements ModuleLifecycle {
     );
 
     return app.get<{ Querystring: GetStudioTableRequestType }>(
-      RoutesEnum.V1_GET_STUDIO_TABLE,
+      RoutesEnum.V1_STUDIO_TABLE,
       {
         schema: {
           querystring: GetStudioTableRequest,
@@ -59,18 +64,18 @@ export class StudioController implements ModuleLifecycle {
     );
   }
 
-  upsertStudioTable(app: FastifyInstance) {
+  insertStudioTable(app: FastifyInstance) {
     const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
       this.preHandlersService,
     );
 
-    return app.post<{ Body: UpsertStudioTableRequestType }>(
-      RoutesEnum.V1_UPSERT_STUDIO_TABLE,
+    return app.post<{ Body: InsertStudioTableRequestType }>(
+      RoutesEnum.V1_STUDIO_TABLE,
       {
         schema: {
-          body: UpsertStudioTableRequest,
+          body: InsertStudioTableRequest,
           response: {
-            [StatusCodes.OK]: RespSchema.Ok(UpsertStudioTableResponse),
+            [StatusCodes.OK]: RespSchema.Ok(InsertStudioTableResponse),
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
             [StatusCodes.BAD_REQUEST]: BadRequestResponse,
           },
@@ -79,8 +84,34 @@ export class StudioController implements ModuleLifecycle {
         },
         preHandler: [serviceAuth],
       },
-      async (req): Promise<UpsertStudioTableResponseType> => {
-        return await this.studioService.upsertStudioTable(req.body);
+      async (req): Promise<InsertStudioTableResponseType> => {
+        return await this.studioService.insertStudioTable(req.body);
+      },
+    );
+  }
+
+  updateStudioTableStatus(app: FastifyInstance) {
+    const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
+      this.preHandlersService,
+    );
+
+    return app.patch<{ Body: UpdateStudioTableStatusRequestType }>(
+      RoutesEnum.V1_STUDIO_TABLE,
+      {
+        schema: {
+          body: UpdateStudioTableStatusRequest,
+          response: {
+            [StatusCodes.OK]: RespSchema.Ok(UpdateStudioTableStatusResponse),
+            [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
+            [StatusCodes.BAD_REQUEST]: BadRequestResponse,
+          },
+          tags: ['studio'],
+          security: [{ serviceApiAuth: [] }],
+        },
+        preHandler: [serviceAuth],
+      },
+      async (req): Promise<UpdateStudioTableStatusResponseType> => {
+        return await this.studioService.updateStudioTableStatus(req.body);
       },
     );
   }

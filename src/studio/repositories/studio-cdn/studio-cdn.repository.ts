@@ -6,7 +6,7 @@ import {
   TableCdnResult,
 } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { StudioCdn } from '../../entities/studio-cdn.entity';
-import { UpsertTableCdnResult } from './studio-cdn.repository.type';
+import { InsertTableCdnResult, UpdateTableCdnEntity } from './studio-cdn.repository.type';
 
 export class StudioCdnRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
@@ -32,17 +32,29 @@ export class StudioCdnRepository implements ModuleLifecycle {
     return await builder.getRawOne<TableCdnResult>();
   }
 
-  async upsertTableCdn(studioCdn: StudioCdn): Promise<UpsertTableCdnResult> {
+  async insertTableCdn(studioCdn: StudioCdn): Promise<InsertTableCdnResult> {
     const result = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .insert()
       .into(StudioCdn)
       .values(studioCdn)
-      .orUpdate(['CDN'], ['TABLE_ID'])
       .returning(['tableId', 'cdnDst'])
       .execute();
-    return result.raw[0] as UpsertTableCdnResult;
+    return result.raw[0] as InsertTableCdnResult;
+  }
+
+  async updateTableCdn(entity: UpdateTableCdnEntity): Promise<number> {
+    const updateResult = await this.dbService
+      .getConnection()
+      .createQueryBuilder()
+      .update(StudioCdn)
+      .set({ cdnDst: entity.cdnDst })
+      .where('tableId = :tableId', { tableId: entity.tableId })
+      .returning(['tableId', 'cdnDst'])
+      .execute();
+
+    return updateResult.affected ?? -1;
   }
 
   async onInit(): Promise<void> {}

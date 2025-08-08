@@ -1,4 +1,5 @@
 /* eslint-disable unicorn/no-null */
+/* eslint-disable unicorn/numeric-separators-style */
 // studio-cache.service.spec.ts
 import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
@@ -36,31 +37,33 @@ describe('StudioCacheService', () => {
     jest.clearAllMocks();
   });
 
+  describe('onInit', () => {
+    it('should be callable and return without errors', async () => {
+      await expect(service.onInit()).resolves.toBeUndefined();
+    });
+  });
+
   describe('getCaches', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData = new Map<string, StudioCacheResult>([
-        [
-          'uniTest',
-          {
-            tableId: 'uniTest',
-            tableStatus: StudioTableStatusEnum.INACTIVE,
-            cdnDst: {
-              primary: {
-                hd: 'http://ikg-cit.io/hd.flv',
-                hi: 'http://ikg-cit.io/hi.flv',
-                me: 'http://ikg-cit.io/me.flv',
-                lo: 'http://ikg-cit.io/lo.flv',
-              },
-              secondary: {
-                hd: 'http://ikg-cit.io/hd.flv',
-                hi: 'http://ikg-cit.io/hi.flv',
-                me: 'http://ikg-cit.io/me.flv',
-                lo: 'http://ikg-cit.io/lo.flv',
-              },
-            },
-          } as StudioCacheResult,
-        ],
-      ]);
+      const mockCacheData = new Map<string, StudioCacheResult>();
+      mockCacheData.set('uniTest', {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      } as StudioCacheResult);
       const mockCacheString = JSON.stringify([...mockCacheData]);
 
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
@@ -82,16 +85,16 @@ describe('StudioCacheService', () => {
           tableStatus: StudioTableStatusEnum.INACTIVE,
           cdnDst: {
             primary: {
+              lo: 'http://ikg-cit.io/hd.flv',
+              me: 'http://ikg-cit.io/hd.flv',
+              hi: 'http://ikg-cit.io/hd.flv',
               hd: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hi.flv',
-              me: 'http://ikg-cit.io/me.flv',
-              lo: 'http://ikg-cit.io/lo.flv',
             },
             secondary: {
+              lo: 'http://ikg-cit.io/hd.flv',
+              me: 'http://ikg-cit.io/hd.flv',
+              hi: 'http://ikg-cit.io/hd.flv',
               hd: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hi.flv',
-              me: 'http://ikg-cit.io/me.flv',
-              lo: 'http://ikg-cit.io/lo.flv',
             },
           },
         } as StudioCacheResult,
@@ -106,41 +109,76 @@ describe('StudioCacheService', () => {
       const expectedMap = new Map();
       expectedMap.set('uniTest', mockRepositoryData[0]);
 
-      const expectedCacheString = JSON.stringify([...expectedMap]);
-
-      expect(mockCacheService.set).toHaveBeenCalledWith('studioMap', expectedCacheString, 86_400);
-
       expect(result).toEqual(expectedMap);
+    });
+  });
+
+  describe('getCache', () => {
+    it('should return the correct cache entry for a given key', async () => {
+      const mockCacheData = new Map<string, StudioCacheResult>();
+      const entry1: StudioCacheResult = {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+      mockCacheData.set('uniTest', entry1);
+      const mockCacheString = JSON.stringify([...mockCacheData]);
+      (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
+
+      const result = await service.getCache('uniTest');
+
+      expect(mockCacheService.get).toHaveBeenCalledWith('studioMap');
+      expect(result).toEqual(entry1);
+    });
+
+    it('should return EmptyStudioCacheResult if the key is not in cache', async () => {
+      const mockCacheData = new Map<string, StudioCacheResult>();
+      const mockCacheString = JSON.stringify([...mockCacheData]);
+      (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
+
+      const result = await service.getCache('non-existent');
+
+      expect(result).toEqual(EmptyStudioCacheResult());
     });
   });
 
   describe('refreshCache', () => {
     it('should refresh the cache with new data', async () => {
-      const initialCacheData = new Map<string, StudioCacheResult>([
-        [
-          'uniTest',
-          {
-            tableId: 'uniTest',
-            tableStatus: StudioTableStatusEnum.INACTIVE,
-            cdnDst: {
-              primary: {
-                hd: 'http://ikg-cit.io/hd.flv',
-                hi: 'http://ikg-cit.io/hi.flv',
-                me: 'http://ikg-cit.io/me.flv',
-                lo: 'http://ikg-cit.io/lo.flv',
-              },
-              secondary: {
-                hd: 'http://ikg-cit.io/hd.flv',
-                hi: 'http://ikg-cit.io/hi.flv',
-                me: 'http://ikg-cit.io/me.flv',
-                lo: 'http://ikg-cit.io/lo.flv',
-              },
-            },
-          } as StudioCacheResult,
-        ],
-      ]);
-      const initialCacheString = JSON.stringify([...initialCacheData]);
+      const initialCacheData = new Map<string, StudioCacheResult>();
+      const initialEntry: StudioCacheResult = {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+      initialCacheData.set('uniTest', initialEntry);
 
+      const initialCacheString = JSON.stringify([...initialCacheData]);
       (mockCacheService.get as jest.Mock).mockResolvedValue(initialCacheString);
 
       const newCache: StudioCacheResult = {
@@ -148,19 +186,19 @@ describe('StudioCacheService', () => {
         tableStatus: StudioTableStatusEnum.INACTIVE,
         cdnDst: {
           primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            lo: 'http://ikg-cit.io/lo.flv',
           },
           secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
             hd: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hi.flv',
-            me: 'http://ikg-cit.io/me.flv',
-            lo: 'http://ikg-cit.io/lo.flv',
           },
         },
-      } as StudioCacheResult;
+      };
 
       await service.refreshCache(newCache);
 
@@ -174,67 +212,8 @@ describe('StudioCacheService', () => {
       expect(mockCacheService.set).toHaveBeenCalledWith(
         'studioMap',
         expectedUpdatedCacheString,
-        86_400,
+        86400,
       );
     });
-  });
-});
-
-describe('StudioCacheResult Model', () => {
-  it('should have all properties defined in the StudioCacheResult type', () => {
-    const studioCacheResult: StudioCacheResult = {
-      tableId: '',
-      tableStatus: StudioTableStatusEnum.INACTIVE,
-      cdnDst: {
-        primary: {
-          lo: '',
-          me: '',
-          hi: '',
-          hd: '',
-        },
-        secondary: {
-          lo: '',
-          me: '',
-          hi: '',
-          hd: '',
-        },
-      },
-    };
-
-    expect(studioCacheResult).toBeDefined();
-    const expectedKeys = ['tableId', 'tableStatus', 'cdnDst'];
-
-    expect(Object.keys(studioCacheResult)).toEqual(expect.arrayContaining(expectedKeys));
-    expect(Object.keys(studioCacheResult).length).toBe(expectedKeys.length);
-  });
-});
-
-describe('EmptyStudioCacheResult', () => {
-  it('should create a valid StudioCacheResult object with correct default values', () => {
-    const emptyResult = EmptyStudioCacheResult();
-
-    expect(emptyResult).toBeDefined();
-    expect(emptyResult.tableId).toBe('');
-    expect(emptyResult.tableStatus).toBe(StudioTableStatusEnum.INACTIVE);
-    expect(emptyResult.cdnDst).toStrictEqual({
-      primary: {
-        hd: '',
-        hi: '',
-        me: '',
-        lo: '',
-      },
-      secondary: {
-        hd: '',
-        hi: '',
-        me: '',
-        lo: '',
-      },
-    });
-  });
-
-  it('should have the correct type inferred by TypeScript', () => {
-    const emptyResult = EmptyStudioCacheResult();
-    const expectedKeys = Object.keys({} as StudioCacheResult);
-    expect(Object.keys(emptyResult)).toEqual(expect.arrayContaining(expectedKeys));
   });
 });

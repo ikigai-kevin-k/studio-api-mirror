@@ -2,15 +2,17 @@ import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import {
   GetStudioTableRequestType,
-  UpsertStudioTableRequestType,
+  InsertStudioTableRequestType,
+  UpdateStudioTableStatusRequestType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
-import { EmptyStudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
+import { UpdateStudioTableStatusEntity } from 'src/studio/repositories/studio/studio.repository.type';
 import {
   GetStudioTableOutput,
   GetStudioTableResult,
+  InsertStudioTableResult,
   StudioTableResult,
-  UpdateStudioTableResult,
+  UpdateStudioTableStatusResult,
 } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import { StudioRepository } from '../../repositories/studio/studio.repository';
@@ -55,18 +57,39 @@ export class StudioService implements ModuleLifecycle {
     };
   }
 
-  async upsertStudioTable(type: UpsertStudioTableRequestType): Promise<UpdateStudioTableResult> {
+  async insertStudioTable(type: InsertStudioTableRequestType): Promise<InsertStudioTableResult> {
     const studio: Studio = new Studio();
     studio.tableId = type.tableId;
     studio.tableStatus = type.tableStatus;
 
-    const studioReturning = await this.studioRepository.upsertStudio(studio);
+    const studioReturning = await this.studioRepository.insertStudioTable(studio);
 
-    const studioMap = await this.studioCacheService.getCaches();
-    const data = studioMap.get(type.tableId) ?? EmptyStudioCacheResult();
-
+    const data = await this.studioCacheService.getCache(type.tableId);
     data.tableId = studioReturning.TABLE_ID;
     data.tableStatus = studioReturning.TABLE_STATUS;
+
+    await this.studioCacheService.refreshCache(data);
+
+    return {
+      tableId: data.tableId,
+      tableStatus: data.tableStatus,
+    };
+  }
+
+  async updateStudioTableStatus(
+    type: UpdateStudioTableStatusRequestType,
+  ): Promise<UpdateStudioTableStatusResult> {
+    const entity: UpdateStudioTableStatusEntity = {
+      tableId: type.tableId,
+      tableStatus: type.tableStatus,
+    };
+
+    const result = await this.studioRepository.updateStudioTableStatus(entity);
+    if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
+
+    const data = await this.studioCacheService.getCache(type.tableId);
+    data.tableId = type.tableId;
+    data.tableStatus = type.tableStatus;
 
     await this.studioCacheService.refreshCache(data);
 

@@ -12,10 +12,14 @@ import {
   GetStudioTableCdnRequestType,
   GetStudioTableCdnResponse,
   GetStudioTableCdnResponseType,
-  UpsertStudioTableCdnRequest,
-  UpsertStudioTableCdnRequestType,
-  UpsertStudioTableCdnResponse,
-  UpsertStudioTableCdnResponseType,
+  InsertStudioTableCdnRequest,
+  InsertStudioTableCdnRequestType,
+  InsertStudioTableCdnResponse,
+  InsertStudioTableCdnResponseType,
+  UpdateStudioTableCdnRequest,
+  UpdateStudioTableCdnRequestType,
+  UpdateStudioTableCdnResponse,
+  UpdateStudioTableCdnResponseType,
 } from './studio-cdn.type';
 
 export class StudioCdnController implements ModuleLifecycle {
@@ -29,7 +33,8 @@ export class StudioCdnController implements ModuleLifecycle {
   async onInit(): Promise<void> {
     this.routerService.app.register(async (context) => {
       this.getTableCdn(context);
-      this.upsertTableCdn(context);
+      this.insertTableCdn(context);
+      this.updateTableCdn(context);
     });
   }
 
@@ -39,7 +44,7 @@ export class StudioCdnController implements ModuleLifecycle {
     );
 
     return app.get<{ Querystring: GetStudioTableCdnRequestType }>(
-      RoutesEnum.V1_GET_STUDIO_TABLE_CDN,
+      RoutesEnum.V1_STUDIO_TABLE_CDN,
       {
         schema: {
           querystring: GetStudioTableCdnRequest,
@@ -66,18 +71,18 @@ export class StudioCdnController implements ModuleLifecycle {
     );
   }
 
-  upsertTableCdn(app: FastifyInstance) {
+  insertTableCdn(app: FastifyInstance) {
     const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
       this.preHandlersService,
     );
 
-    return app.post<{ Body: UpsertStudioTableCdnRequestType }>(
-      RoutesEnum.V1_UPSERT_STUDIO_TABLE_CDN,
+    return app.post<{ Body: InsertStudioTableCdnRequestType }>(
+      RoutesEnum.V1_STUDIO_TABLE_CDN,
       {
         schema: {
-          body: UpsertStudioTableCdnRequest,
+          body: InsertStudioTableCdnRequest,
           response: {
-            [StatusCodes.OK]: RespSchema.Ok(UpsertStudioTableCdnResponse),
+            [StatusCodes.OK]: RespSchema.Ok(InsertStudioTableCdnResponse),
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
             [StatusCodes.BAD_REQUEST]: BadRequestResponse,
           },
@@ -86,8 +91,41 @@ export class StudioCdnController implements ModuleLifecycle {
         },
         preHandler: [serviceAuth],
       },
-      async (req): Promise<UpsertStudioTableCdnResponseType> => {
-        const { tableId, cdnDst } = await this.studioCdnService.upsertTableCdn(req.body);
+      async (req): Promise<InsertStudioTableCdnResponseType> => {
+        const { tableId, cdnDst } = await this.studioCdnService.insertTableCdn(req.body);
+        return {
+          tableId: tableId,
+          cdnDst: {
+            primary: cdnDst['primary'],
+            secondary: cdnDst['secondary'],
+          },
+        };
+      },
+    );
+  }
+
+  updateTableCdn(app: FastifyInstance) {
+    const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
+      this.preHandlersService,
+    );
+
+    return app.patch<{ Body: UpdateStudioTableCdnRequestType }>(
+      RoutesEnum.V1_STUDIO_TABLE_CDN,
+      {
+        schema: {
+          body: UpdateStudioTableCdnRequest,
+          response: {
+            [StatusCodes.OK]: RespSchema.Ok(UpdateStudioTableCdnResponse),
+            [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
+            [StatusCodes.BAD_REQUEST]: BadRequestResponse,
+          },
+          tags: ['studio'],
+          security: [{ serviceApiAuth: [] }],
+        },
+        preHandler: [serviceAuth],
+      },
+      async (req): Promise<UpdateStudioTableCdnResponseType> => {
+        const { tableId, cdnDst } = await this.studioCdnService.updateTableCdn(req.body);
         return {
           tableId: tableId,
           cdnDst: {

@@ -6,7 +6,7 @@ import {
   StudioTableResult,
 } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
-import { UpdateStudioTableEntity, UpsertStudioTableResult } from './studio.repository.type';
+import { InsertStudioTableResult, UpdateStudioTableStatusEntity } from './studio.repository.type';
 
 export class StudioRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
@@ -34,29 +34,28 @@ export class StudioRepository implements ModuleLifecycle {
     return await builder.getRawMany<StudioTableResult>();
   }
 
-  async upsertStudio(studio: Studio): Promise<UpsertStudioTableResult> {
+  async insertStudioTable(studio: Studio): Promise<InsertStudioTableResult> {
     const result = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .insert()
       .into(Studio)
       .values(studio)
-      .orUpdate(['TABLE_STATUS'], ['TABLE_ID'])
       .returning(['tableId', 'tableStatus'])
       .execute();
-    return result.raw[0] as UpsertStudioTableResult;
+    return result.raw[0] as InsertStudioTableResult;
   }
 
-  async updateStudioTableStatus(UpdateStudioTableEntity: UpdateStudioTableEntity): Promise<number> {
+  async updateStudioTableStatus(entity: UpdateStudioTableStatusEntity): Promise<number> {
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .update(Studio)
       .set({
-        tableStatus: UpdateStudioTableEntity.tableStatus,
+        tableStatus: entity.tableStatus,
       })
       .where({
-        tableId: UpdateStudioTableEntity.tableId,
+        tableId: entity.tableId,
       })
       .execute();
 

@@ -3,7 +3,7 @@ import { StudioTableStatusEnum } from '../../enums/studio.enums';
 
 export type StudioCacheResult = {
   tableId: string;
-  tableStatus: StudioTableStatusEnum;
+  tableStatus: string;
   cdnDst: Record<string, any>;
 };
 
