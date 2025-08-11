@@ -1,29 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { StudioTableStatusEnum } from '../../enums/studio.enums';
-
-export type StudioCacheResult = {
+export interface StudioCacheData {
   tableId: string;
-  tableStatus: string;
-  cdnDst: Record<string, any>;
-};
-
-export function EmptyStudioCacheResult() {
-  return {
-    tableId: '',
-    tableStatus: StudioTableStatusEnum.INACTIVE,
-    cdnDst: {
-      primary: {
-        lo: '',
-        me: '',
-        hi: '',
-        hd: '',
-      },
-      secondary: {
-        lo: '',
-        me: '',
-        hi: '',
-        hd: '',
-      },
-    },
-  } as StudioCacheResult;
 }

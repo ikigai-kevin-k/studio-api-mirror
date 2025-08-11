@@ -3,16 +3,13 @@
 // studio-cache.service.spec.ts
 import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
-import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
 import { StudioCacheService } from 'src/studio/services/studio-cache/studio-cache.service';
-import {
-  EmptyStudioCacheResult,
-  StudioCacheResult,
-} from 'src/studio/services/studio-cache/studio-cache.service.type';
+import { StudioCacheData } from 'src/studio/services/studio-cache/studio-cache.service.type';
 
 const mockStudioCacheRepository = {
-  getCaches: jest.fn(),
+  getStudioCache: jest.fn(),
+  getStudioCdnCache: jest.fn(),
 } as unknown as StudioCacheRepository;
 
 const mockCacheService = {
@@ -43,35 +40,50 @@ describe('StudioCacheService', () => {
     });
   });
 
+  describe('queryCache', () => {
+    it('should call getStudioCache when tag is "studio"', async () => {
+      const mockData: StudioCacheData[] = [{ tableId: 'uniTest' }];
+      (mockStudioCacheRepository.getStudioCache as jest.Mock).mockResolvedValue(mockData);
+
+      const result = await service.queryCache('studio');
+
+      expect(mockStudioCacheRepository.getStudioCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheRepository.getStudioCdnCache).not.toHaveBeenCalled();
+      expect(result).toEqual(mockData);
+    });
+
+    it('should call getStudioCdnCache when tag is "cdn"', async () => {
+      const mockData: StudioCacheData[] = [{ tableId: 'uniTest' }];
+      (mockStudioCacheRepository.getStudioCdnCache as jest.Mock).mockResolvedValue(mockData);
+
+      const result = await service.queryCache('cdn');
+
+      expect(mockStudioCacheRepository.getStudioCdnCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheRepository.getStudioCache).not.toHaveBeenCalled();
+      expect(result).toEqual(mockData);
+    });
+
+    it('should return an empty array for an unknown tag', async () => {
+      const result = await service.queryCache('unknown');
+
+      expect(mockStudioCacheRepository.getStudioCache).not.toHaveBeenCalled();
+      expect(mockStudioCacheRepository.getStudioCdnCache).not.toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+  });
+
   describe('getCaches', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData = new Map<string, StudioCacheResult>();
-      mockCacheData.set('uniTest', {
-        tableId: 'uniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      } as StudioCacheResult);
+      const mockCacheData = new Map<string, StudioCacheData>();
+      mockCacheData.set('uniTest', { tableId: 'uniTest' });
       const mockCacheString = JSON.stringify([...mockCacheData]);
 
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
 
-      const result = await service.getCaches();
+      const result = await service.getCaches('studio');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studioMap');
-      expect(mockStudioCacheRepository.getCaches).not.toHaveBeenCalled();
+      expect(mockCacheService.get).toHaveBeenCalledWith('studio');
+      expect(mockStudioCacheRepository.getStudioCache).not.toHaveBeenCalled();
 
       expect(result).toEqual(mockCacheData);
     });
@@ -79,35 +91,20 @@ describe('StudioCacheService', () => {
     it('should fetch from repository and set cache if cache does not exist', async () => {
       (mockCacheService.get as jest.Mock).mockResolvedValue(null);
 
-      const mockRepositoryData: StudioCacheResult[] = [
-        {
-          tableId: 'uniTest',
-          tableStatus: StudioTableStatusEnum.INACTIVE,
-          cdnDst: {
-            primary: {
-              lo: 'http://ikg-cit.io/hd.flv',
-              me: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hd.flv',
-              hd: 'http://ikg-cit.io/hd.flv',
-            },
-            secondary: {
-              lo: 'http://ikg-cit.io/hd.flv',
-              me: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hd.flv',
-              hd: 'http://ikg-cit.io/hd.flv',
-            },
-          },
-        } as StudioCacheResult,
-      ];
-      (mockStudioCacheRepository.getCaches as jest.Mock).mockResolvedValue(mockRepositoryData);
+      const mockRepositoryData: StudioCacheData[] = [{ tableId: 'uniTest' }];
+      (mockStudioCacheRepository.getStudioCache as jest.Mock).mockResolvedValue(mockRepositoryData);
 
-      const result = await service.getCaches();
+      const result = await service.getCaches('studio');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studioMap');
-      expect(mockStudioCacheRepository.getCaches).toHaveBeenCalledTimes(1);
+      expect(mockCacheService.get).toHaveBeenCalledWith('studio');
+      expect(mockStudioCacheRepository.getStudioCache).toHaveBeenCalledTimes(1);
 
       const expectedMap = new Map();
       expectedMap.set('uniTest', mockRepositoryData[0]);
+
+      const expectedCacheString = JSON.stringify([...expectedMap]);
+
+      expect(mockCacheService.set).toHaveBeenCalledWith('studio', expectedCacheString, 86_400);
 
       expect(result).toEqual(expectedMap);
     });
@@ -115,94 +112,38 @@ describe('StudioCacheService', () => {
 
   describe('getCache', () => {
     it('should return the correct cache entry for a given key', async () => {
-      const mockCacheData = new Map<string, StudioCacheResult>();
-      const entry1: StudioCacheResult = {
-        tableId: 'uniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      };
-      mockCacheData.set('uniTest', entry1);
+      const mockCacheData = new Map<string, StudioCacheData>();
+      mockCacheData.set('uniTest', { tableId: 'uniTest' });
       const mockCacheString = JSON.stringify([...mockCacheData]);
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
 
-      const result = await service.getCache('uniTest');
+      const result = await service.getCache('studio', 'uniTest');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studioMap');
-      expect(result).toEqual(entry1);
+      expect(result).toEqual({ tableId: 'uniTest' });
     });
 
-    it('should return EmptyStudioCacheResult if the key is not in cache', async () => {
-      const mockCacheData = new Map<string, StudioCacheResult>();
+    it('should return undefined if the key is not in cache', async () => {
+      const mockCacheData = new Map<string, StudioCacheData>();
       const mockCacheString = JSON.stringify([...mockCacheData]);
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
 
-      const result = await service.getCache('non-existent');
+      const result = await service.getCache('studio', 'non-existent');
 
-      expect(result).toEqual(EmptyStudioCacheResult());
+      expect(result).toBeUndefined();
     });
   });
 
   describe('refreshCache', () => {
     it('should refresh the cache with new data', async () => {
-      const initialCacheData = new Map<string, StudioCacheResult>();
-      const initialEntry: StudioCacheResult = {
-        tableId: 'uniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      };
-      initialCacheData.set('uniTest', initialEntry);
+      const initialCacheData = new Map<string, StudioCacheData>();
+      initialCacheData.set('uniTest', { tableId: 'uniTest' });
 
       const initialCacheString = JSON.stringify([...initialCacheData]);
       (mockCacheService.get as jest.Mock).mockResolvedValue(initialCacheString);
 
-      const newCache: StudioCacheResult = {
-        tableId: 'uniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      };
+      const newCache: StudioCacheData = { tableId: 'uniTest' };
 
-      await service.refreshCache(newCache);
-
-      expect(mockCacheService.get).toHaveBeenCalledWith('studioMap');
+      await service.refreshCache('studio', newCache);
 
       const expectedUpdatedMap = new Map(initialCacheData);
       expectedUpdatedMap.set('uniTest', newCache);
@@ -210,9 +151,9 @@ describe('StudioCacheService', () => {
       const expectedUpdatedCacheString = JSON.stringify([...expectedUpdatedMap]);
 
       expect(mockCacheService.set).toHaveBeenCalledWith(
-        'studioMap',
+        'studio',
         expectedUpdatedCacheString,
-        86400,
+        86_400,
       );
     });
   });

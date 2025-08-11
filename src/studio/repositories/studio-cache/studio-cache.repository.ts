@@ -1,40 +1,29 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { StudioCacheResult } from 'src/studio/services/studio-cache/studio-cache.service.type';
+import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
+import { StudioCacheData } from 'src/studio/services/studio-cache/studio-cache.service.type';
 import { Studio } from '../../entities/studio.entity';
 
 export class StudioCacheRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getCacheByTableID(tableID: string): Promise<StudioCacheResult | undefined> {
-    const builder = this.dbService
-      .getConnection()
-      .getRepository(Studio)
-      .createQueryBuilder('studio')
-      .leftJoinAndSelect('studio-cdn', 'sc', 'sc.TABLE_ID = studio.TABLE_ID')
-      .select([
-        'studio."TABLE_ID" as "tableId"',
-        'studio."TABLE_STATUS" as "tableStatus"',
-        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
-      ])
-      .where('studio.TABLE_ID = :tableID', { tableID: tableID });
-
-    return await builder.getRawOne<StudioCacheResult>();
-  }
-
-  async getCaches(): Promise<StudioCacheResult[]> {
+  async getStudioCache(): Promise<StudioCacheData[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(Studio, 'studio')
-      .leftJoinAndSelect('studio-cdn', 'sc', 'sc.TABLE_ID = studio.TABLE_ID')
-      .select([
-        'studio."TABLE_ID" as "tableId"',
-        'studio."TABLE_STATUS" as "tableStatus"',
-        `COALESCE(sc."CDN", '{"primary": { "hd":"", "hi":"", "me":"", "lo":"" }, "secondary": { "hd":"", "hi":"", "me":"", "lo":"" }}') as "cdnDst"`,
-      ]);
+      .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
 
-    return await builder.getRawMany<StudioCacheResult>();
+    return await builder.getRawMany<StudioCacheData>();
+  }
+
+  async getStudioCdnCache(): Promise<StudioCacheData[]> {
+    const builder = this.dbService
+      .getConnection()
+      .createQueryBuilder(StudioCdn, 'studio')
+      .select(['studio."TABLE_ID" as "tableId"', 'studio."CDN" as "cdnDst"']);
+
+    return await builder.getRawMany<StudioCacheData>();
   }
 
   async onInit(): Promise<void> {}

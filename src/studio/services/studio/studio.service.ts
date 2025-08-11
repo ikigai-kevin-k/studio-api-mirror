@@ -11,7 +11,6 @@ import {
   GetStudioTableOutput,
   GetStudioTableResult,
   InsertStudioTableResult,
-  StudioTableResult,
   UpdateStudioTableStatusResult,
 } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
@@ -35,25 +34,19 @@ export class StudioService implements ModuleLifecycle {
   }
 
   async getStudioTable(type: GetStudioTableRequestType): Promise<GetStudioTableResult> {
-    const studioMap = await this.studioCacheService.getCaches();
+    const cacheMap = await this.studioCacheService.getCaches('studio');
 
-    const studioReturning: StudioTableResult[] = [];
+    const studioReturning: GetStudioTableOutput[] = [];
 
     for (const tableId of type.tableId ?? []) {
-      const data = studioMap.get(tableId);
+      const data = cacheMap.get(tableId);
       if (data) {
-        studioReturning.push(data);
+        studioReturning.push(data as GetStudioTableOutput);
       }
     }
 
     return {
-      list: studioReturning.map((e) => {
-        const output: GetStudioTableOutput = {
-          tableId: e.tableId,
-          tableStatus: e.tableStatus,
-        };
-        return output;
-      }),
+      list: studioReturning,
     };
   }
 
@@ -64,16 +57,14 @@ export class StudioService implements ModuleLifecycle {
 
     const studioReturning = await this.studioRepository.insertStudioTable(studio);
 
-    const data = await this.studioCacheService.getCache(type.tableId);
-    data.tableId = studioReturning.TABLE_ID;
-    data.tableStatus = studioReturning.TABLE_STATUS;
-
-    await this.studioCacheService.refreshCache(data);
-
-    return {
-      tableId: data.tableId,
-      tableStatus: data.tableStatus,
+    const output = {
+      tableId: studioReturning.TABLE_ID,
+      tableStatus: studioReturning.TABLE_STATUS,
     };
+
+    await this.studioCacheService.refreshCache('studio', output);
+
+    return output;
   }
 
   async updateStudioTableStatus(
@@ -87,16 +78,14 @@ export class StudioService implements ModuleLifecycle {
     const result = await this.studioRepository.updateStudioTableStatus(entity);
     if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
 
-    const data = await this.studioCacheService.getCache(type.tableId);
-    data.tableId = type.tableId;
-    data.tableStatus = type.tableStatus;
-
-    await this.studioCacheService.refreshCache(data);
-
-    return {
-      tableId: data.tableId,
-      tableStatus: data.tableStatus,
+    const output = {
+      tableId: type.tableId,
+      tableStatus: type.tableStatus,
     };
+
+    await this.studioCacheService.refreshCache('studio', output);
+
+    return output;
   }
 
   async onInit(): Promise<void> {}

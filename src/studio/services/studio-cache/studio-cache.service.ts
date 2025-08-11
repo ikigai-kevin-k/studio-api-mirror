@@ -2,10 +2,7 @@ import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
-import {
-  EmptyStudioCacheResult,
-  StudioCacheResult,
-} from 'src/studio/services/studio-cache/studio-cache.service.type';
+import { StudioCacheData } from 'src/studio/services/studio-cache/studio-cache.service.type';
 
 export class StudioCacheService implements ModuleLifecycle {
   constructor(
@@ -14,36 +11,50 @@ export class StudioCacheService implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  async getCaches(): Promise<Map<string, StudioCacheResult>> {
-    const cacheStudios = await this.cacheService.get('studioMap');
+  async queryCache(tag: string): Promise<StudioCacheData[]> {
+    switch (tag) {
+      case 'studio': {
+        return await this.studioCacheRepository.getStudioCache();
+      }
+      case 'cdn': {
+        return await this.studioCacheRepository.getStudioCdnCache();
+      }
+      default: {
+        return [];
+      }
+    }
+  }
 
-    if (!cacheStudios) {
-      const caches = await this.studioCacheRepository.getCaches();
+  async getCaches(tag: string): Promise<Map<string, StudioCacheData>> {
+    const hashTable = await this.cacheService.get(tag);
 
-      const studioMap = new Map();
+    if (!hashTable) {
+      const caches = await this.queryCache(tag);
+
+      const cacheMap = new Map();
       for (const cache of caches) {
-        studioMap.set(cache.tableId, cache);
+        cacheMap.set(cache.tableId, cache);
       }
 
-      await this.cacheService.set('studioMap', JSON.stringify([...studioMap]), 86_400);
+      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
 
-      return studioMap;
+      return cacheMap;
     }
 
-    return new Map(JSON.parse(cacheStudios));
+    return new Map(JSON.parse(hashTable));
   }
 
-  async getCache(key: string): Promise<StudioCacheResult> {
-    const studioMap = await this.getCaches();
-    return studioMap.get(key) ?? EmptyStudioCacheResult();
+  async getCache(tag: string, key: string): Promise<StudioCacheData | undefined> {
+    const hashTable = await this.getCaches(tag);
+    return hashTable.get(key);
   }
 
-  async refreshCache(cache: StudioCacheResult): Promise<void> {
-    const studioMap = await this.getCaches();
+  async refreshCache(tag: string, cache: StudioCacheData): Promise<void> {
+    const hashTable = await this.getCaches(tag);
 
-    studioMap.set(cache.tableId, cache);
+    hashTable.set(cache.tableId, cache);
 
-    return await this.cacheService.set('studioMap', JSON.stringify([...studioMap]), 86_400);
+    return await this.cacheService.set(tag, JSON.stringify([...hashTable]), 86_400);
   }
 
   async onInit(): Promise<void> {}

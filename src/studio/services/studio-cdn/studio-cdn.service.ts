@@ -33,11 +33,11 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetTableCdnOutput> {
-    const entity = await this.studioCacheService.getCache(type.tableId);
-    return {
-      tableId: type.tableId,
-      cdnDst: entity.cdnDst,
-    };
+    const output = await this.studioCacheService.getCache('cdn', type.tableId);
+    if (!output) {
+      throw new StudioNotFoundError(`table ${type.tableId} not found`);
+    }
+    return output as GetTableCdnOutput;
   }
 
   async insertTableCdn(type: InsertStudioTableCdnRequestType): Promise<InsertTableCdnOutput> {
@@ -46,17 +46,14 @@ export class StudioCdnService implements ModuleLifecycle {
     studio.cdnDst = type.cdnDst;
 
     const studioReturning = await this.studioCdnRepository.insertTableCdn(studio);
-
-    const data = await this.studioCacheService.getCache(type.tableId);
-    data.tableId = studioReturning.TABLE_ID;
-    data.cdnDst = studioReturning.CDN;
-
-    await this.studioCacheService.refreshCache(data);
-
-    return {
-      tableId: data.tableId,
-      cdnDst: data.cdnDst,
+    const output = {
+      tableId: studioReturning.TABLE_ID,
+      cdnDst: studioReturning.CDN,
     };
+
+    await this.studioCacheService.refreshCache('cdn', output);
+
+    return output;
   }
 
   async updateTableCdn(type: UpdateStudioTableCdnRequestType): Promise<UpdateTableCdnOutput> {
@@ -68,16 +65,14 @@ export class StudioCdnService implements ModuleLifecycle {
     const result = await this.studioCdnRepository.updateTableCdn(entity);
     if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
 
-    const data = await this.studioCacheService.getCache(type.tableId);
-    data.tableId = type.tableId;
-    data.cdnDst = type.cdnDst;
-
-    await this.studioCacheService.refreshCache(data);
-
-    return {
-      tableId: data.tableId,
-      cdnDst: data.cdnDst,
+    const output = {
+      tableId: type.tableId,
+      cdnDst: type.cdnDst,
     };
+
+    await this.studioCacheService.refreshCache('cdn', output);
+
+    return output;
   }
 
   async onInit(): Promise<void> {}
