@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import { ServiceAuthStrategyService } from '@ikigaians/auth';
+import { IkiError } from '@ikigaians/common';
 import { LoggerService } from 'src/log/logger.service';
 import { PreHandlersService } from './pre-handlers.service';
 
@@ -17,16 +18,20 @@ describe('PreHandlersService', () => {
     preHandlersService = new PreHandlersService(logger, serviceAuthStrategyService);
   });
 
-  it('should return unauthorized if signature is missing or invalid', async () => {
+  it('should throw an IkiError if signature is missing or invalid', async () => {
     (serviceAuthStrategyService.validateSignature as jest.Mock).mockReturnValue(false);
-    const reply = { code: jest.fn().mockReturnThis(), send: jest.fn() };
-    await preHandlersService.serviceApisAuthenticator(
-      { headers: {}, url: '/test' } as any,
-      reply as any,
+
+    const request = { headers: {}, url: '/test' } as any;
+    const reply = {} as any;
+
+    await expect(preHandlersService.serviceApisAuthenticator(request, reply)).rejects.toThrow(
+      IkiError,
     );
-    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('FAILED'));
-    expect(reply.code).toHaveBeenCalledWith(401);
-    expect(reply.send).toHaveBeenCalledWith({ message: 'Unauthorized' });
+
+    expect(logger.info).toHaveBeenCalledWith(
+      `PreHandler: serviceApisAuthenticator for /test FAILED`,
+    );
+    expect(logger.debug).not.toHaveBeenCalled();
   });
 
   it('should log success if signature is valid', async () => {
@@ -38,7 +43,5 @@ describe('PreHandlersService', () => {
       reply as any,
     );
     expect(logger.debug).toHaveBeenCalledWith(expect.stringContaining('SUCCESS'));
-    expect(reply.code).not.toHaveBeenCalled();
-    expect(reply.send).not.toHaveBeenCalled();
   });
 });
