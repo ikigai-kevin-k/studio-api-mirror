@@ -15,4 +15,12 @@ export const InjectionTokensEnum = {
   STUDIO_CDN_REPOSITORY: 'studioCdnRepository',
   STUDIO_CDN_SERVICE: 'studioCdnService',
   STUDIO_CDN_CONTROLLER: 'studioCdnController',
+
+  STUDIO_STATUS_REPOSITORY: 'studioStatusRepository',
+  STUDIO_STATUS_SERVICE: 'studioStatusService',
+  STUDIO_STATUS_CONTROLLER: 'studioStatusController',
+
+  STUDIO_WS_SERVICE: 'studioWsService',
+
+  WS_SERVICE: 'wsService',
 } as const;

@@ -2,8 +2,13 @@
 /* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
+import { StudioStatus } from 'src/studio/entities/studio-status.entity';
 import { Studio } from 'src/studio/entities/studio.entity';
-import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
+import {
+  StudioDeviceStatusEnum,
+  StudioServiceStatusEnum,
+  StudioTableStatusEnum,
+} from 'src/studio/enums/studio.enums';
 import { StudioCacheRepository } from 'src/studio/repositories/studio-cache/studio-cache.repository';
 
 const mockQueryBuilder = {
@@ -102,6 +107,57 @@ describe('StudioCacheRepository', () => {
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue([]);
 
       const result = await repository.getStudioCdnCache();
+
+      expect(result).toEqual([]);
+    });
+  });
+
+  describe('getStudioStatusCache', () => {
+    it('should return an array of StudioCacheData from StudioStatus entity', async () => {
+      const mockResults = [
+        {
+          tableId: 'uniTest',
+          uptime: 0,
+          timestamp: new Date(),
+          maintenance: true,
+          sdp: StudioServiceStatusEnum.DOWN,
+          idp: StudioServiceStatusEnum.DOWN,
+          broker: StudioDeviceStatusEnum.DOWN,
+          zCam: StudioDeviceStatusEnum.DOWN,
+          roulette: StudioDeviceStatusEnum.DOWN,
+          shaker: StudioDeviceStatusEnum.DOWN,
+          barcodeScanner: StudioDeviceStatusEnum.DOWN,
+          nfcScanner: StudioDeviceStatusEnum.DOWN,
+        },
+      ];
+      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
+
+      const result = await repository.getStudioStatusCache();
+
+      expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
+      expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioStatus, 'studio');
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
+        'studio."TABLE_ID" as "tableId"',
+        'studio."UPTIME" as "uptime"',
+        'studio."TIMESTAMP" as "timestamp"',
+        'studio."MAINTENANCE" as "maintenance"',
+        'studio."SDP" as "sdp"',
+        'studio."IDP" as "idp"',
+        'studio."BROKER" as "broker"',
+        'studio."Z_CAM" as "zCam"',
+        'studio."ROULETTE" as "roulette"',
+        'studio."SHAKER" as "shaker"',
+        'studio."BARCODE_SCANNER" as "barcodeScanner"',
+        'studio."NFC_SCANNER" as "nfcScanner"',
+      ]);
+      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockResults);
+    });
+
+    it('should return an empty array if no results are found', async () => {
+      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue([]);
+
+      const result = await repository.getStudioStatusCache();
 
       expect(result).toEqual([]);
     });

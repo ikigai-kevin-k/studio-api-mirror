@@ -8,6 +8,8 @@ import {
   GetStudioTableResponseType,
   InsertStudioTableRequestType,
   InsertStudioTableResponseType,
+  UpdateStudioTableStatusRequestType,
+  UpdateStudioTableStatusResponseType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
@@ -23,6 +25,7 @@ const mockFastify = {
 const mockStudioService = {
   getStudioTable: jest.fn(),
   insertStudioTable: jest.fn(),
+  updateStudioTableStatus: jest.fn(),
 } as unknown as StudioService;
 
 const mockPreHandlersService = {
@@ -100,6 +103,27 @@ describe('StudioController', () => {
       const result = await insertStudioTableHandler({ body: mockRequestBody });
 
       expect(mockStudioService.insertStudioTable).toHaveBeenCalledWith(mockRequestBody);
+      expect(result).toEqual(mockServiceResponse);
+    });
+
+    it('should handle updateStudioTable request from body and return the correct response', async () => {
+      await controller.onInit();
+      const mockRequestBody: UpdateStudioTableStatusRequestType = {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+      };
+      const mockServiceResponse: UpdateStudioTableStatusResponseType = {
+        tableId: 'uniTest',
+        tableStatus: 'inactive',
+      };
+
+      (mockStudioService.updateStudioTableStatus as jest.Mock).mockResolvedValue(
+        mockServiceResponse,
+      );
+      const updateStudioTableHandler = (mockFastify.patch as jest.Mock).mock.calls[0][2];
+      const result = await updateStudioTableHandler({ body: mockRequestBody });
+
+      expect(mockStudioService.updateStudioTableStatus).toHaveBeenCalledWith(mockRequestBody);
       expect(result).toEqual(mockServiceResponse);
     });
   });
