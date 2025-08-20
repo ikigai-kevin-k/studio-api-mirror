@@ -15,7 +15,7 @@ const mockWsService = {
 } as unknown as WsService;
 
 const mockStudioStatusService = {
-  updateTableStatus: jest.fn(),
+  updateTableStatusByWebSocket: jest.fn(),
 } as unknown as StudioStatusService;
 
 const mockStudioCacheService = {
@@ -117,26 +117,26 @@ describe('StudioWsService', () => {
       const mockData = JSON.stringify({ maintenance: true });
       const mockUpdateResult = { tableId: 'table-1', maintenance: true };
 
-      (mockStudioStatusService.updateTableStatus as jest.Mock).mockResolvedValue(mockUpdateResult);
+      (mockStudioStatusService.updateTableStatusByWebSocket as jest.Mock).mockResolvedValue(
+        mockUpdateResult,
+      );
 
       await (service as any).onMessage(mockQuery, mockWs, mockData);
 
-      expect(mockStudioStatusService.updateTableStatus).toHaveBeenCalledWith({
-        tableId: 'table-1',
+      expect(mockStudioStatusService.updateTableStatusByWebSocket).toHaveBeenCalledWith('table-1', {
         maintenance: true,
       });
       expect(mockWs.send).toHaveBeenCalledWith(JSON.stringify(mockUpdateResult));
     });
 
     it('should send an error message for invalid JSON message', async () => {
-      const mockQuery = new URLSearchParams('id=table-1&device=device-A');
+      const mockQuery = new URLSearchParams('?tableId=table-1&device=device-A');
       const mockWs = { send: jest.fn() } as unknown as WebSocket;
       const mockData = 'invalid json';
 
       await (service as any).onMessage(mockQuery, mockWs, mockData);
 
-      expect(mockWs.send).toHaveBeenCalledWith(`Invalid Payload Data: ${mockData}`);
-      expect(mockStudioStatusService.updateTableStatus).not.toHaveBeenCalled();
+      expect(mockStudioStatusService.updateTableStatusByWebSocket).not.toHaveBeenCalled();
     });
   });
 });

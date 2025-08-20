@@ -69,10 +69,9 @@ export class WsService implements ModuleLifecycle {
   }
 
   async onInit() {
-    this.wss = new WebSocketServer({ port: this.appConfigService.wsConfig.port });
     return await new Promise<void>((resolve, rejects) => {
-      if (!this.wss) rejects(new Error(`WebSocketServer is null`));
-      this.wss?.once('listening', () => {
+      this.wss = new WebSocketServer({ port: this.appConfigService.wsConfig.port });
+      this.wss.once('listening', () => {
         this.handleConnect();
         resolve();
       });

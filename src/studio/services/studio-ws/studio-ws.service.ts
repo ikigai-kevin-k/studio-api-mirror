@@ -1,4 +1,3 @@
-/* eslint-disable unicorn/prefer-optional-catch-binding */
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { WsService } from 'src/ws/ws.service';
@@ -32,6 +31,8 @@ export class StudioWsService implements ModuleLifecycle {
       return;
     }
 
+    ws.send(`Welcome to StudioAPI, ${params.tableId}::${params.device}`);
+
     this.logger.info(`${params.tableId}::${params.device} login`);
   }
 
@@ -46,18 +47,14 @@ export class StudioWsService implements ModuleLifecycle {
 
     try {
       const input = JSON.parse(data ?? '{}');
-      const payload = {
-        tableId: params.tableId,
-        ...input,
-      };
-      this.logger.info(JSON.stringify(payload));
-      const result = await this.studioStatusService.updateTableStatus({
-        tableId: params.tableId,
-        ...input,
-      });
+      const result = await this.studioStatusService.updateTableStatusByWebSocket(
+        params.tableId,
+        input,
+      );
       ws.send(JSON.stringify(result));
     } catch (error) {
-      ws.send(`Invalid Payload Data: ${data}`);
+      const reason = error as string;
+      ws.send(reason);
     }
   }
 

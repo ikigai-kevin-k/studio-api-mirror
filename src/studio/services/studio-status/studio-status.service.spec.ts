@@ -23,6 +23,7 @@ const mockStudioStatusRepository = {
   getTableStatusByTableID: jest.fn(),
   insertTableStatus: jest.fn(),
   updateTableStatus: jest.fn(),
+  updateTableStatusByWebSocket: jest.fn(),
 } as unknown as StudioStatusRepository;
 
 const mockStudioCacheService = {
@@ -211,6 +212,41 @@ describe('StudioStatusService', () => {
       (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
 
       await expect(service.updateTableStatus(request)).rejects.toThrow(StudioNotFoundError);
+      expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('updateTableStatusByWebSocket', () => {
+    it('should update status and refresh the cache', async () => {
+      const tableId = 'status-table-1';
+      const input = { maintenance: true };
+      const affectedRows = 1;
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
+
+      const result = await service.updateTableStatusByWebSocket(tableId, input);
+
+      const expectedEntity = { maintenance: true };
+      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith(
+        tableId,
+        expectedEntity,
+      );
+
+      const expectedOutput = {
+        tableId: tableId,
+        ...expectedEntity,
+      };
+      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('status', expectedOutput);
+
+      expect(result).toEqual(expectedOutput);
+    });
+
+    it('should throw StudioNotFoundError if no rows are updated', async () => {
+      const tableId = 'non-existent';
+      const input = { maintenance: true };
+      const affectedRows = 0;
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
+
+      await expect(service.updateTableStatusByWebSocket(tableId, input)).rejects.toThrow(Error);
       expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
     });
   });

@@ -12,6 +12,8 @@ import { StudioStatusRepository } from 'src/studio/repositories/studio-status/st
 import {
   GetTableStatusOutput,
   InsertTableStatusOutput,
+  UpdateTableStatusInput,
+  UpdateTableStatusOutput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
 import { StudioCacheService } from '../studio-cache/studio-cache.service';
 
@@ -74,6 +76,25 @@ export class StudioStatusService implements ModuleLifecycle {
     const output = {
       tableId: tableId,
       ...entity,
+    };
+
+    await this.studioCacheService.refreshCache('status', output);
+
+    return output;
+  }
+
+  async updateTableStatusByWebSocket(
+    tableId: string,
+    input: UpdateTableStatusInput,
+  ): Promise<UpdateTableStatusOutput> {
+    this.logger.info(JSON.stringify(input));
+    const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
+    this.logger.info(`result = ${result}`);
+    if (result <= 0) throw new Error(`tableId ${tableId} hasn't changed`);
+
+    const output = {
+      tableId: tableId,
+      ...input,
     };
 
     await this.studioCacheService.refreshCache('status', output);
