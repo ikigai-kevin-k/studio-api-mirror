@@ -187,7 +187,9 @@ describe('StudioStatusRepository', () => {
       expect(mockQueryBuilder.update).toHaveBeenCalledWith(StudioStatus);
       expect(mockQueryBuilder.set).toHaveBeenCalledWith(updateEntity);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', { tableId });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('(uptime != :uptime OR sdp != :sdp)');
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith(
+        'NOT (uptime = :uptime AND sdp = :sdp)',
+      );
       expect(mockQueryBuilder.setParameters).toHaveBeenCalledWith(updateEntity);
       expect(result).toBe(1);
     });
