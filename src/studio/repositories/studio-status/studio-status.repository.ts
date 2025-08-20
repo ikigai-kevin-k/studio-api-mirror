@@ -71,8 +71,8 @@ export class StudioStatusRepository implements ModuleLifecycle {
 
   async updateTableStatus(tableId: string, entity: UpdateTableStatusEntity): Promise<number> {
     const whereClause = Object.keys(entity)
-      .map((key) => `${key} != :${key}`)
-      .join(' OR ');
+      .map((key) => `${key} = :${key}`)
+      .join(' AND ');
 
     const updateResult = await this.dbService
       .getConnection()
@@ -80,7 +80,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .update(StudioStatus)
       .set(entity)
       .where('tableId = :tableId', { tableId })
-      .andWhere(`(${whereClause})`)
+      .andWhere(`NOT (${whereClause})`)
       .setParameters(entity)
       .execute();
 

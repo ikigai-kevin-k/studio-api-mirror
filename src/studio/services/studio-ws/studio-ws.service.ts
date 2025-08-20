@@ -53,7 +53,7 @@ export class StudioWsService implements ModuleLifecycle {
       );
       ws.send(JSON.stringify(result));
     } catch (error) {
-      const reason = error as string;
+      const reason = (error as Error).toString();
       ws.send(reason);
     }
   }
