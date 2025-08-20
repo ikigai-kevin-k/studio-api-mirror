@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { CacheService } from '@ikigaians/cache';
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
@@ -60,6 +59,7 @@ export class StudioCacheService implements ModuleLifecycle {
 
     const result = {
       ...origin,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
     } as StudioCacheData;
 
