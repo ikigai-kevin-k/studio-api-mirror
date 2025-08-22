@@ -19,6 +19,9 @@ export class StudioCacheService implements ModuleLifecycle {
       case 'cdn': {
         return await this.studioCacheRepository.getStudioCdnCache();
       }
+      case 'status': {
+        return await this.studioCacheRepository.getStudioStatusCache();
+      }
       default: {
         return [];
       }
@@ -52,7 +55,15 @@ export class StudioCacheService implements ModuleLifecycle {
   async refreshCache(tag: string, cache: StudioCacheData): Promise<void> {
     const hashTable = await this.getCaches(tag);
 
-    hashTable.set(cache.tableId, cache);
+    const origin = hashTable.get(cache.tableId);
+
+    const result = {
+      ...origin,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
+    } as StudioCacheData;
+
+    hashTable.set(cache.tableId, result);
 
     return await this.cacheService.set(tag, JSON.stringify([...hashTable]), 86_400);
   }

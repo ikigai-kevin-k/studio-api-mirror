@@ -56,11 +56,13 @@
     "fastify": "^5.1.0",
     "http-status-codes": "^2.3.0",
     "pg": "^8.16.3",
-    "typeorm": "^0.3.25"
+    "typeorm": "^0.3.25",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.5",
+    "@types/ws": "^8.18.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "concurrently": "^8.2.2",

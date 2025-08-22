@@ -10,6 +10,7 @@ import { StudioCacheData } from 'src/studio/services/studio-cache/studio-cache.s
 const mockStudioCacheRepository = {
   getStudioCache: jest.fn(),
   getStudioCdnCache: jest.fn(),
+  getStudioStatusCache: jest.fn(),
 } as unknown as StudioCacheRepository;
 
 const mockCacheService = {
@@ -49,6 +50,7 @@ describe('StudioCacheService', () => {
 
       expect(mockStudioCacheRepository.getStudioCache).toHaveBeenCalledTimes(1);
       expect(mockStudioCacheRepository.getStudioCdnCache).not.toHaveBeenCalled();
+      expect(mockStudioCacheRepository.getStudioStatusCache).not.toHaveBeenCalled();
       expect(result).toEqual(mockData);
     });
 
@@ -60,6 +62,19 @@ describe('StudioCacheService', () => {
 
       expect(mockStudioCacheRepository.getStudioCdnCache).toHaveBeenCalledTimes(1);
       expect(mockStudioCacheRepository.getStudioCache).not.toHaveBeenCalled();
+      expect(mockStudioCacheRepository.getStudioStatusCache).not.toHaveBeenCalled();
+      expect(result).toEqual(mockData);
+    });
+
+    it('should call getStudioCdnCache when tag is "status"', async () => {
+      const mockData: StudioCacheData[] = [{ tableId: 'uniTest' }];
+      (mockStudioCacheRepository.getStudioStatusCache as jest.Mock).mockResolvedValue(mockData);
+
+      const result = await service.queryCache('status');
+
+      expect(mockStudioCacheRepository.getStudioStatusCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCacheRepository.getStudioCache).not.toHaveBeenCalled();
+      expect(mockStudioCacheRepository.getStudioCdnCache).not.toHaveBeenCalled();
       expect(result).toEqual(mockData);
     });
 

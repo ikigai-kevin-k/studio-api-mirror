@@ -8,6 +8,8 @@ import {
   GetStudioTableCdnResponseType,
   InsertStudioTableCdnRequestType,
   InsertStudioTableCdnResponseType,
+  UpdateStudioTableCdnRequestType,
+  UpdateStudioTableCdnResponseType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
@@ -22,6 +24,7 @@ const mockFastify = {
 const mockStudioCdnService = {
   getTableCdn: jest.fn(),
   insertTableCdn: jest.fn(),
+  updateTableCdn: jest.fn(),
 } as unknown as StudioCdnService;
 
 const mockPreHandlersService = {
@@ -137,6 +140,41 @@ describe('StudioCdnController', () => {
       const result = await insertTableCdnHandler({ body: mockRequestBody });
 
       expect(mockStudioCdnService.insertTableCdn).toHaveBeenCalledWith(mockRequestBody);
+      expect(result).toEqual(expectedControllerResponse);
+    });
+
+    it('should handle updateTableCdn request and return the correct response', async () => {
+      await controller.onInit();
+      const mockRequestBody: UpdateStudioTableCdnRequestType = {
+        tableId: 'uniTest',
+        cdnDst: {
+          primary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+          secondary: {
+            lo: 'http://ikg-cit.io/hd.flv',
+            me: 'http://ikg-cit.io/hd.flv',
+            hi: 'http://ikg-cit.io/hd.flv',
+            hd: 'http://ikg-cit.io/hd.flv',
+          },
+        },
+      };
+      const expectedControllerResponse: UpdateStudioTableCdnResponseType = {
+        tableId: 'uniTest',
+        cdnDst: mockRequestBody.cdnDst,
+      };
+
+      (mockStudioCdnService.updateTableCdn as jest.Mock).mockResolvedValue(
+        expectedControllerResponse,
+      );
+
+      const updateTableCdnHandler = (mockFastify.patch as jest.Mock).mock.calls[0][2];
+      const result = await updateTableCdnHandler({ body: mockRequestBody });
+
+      expect(mockStudioCdnService.updateTableCdn).toHaveBeenCalledWith(mockRequestBody);
       expect(result).toEqual(expectedControllerResponse);
     });
   });

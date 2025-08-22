@@ -54,6 +54,12 @@ export class AppConfigService {
         process.env.REDIS_IS_CLUSTER === 'true' ||
         false,
     };
+
+    this.ws = {
+      port: Number(process.env.WS_PORT),
+      token: process.env.WS_TOKEN || '',
+      logger: this.logger,
+    };
   }
 
   private logger: { level: LogLevelsEnum };
@@ -78,5 +84,11 @@ export class AppConfigService {
   private cache: CacheConnectParams;
   get cacheConfig(): CacheConnectParams {
     return this.cache;
+  }
+
+  /** ws config */
+  private ws!: { port: number; token: string; logger: { level: LogLevelsEnum } };
+  get wsConfig(): { port: number; token: string; logger: { level: LogLevelsEnum } } {
+    return this.ws;
   }
 }

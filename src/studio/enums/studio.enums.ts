@@ -19,3 +19,16 @@ export enum StudioMachineStatusEnum {
   NORMAL = 'normal',
   FAILURE = 'failure',
 }
+
+export enum StudioServiceStatusEnum {
+  UP = 'up',
+  DOWN = 'down',
+  STANDBY = 'standby',
+  CALIBRATION = 'calibration',
+  EXCEPTION = 'exception',
+}
+
+export enum StudioDeviceStatusEnum {
+  UP = 'up',
+  DOWN = 'down',
+}

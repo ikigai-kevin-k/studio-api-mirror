@@ -7,6 +7,7 @@ import { HealthcheckModule } from 'src/healthcheck';
 import { LogModule } from 'src/log';
 import { RouterModule } from 'src/router';
 import { StudioModule } from 'src/studio';
+import { WsModule } from 'src/ws';
 import { InjectionTokensEnum } from './injection-tokens.enum';
 
 export const StudioMod: ModuleProfile[] = [
@@ -17,5 +18,6 @@ export const StudioMod: ModuleProfile[] = [
   ...RouterModule,
   ...HealthcheckModule,
   ...LogModule,
+  ...WsModule,
   ...StudioModule,
 ];
