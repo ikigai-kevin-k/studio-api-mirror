@@ -1,5 +1,6 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { CacheService } from 'src/cache/cache.service';
 import {
   GetTableStatusRequestType,
   InsertTableStatusRequestType,
@@ -10,17 +11,19 @@ import { StudioStatus } from 'src/studio/entities/studio-status.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
-  GetTableStatusOutput,
-  InsertTableStatusOutput,
+  TableStatusOutput,
   UpdateTableStatusInput,
-  UpdateTableStatusOutput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
-import { StudioCacheService } from '../studio-cache/studio-cache.service';
+import { WsService } from 'src/ws/ws.service';
+import { Unsubscribe } from 'src/ws/ws.service.type';
+import { WebSocket } from 'ws';
 
 export class StudioStatusService implements ModuleLifecycle {
+  private unSubscribes: Unsubscribe[] = [];
   constructor(
+    private readonly wsService: WsService,
     private readonly studioStatusRepository: StudioStatusRepository,
-    private readonly studioCacheService: StudioCacheService,
+    private readonly cacheService: CacheService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -33,16 +36,16 @@ export class StudioStatusService implements ModuleLifecycle {
     return entity;
   }
 
-  async getTableStatus(type: GetTableStatusRequestType): Promise<GetTableStatusOutput> {
-    const output = await this.studioCacheService.getCache('status', type.tableId);
+  async getTableStatus(type: GetTableStatusRequestType): Promise<TableStatusOutput> {
+    const output = await this.getCache(type.tableId);
     if (!output) {
       throw new StudioNotFoundError(`table ${type.tableId} not found`);
     }
 
-    return output as GetTableStatusOutput;
+    return output as TableStatusOutput;
   }
 
-  async insertTableStatus(type: InsertTableStatusRequestType): Promise<InsertTableStatusOutput> {
+  async insertTableStatus(type: InsertTableStatusRequestType): Promise<TableStatusOutput> {
     const studioReturning = await this.studioStatusRepository.insertTableStatus(type.tableId);
     const output = {
       tableId: studioReturning.TABLE_ID,
@@ -59,7 +62,7 @@ export class StudioStatusService implements ModuleLifecycle {
       nfcScanner: studioReturning.NFC_SCANNER,
     };
 
-    await this.studioCacheService.refreshCache('status', output);
+    await this.refreshCache(output);
 
     return output;
   }
@@ -67,18 +70,27 @@ export class StudioStatusService implements ModuleLifecycle {
   async updateTableStatus(
     type: UpdateTableStatusRequestType,
   ): Promise<UpdateTableStatusResponseType> {
-    const { tableId, ...entity } = type;
-    this.logger.info(JSON.stringify(entity));
+    const { tableId, timestamp, ...params } = type;
+    const entity = {
+      ...params,
+      // eslint-disable-next-line unicorn/no-negated-condition
+      timestamp: timestamp != undefined ? new Date(timestamp) : undefined,
+    };
     const result = await this.studioStatusRepository.updateTableStatus(tableId, entity);
     this.logger.info(`result = ${result}`);
     if (result <= 0) throw new StudioNotFoundError(`tableId ${tableId} hasn't changed`);
 
     const output = {
       tableId: tableId,
-      ...entity,
+      //eslint-disable-next-line unicorn/no-useless-spread
+      ...{
+        ...entity,
+        //eslint-disable-next-line unicorn/no-negated-condition
+        timestamp: entity.timestamp != undefined ? entity.timestamp.getTime() : undefined,
+      },
     };
 
-    await this.studioCacheService.refreshCache('status', output);
+    await this.refreshCache(output);
 
     return output;
   }
@@ -86,21 +98,92 @@ export class StudioStatusService implements ModuleLifecycle {
   async updateTableStatusByWebSocket(
     tableId: string,
     input: UpdateTableStatusInput,
-  ): Promise<UpdateTableStatusOutput> {
+  ): Promise<TableStatusOutput> {
     this.logger.info(JSON.stringify(input));
-    const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
-    this.logger.info(`result = ${result}`);
-    if (result <= 0) throw new Error(`tableId ${tableId} hasn't changed`);
+    await this.studioStatusRepository.updateTableStatus(tableId, input);
 
     const output = {
       tableId: tableId,
-      ...input,
+      //eslint-disable-next-line unicorn/no-useless-spread
+      ...{
+        ...input,
+        //eslint-disable-next-line unicorn/no-negated-condition
+        timestamp: input.timestamp != undefined ? input.timestamp.getTime() : undefined,
+      },
     };
 
-    await this.studioCacheService.refreshCache('status', output);
+    await this.refreshCache(output);
 
     return output;
   }
 
-  async onInit(): Promise<void> {}
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async onServiceStatus(query: URLSearchParams, ws: WebSocket, data?: any) {
+    try {
+      const tableId = query.get('id');
+      if (!tableId) throw new Error(`Ws connect without tableId !!`);
+
+      const result = await this.updateTableStatusByWebSocket(tableId, data);
+      ws.send(JSON.stringify(result));
+    } catch (error) {
+      const reason = (error as Error).toString();
+      this.logger.error(reason);
+    }
+  }
+
+  async getCaches(): Promise<Map<string, TableStatusOutput>> {
+    const tag = 'status';
+    const hashTable = await this.cacheService.get(tag);
+
+    if (!hashTable) {
+      const caches = await this.studioStatusRepository.getStudioStatusCache();
+
+      const cacheMap = new Map();
+      for (const cache of caches) {
+        cacheMap.set(cache.tableId, cache);
+      }
+
+      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
+
+      return cacheMap;
+    }
+
+    return new Map(JSON.parse(hashTable));
+  }
+
+  async getCache(key: string): Promise<TableStatusOutput | undefined> {
+    const hashTable = await this.getCaches();
+    return hashTable.get(key);
+  }
+
+  async refreshCache(cache: TableStatusOutput): Promise<void> {
+    const hashTable = await this.getCaches();
+
+    const origin = hashTable.get(cache.tableId);
+
+    const result = {
+      ...origin,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
+    } as TableStatusOutput;
+
+    hashTable.set(cache.tableId, result);
+
+    return await this.cacheService.set('status', JSON.stringify([...hashTable]), 86_400);
+  }
+
+  async onInit(): Promise<void> {
+    this.unSubscribes = [
+      this.wsService.subscribe('service_status', this.onServiceStatus.bind(this)),
+      // Provide a provisional handling for the legacy format
+      // this should be removed after the source updates the packet format.
+      this.wsService.subscribe('unknown', this.onServiceStatus.bind(this)),
+    ];
+  }
+
+  async onDispose(): Promise<void> {
+    for (const unSubscribe of this.unSubscribes) {
+      unSubscribe();
+    }
+  }
 }

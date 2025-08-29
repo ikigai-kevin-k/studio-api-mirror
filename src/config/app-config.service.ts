@@ -55,10 +55,33 @@ export class AppConfigService {
         false,
     };
 
+    this.jobLocker = {
+      host: process.env.JOB_LOCKER_HOST || 'localhost',
+      port: Number(process.env.JOB_LOCKER_PORT),
+      password: String(process.env.JOB_LOCKER_PASSWORD),
+      username: String(process.env.JOB_LOCKER_USERNAME),
+      tls:
+        Number(process.env.JOB_LOCKER_TLS) === 1 || process.env.JOB_LOCKER_TLS === 'true' || false,
+    };
+
     this.ws = {
       port: Number(process.env.WS_PORT),
-      token: process.env.WS_TOKEN || '',
-      logger: this.logger,
+      token: String(process.env.WS_TOKEN),
+    };
+
+    this.los = {
+      url: String(process.env.LOS_URL),
+    };
+
+    this.am = {
+      url: String(process.env.AM_URL),
+      user: String(process.env.AM_USER),
+      pw: String(process.env.AM_PASSWORD),
+    };
+
+    this.slack = {
+      token: String(process.env.SLACK_TOKEN),
+      channel: String(process.env.SLACK_CHANNEL),
     };
   }
 
@@ -86,9 +109,45 @@ export class AppConfigService {
     return this.cache;
   }
 
+  /** jobLocker config */
+  private jobLocker!: {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    tls: boolean;
+  };
+  get jobLockerConfig(): {
+    host: string;
+    port: number;
+    username: string;
+    password: string;
+    tls: boolean;
+  } {
+    return this.jobLocker;
+  }
+
   /** ws config */
-  private ws!: { port: number; token: string; logger: { level: LogLevelsEnum } };
-  get wsConfig(): { port: number; token: string; logger: { level: LogLevelsEnum } } {
+  private ws!: { port: number; token: string };
+  get wsConfig(): { port: number; token: string } {
     return this.ws;
+  }
+
+  /** los url config */
+  private los!: { url: string };
+  get losConfig(): { url: string } {
+    return this.los;
+  }
+
+  /** access manager config */
+  private am!: { url: string; user: string; pw: string };
+  get amConfig(): { url: string; user: string; pw: string } {
+    return this.am;
+  }
+
+  /** slack config */
+  private slack!: { token: string; channel: string };
+  get slackConfig(): { token: string; channel: string } {
+    return this.slack;
   }
 }

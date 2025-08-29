@@ -1,35 +1,38 @@
 // studio-status.repository.spec.ts
 /* eslint-disable unicorn/no-null */
 /* eslint-disable unicorn/no-useless-undefined */
+/* eslint-disable unicorn/no-empty-file */
+
+// studio-status.repository.spec.ts
+/* eslint-disable unicorn/no-null */
 import { DbService } from 'src/db/db.service';
-import { StudioStatus } from 'src/studio/entities/studio-status.entity';
-import { StudioDeviceStatusEnum, StudioServiceStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
+  GetTableStatusQuery,
+  GetTableStatusResult,
   InsertTableStatusResult,
   UpdateTableStatusEntity,
 } from 'src/studio/repositories/studio-status/studio-status.repository.type';
-import {
-  GetTableStatusQuery,
-  TableStatusResult,
-} from 'src/studio/services/studio-status/studio-status.service.type';
 import { UpdateResult } from 'typeorm';
+import { StudioStatus } from '../../entities/studio-status.entity';
 
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
   from: jest.fn().mockReturnThis(),
   where: jest.fn().mockReturnThis(),
   andWhere: jest.fn().mockReturnThis(),
-  setParameters: jest.fn().mockReturnThis(),
   insert: jest.fn().mockReturnThis(),
   into: jest.fn().mockReturnThis(),
   values: jest.fn().mockReturnThis(),
   returning: jest.fn().mockReturnThis(),
   update: jest.fn().mockReturnThis(),
   set: jest.fn().mockReturnThis(),
+  setParameters: jest.fn().mockReturnThis(),
   execute: jest.fn(),
   getOne: jest.fn(),
+  getMany: jest.fn(),
   getRawOne: jest.fn(),
+  getRawMany: jest.fn(),
 };
 
 const mockRepository = {
@@ -63,57 +66,97 @@ describe('StudioStatusRepository', () => {
     it('should return a StudioStatus object when found', async () => {
       const mockStatus: StudioStatus = {
         id: 1,
-        tableId: 'uniTest',
+        tableId: 'status-table-1',
         uptime: 1,
         timestamp: new Date(),
         maintenance: false,
-        sdp: StudioServiceStatusEnum.DOWN,
-        idp: StudioServiceStatusEnum.DOWN,
-        broker: StudioDeviceStatusEnum.DOWN,
-        zCam: StudioDeviceStatusEnum.DOWN,
-        roulette: StudioDeviceStatusEnum.DOWN,
-        shaker: StudioDeviceStatusEnum.DOWN,
-        barcodeScanner: StudioDeviceStatusEnum.DOWN,
-        nfcScanner: StudioDeviceStatusEnum.DOWN,
+        sdp: 'OK',
+        idp: 'OK',
+        broker: 'OK',
+        zCam: 'OK',
+        roulette: 'OK',
+        shaker: 'OK',
+        barcodeScanner: 'OK',
+        nfcScanner: 'OK',
       };
 
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockStatus);
 
-      const result = await repository.getTableStatusByTableID('uniTest');
+      const result = await repository.getTableStatusByTableID('status-table-1');
 
       expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioStatus);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
-        tableID: 'uniTest',
+        tableID: 'status-table-1',
       });
       expect(result).toEqual(mockStatus);
     });
 
     it('should return null when no StudioStatus is found', async () => {
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(null);
-
       const result = await repository.getTableStatusByTableID('non-existent');
-
       expect(result).toBeNull();
     });
   });
 
+  describe('getStudioStatusCache', () => {
+    it('should return an array of TableStatusOutput', async () => {
+      const mockResults = [
+        {
+          tableId: 'table-1',
+          uptime: 1,
+          timestamp: 0,
+          maintenance: false,
+          sdp: 'OK',
+          idp: 'OK',
+          broker: 'OK',
+          zCam: 'OK',
+          roulette: 'OK',
+          shaker: 'OK',
+          barcodeScanner: 'OK',
+          nfcScanner: 'OK',
+        },
+      ];
+
+      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
+
+      const result = await repository.getStudioStatusCache();
+
+      expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioStatus, 'studio');
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
+        'studio."TABLE_ID" as "tableId"',
+        'studio."UPTIME" as "uptime"',
+        '(EXTRACT(EPOCH FROM studio."TIMESTAMP") * 1000)::bigint as "timestamp"',
+        'studio."MAINTENANCE" as "maintenance"',
+        'studio."SDP" as "sdp"',
+        'studio."IDP" as "idp"',
+        'studio."BROKER" as "broker"',
+        'studio."Z_CAM" as "zCam"',
+        'studio."ROULETTE" as "roulette"',
+        'studio."SHAKER" as "shaker"',
+        'studio."BARCODE_SCANNER" as "barcodeScanner"',
+        'studio."NFC_SCANNER" as "nfcScanner"',
+      ]);
+      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockResults);
+    });
+  });
+
   describe('getTableStatus', () => {
-    it('should return a TableStatusResult object when found', async () => {
-      const query: GetTableStatusQuery = { tableId: 'uniTest' };
-      const mockResult: TableStatusResult = {
+    it('should return a GetTableStatusResult object when found', async () => {
+      const query: GetTableStatusQuery = { tableId: 'status-table-1' };
+      const mockResult: GetTableStatusResult = {
         uptime: 1,
         timestamp: new Date(),
         maintenance: false,
-        sdp: StudioServiceStatusEnum.DOWN,
-        idp: StudioServiceStatusEnum.DOWN,
-        broker: StudioDeviceStatusEnum.DOWN,
-        zCam: StudioDeviceStatusEnum.DOWN,
-        roulette: StudioDeviceStatusEnum.DOWN,
-        shaker: StudioDeviceStatusEnum.DOWN,
-        barcodeScanner: StudioDeviceStatusEnum.DOWN,
-        nfcScanner: StudioDeviceStatusEnum.DOWN,
+        sdp: 'OK',
+        idp: 'OK',
+        broker: 'OK',
+        zCam: 'OK',
+        roulette: 'OK',
+        shaker: 'OK',
+        barcodeScanner: 'OK',
+        nfcScanner: 'OK',
       };
-
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockResult);
 
       const result = await repository.getTableStatus(query);
@@ -121,7 +164,7 @@ describe('StudioStatusRepository', () => {
       expect(mockQueryBuilder.select).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.from).toHaveBeenCalledWith(StudioStatus, 'studio');
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableId', {
-        tableId: 'uniTest',
+        tableId: 'status-table-1',
       });
       expect(result).toEqual(mockResult);
     });
@@ -129,16 +172,14 @@ describe('StudioStatusRepository', () => {
     it('should return undefined when no result is found', async () => {
       const query: GetTableStatusQuery = { tableId: 'non-existent' };
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(undefined);
-
       const result = await repository.getTableStatus(query);
-
       expect(result).toBeUndefined();
     });
   });
 
   describe('insertTableStatus', () => {
     it('should insert a new status and return the result', async () => {
-      const mockTableId = 'uniTest';
+      const mockTableId = 'status-table-1';
       const mockRawResult: InsertTableStatusResult = {
         TABLE_ID: mockTableId,
         UPTIME: 0,
@@ -162,18 +203,28 @@ describe('StudioStatusRepository', () => {
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioStatus);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith({ tableId: mockTableId });
-      expect(mockQueryBuilder.returning).toHaveBeenCalledTimes(1);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith([
+        'tableId',
+        'uptime',
+        'timestamp',
+        'maintenance',
+        'sdp',
+        'idp',
+        'broker',
+        'zCam',
+        'roulette',
+        'shaker',
+        'barcodeScanner',
+        'nfcScanner',
+      ]);
       expect(result).toEqual(mockRawResult);
     });
   });
 
   describe('updateTableStatus', () => {
     it('should update the status and return affected rows count', async () => {
-      const tableId = 'uniTest';
-      const updateEntity: UpdateTableStatusEntity = {
-        uptime: 5,
-        sdp: StudioServiceStatusEnum.DOWN,
-      };
+      const tableId = 'status-table-1';
+      const updateEntity: UpdateTableStatusEntity = { uptime: 5, sdp: 'OK' };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
         raw: [],
@@ -194,35 +245,47 @@ describe('StudioStatusRepository', () => {
       expect(result).toBe(1);
     });
 
+    it('should handle an empty entity without throwing an error', async () => {
+      const tableId = 'status-table-1';
+      const updateEntity: UpdateTableStatusEntity = {};
+      const mockUpdateResult: UpdateResult = {
+        generatedMaps: [],
+        raw: [],
+        affected: 1,
+      };
+
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
+
+      const result = await repository.updateTableStatus(tableId, updateEntity);
+
+      expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', { tableId });
+      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('NOT ()');
+      expect(result).toBe(1);
+    });
+
     it('should return 0 if no rows are affected but query succeeds', async () => {
-      const tableId = 'uniTest';
+      const tableId = 'status-table-1';
       const updateEntity: UpdateTableStatusEntity = { uptime: 5 };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
         raw: [],
         affected: 0,
       };
-
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
       const result = await repository.updateTableStatus(tableId, updateEntity);
-
       expect(result).toBe(0);
     });
 
     it('should return -1 if affected is null', async () => {
-      const tableId = 'uniTest';
+      const tableId = 'status-table-1';
       const updateEntity: UpdateTableStatusEntity = { uptime: 5 };
       const mockUpdateResult = {
         generatedMaps: [],
         raw: [],
         affected: null,
       };
-
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
       const result = await repository.updateTableStatus(tableId, updateEntity);
-
       expect(result).toBe(-1);
     });
   });

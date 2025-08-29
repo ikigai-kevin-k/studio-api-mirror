@@ -1,28 +1,18 @@
-import { StudioCacheData } from '../studio-cache/studio-cache.service.type';
-
-export type GetStudioTableQuery = {
-  tableId?: string[];
-};
-
-export type StudioTableResult = {
+export interface StudioTableOutput {
   tableId: string;
-  tableStatus: string;
-};
-
-export interface GetStudioTableOutput extends StudioCacheData {
   tableStatus: string;
 }
 
-export type GetStudioTableResult = {
-  list: GetStudioTableOutput[];
+export type GetStudioTableOutput = {
+  list: StudioTableOutput[];
 };
 
-export type InsertStudioTableResult = {
+export type InsertStudioTableOutput = {
   tableId: string;
   tableStatus: string;
 };
 
-export type UpdateStudioTableStatusResult = {
+export type UpdateStudioTableStatusOutput = {
   tableId: string;
   tableStatus: string;
 };

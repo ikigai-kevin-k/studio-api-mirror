@@ -5,13 +5,12 @@ import { DbService } from 'src/db/db.service';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import {
+  GetTableCdnQuery,
+  GetTableCdnResult,
   InsertTableCdnResult,
   UpdateTableCdnEntity,
 } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
-import {
-  GetTableCdnQuery,
-  TableCdnResult,
-} from 'src/studio/services/studio-cdn/studio-cdn.service.type';
+import { GetTableCdnOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { UpdateResult } from 'typeorm';
 
 const mockQueryBuilder = {
@@ -21,15 +20,16 @@ const mockQueryBuilder = {
   insert: jest.fn().mockReturnThis(),
   into: jest.fn().mockReturnThis(),
   values: jest.fn().mockReturnThis(),
-  orUpdate: jest.fn().mockReturnThis(),
   returning: jest.fn().mockReturnThis(),
-  execute: jest.fn(),
   update: jest.fn().mockReturnThis(),
   set: jest.fn().mockReturnThis(),
+  execute: jest.fn(),
   getOne: jest.fn(),
   getRawOne: jest.fn(),
+  getRawMany: jest.fn(),
 };
 
+// Mock TypeORM 的 Repository 和 Connection
 const mockRepository = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
@@ -39,6 +39,7 @@ const mockConnection = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
+// Mock DbService
 const mockDbService = {
   getConnection: jest.fn(() => mockConnection),
 } as unknown as DbService;
@@ -61,63 +62,50 @@ describe('StudioCdnRepository', () => {
     it('should return a StudioCdn object when found', async () => {
       const mockCdn: StudioCdn = {
         id: 1,
-        tableId: 'UniTest',
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
+        tableId: 'cdn-table-1',
+        cdnDst: { hi: 'path' },
       };
-
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockCdn);
 
-      const result = await repository.getTableCdnByTableID('uniTest');
+      const result = await repository.getTableCdnByTableID('cdn-table-1');
 
       expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioCdn);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
-        tableID: 'uniTest',
+        tableID: 'cdn-table-1',
       });
       expect(result).toEqual(mockCdn);
     });
 
     it('should return null when no StudioCdn is found', async () => {
       (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(null);
-
       const result = await repository.getTableCdnByTableID('non-existent');
-
       expect(result).toBeNull();
     });
   });
 
-  describe('getTableCdn', () => {
-    it('should return a TableCdnResult object when found', async () => {
-      const query: GetTableCdnQuery = { tableId: 'uniTest' };
-      const mockResult: TableCdnResult = {
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
-      };
+  describe('getStudioCdnCache', () => {
+    it('should return an array of GetTableCdnOutput', async () => {
+      const mockResults: GetTableCdnOutput[] = [
+        { tableId: 'cdn-1', cdnDst: { primary: { lo: 'path' } } },
+      ];
+      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
 
+      const result = await repository.getStudioCdnCache();
+
+      expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioCdn, 'studio');
+      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
+        'studio."TABLE_ID" as "tableId"',
+        'studio."CDN" as "cdnDst"',
+      ]);
+      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
+      expect(result).toEqual(mockResults);
+    });
+  });
+
+  describe('getTableCdn', () => {
+    it('should return a GetTableCdnResult object when found', async () => {
+      const query: GetTableCdnQuery = { tableId: 'cdn-table-1' };
+      const mockResult: GetTableCdnResult = { cdnDst: { primary: { lo: 'path' } } };
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockResult);
 
       const result = await repository.getTableCdn(query);
@@ -125,7 +113,7 @@ describe('StudioCdnRepository', () => {
       expect(mockQueryBuilder.select).toHaveBeenCalledWith(['studio."CDN" as "cdn"']);
       expect(mockQueryBuilder.from).toHaveBeenCalledWith(StudioCdn, 'studio');
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableId', {
-        tableId: 'uniTest',
+        tableId: 'cdn-table-1',
       });
       expect(result).toEqual(mockResult);
     });
@@ -133,9 +121,7 @@ describe('StudioCdnRepository', () => {
     it('should return undefined when no result is found', async () => {
       const query: GetTableCdnQuery = { tableId: 'non-existent' };
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(undefined);
-
       const result = await repository.getTableCdn(query);
-
       expect(result).toBeUndefined();
     });
   });
@@ -144,38 +130,12 @@ describe('StudioCdnRepository', () => {
     it('should insert a StudioCdn and return the result', async () => {
       const mockCdn: StudioCdn = {
         id: 1,
-        tableId: 'uniTest',
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
+        tableId: 'cdn-table-1',
+        cdnDst: { hi: 'path' },
       };
       const mockRawResult: InsertTableCdnResult = {
-        TABLE_ID: 'uniTest',
-        CDN: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
+        TABLE_ID: 'cdn-table-1',
+        CDN: { hi: 'path' },
       };
       const mockExecuteResult = { raw: [mockRawResult] };
 
@@ -194,21 +154,8 @@ describe('StudioCdnRepository', () => {
   describe('updateTableCdn', () => {
     it('should update the cdn and return affected rows count', async () => {
       const updateEntity: UpdateTableCdnEntity = {
-        tableId: 'uniTest',
-        cdnDst: {
-          primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-          secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
-          },
-        },
+        tableId: 'cdn-table-1',
+        cdnDst: { primary: { lo: 'new-path' } },
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
@@ -221,12 +168,11 @@ describe('StudioCdnRepository', () => {
       const result = await repository.updateTableCdn(updateEntity);
 
       expect(mockQueryBuilder.update).toHaveBeenCalledWith(StudioCdn);
-      expect(mockQueryBuilder.set).toHaveBeenCalledWith({
-        cdnDst: updateEntity.cdnDst,
-      });
+      expect(mockQueryBuilder.set).toHaveBeenCalledWith({ cdnDst: updateEntity.cdnDst });
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', {
-        tableId: 'uniTest',
+        tableId: 'cdn-table-1',
       });
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith(['tableId', 'cdnDst']);
       expect(result).toBe(1);
     });
 
@@ -240,11 +186,8 @@ describe('StudioCdnRepository', () => {
         raw: [],
         affected: 0,
       };
-
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
       const result = await repository.updateTableCdn(updateEntity);
-
       expect(result).toBe(0);
     });
 
@@ -258,11 +201,8 @@ describe('StudioCdnRepository', () => {
         raw: [],
         affected: null,
       };
-
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
       const result = await repository.updateTableCdn(updateEntity);
-
       expect(result).toBe(-1);
     });
   });

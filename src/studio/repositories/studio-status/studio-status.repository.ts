@@ -1,12 +1,14 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
+import { TableStatusOutput } from 'src/studio/services/studio-status/studio-status.service.type';
+import { StudioStatus } from '../../entities/studio-status.entity';
 import {
   GetTableStatusQuery,
-  TableStatusResult,
-} from 'src/studio/services/studio-status/studio-status.service.type';
-import { StudioStatus } from '../../entities/studio-status.entity';
-import { InsertTableStatusResult, UpdateTableStatusEntity } from './studio-status.repository.type';
+  GetTableStatusResult,
+  InsertTableStatusResult,
+  UpdateTableStatusEntity,
+} from './studio-status.repository.type';
 
 export class StudioStatusRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
@@ -19,6 +21,28 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .where('studio.TABLE_ID = :tableID', { tableID: tableID });
 
     return await builder.getOne();
+  }
+
+  async getStudioStatusCache(): Promise<TableStatusOutput[]> {
+    const builder = this.dbService
+      .getConnection()
+      .createQueryBuilder(StudioStatus, 'studio')
+      .select([
+        'studio."TABLE_ID" as "tableId"',
+        'studio."UPTIME" as "uptime"',
+        '(EXTRACT(EPOCH FROM studio."TIMESTAMP") * 1000)::bigint as "timestamp"',
+        'studio."MAINTENANCE" as "maintenance"',
+        'studio."SDP" as "sdp"',
+        'studio."IDP" as "idp"',
+        'studio."BROKER" as "broker"',
+        'studio."Z_CAM" as "zCam"',
+        'studio."ROULETTE" as "roulette"',
+        'studio."SHAKER" as "shaker"',
+        'studio."BARCODE_SCANNER" as "barcodeScanner"',
+        'studio."NFC_SCANNER" as "nfcScanner"',
+      ]);
+
+    return await builder.getRawMany<TableStatusOutput>();
   }
 
   async getTableStatus(query: GetTableStatusQuery) {
@@ -41,7 +65,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .from(StudioStatus, 'studio')
       .where('studio.TABLE_ID = :tableId', { tableId: query.tableId });
 
-    return await builder.getRawOne<TableStatusResult>();
+    return await builder.getRawOne<GetTableStatusResult>();
   }
 
   async insertTableStatus(tableId: string): Promise<InsertTableStatusResult> {

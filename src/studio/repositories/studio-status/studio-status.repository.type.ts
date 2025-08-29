@@ -1,3 +1,21 @@
+export type GetTableStatusQuery = {
+  tableId?: string;
+};
+
+export type GetTableStatusResult = {
+  uptime: number;
+  timestamp: Date;
+  maintenance: boolean;
+  sdp: string;
+  idp: string;
+  broker: string;
+  zCam: string;
+  roulette: string;
+  shaker: string;
+  barcodeScanner: string;
+  nfcScanner: string;
+};
+
 export type InsertTableStatusResult = {
   TABLE_ID: string;
   UPTIME: number;
@@ -15,7 +33,7 @@ export type InsertTableStatusResult = {
 
 export type UpdateTableStatusEntity = {
   uptime?: number;
-  timestamp?: number;
+  timestamp?: Date;
   maintenance?: boolean;
   sdp?: string;
   idp?: string;

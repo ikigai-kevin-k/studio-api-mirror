@@ -1,5 +1,6 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { CacheService } from 'src/cache/cache.service';
 import {
   GetStudioTableCdnRequestType,
   InsertStudioTableCdnRequestType,
@@ -14,12 +15,11 @@ import {
   InsertTableCdnOutput,
   UpdateTableCdnOutput,
 } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
-import { StudioCacheService } from '../studio-cache/studio-cache.service';
 
 export class StudioCdnService implements ModuleLifecycle {
   constructor(
     private readonly studioCdnRepository: StudioCdnRepository,
-    private readonly studioCacheService: StudioCacheService,
+    private readonly cacheService: CacheService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -33,11 +33,11 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetTableCdnOutput> {
-    const output = await this.studioCacheService.getCache('cdn', type.tableId);
+    const output = await this.getCache(type.tableId);
     if (!output) {
       throw new StudioNotFoundError(`table ${type.tableId} not found`);
     }
-    return output as GetTableCdnOutput;
+    return output;
   }
 
   async insertTableCdn(type: InsertStudioTableCdnRequestType): Promise<InsertTableCdnOutput> {
@@ -51,7 +51,7 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: studioReturning.CDN,
     };
 
-    await this.studioCacheService.refreshCache('cdn', output);
+    await this.refreshCache(output);
 
     return output;
   }
@@ -70,9 +70,50 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: type.cdnDst,
     };
 
-    await this.studioCacheService.refreshCache('cdn', output);
+    await this.refreshCache(output);
 
     return output;
+  }
+
+  async getCaches(): Promise<Map<string, GetTableCdnOutput>> {
+    const tag = 'cdn';
+    const hashTable = await this.cacheService.get(tag);
+
+    if (!hashTable) {
+      const caches = await this.studioCdnRepository.getStudioCdnCache();
+
+      const cacheMap = new Map();
+      for (const cache of caches) {
+        cacheMap.set(cache.tableId, cache);
+      }
+
+      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
+
+      return cacheMap;
+    }
+
+    return new Map(JSON.parse(hashTable));
+  }
+
+  async getCache(key: string): Promise<GetTableCdnOutput | undefined> {
+    const hashTable = await this.getCaches();
+    return hashTable.get(key);
+  }
+
+  async refreshCache(cache: GetTableCdnOutput): Promise<void> {
+    const hashTable = await this.getCaches();
+
+    const origin = hashTable.get(cache.tableId);
+
+    const result = {
+      ...origin,
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
+    } as GetTableCdnOutput;
+
+    hashTable.set(cache.tableId, result);
+
+    return await this.cacheService.set('cdn', JSON.stringify([...hashTable]), 86_400);
   }
 
   async onInit(): Promise<void> {}

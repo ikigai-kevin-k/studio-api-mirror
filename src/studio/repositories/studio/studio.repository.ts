@@ -1,12 +1,14 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
+import { StudioTableOutput } from 'src/studio/services/studio/studio.service.type';
+import { Studio } from '../../entities/studio.entity';
 import {
   GetStudioTableQuery,
+  InsertStudioTableResult,
   StudioTableResult,
-} from 'src/studio/services/studio/studio.service.type';
-import { Studio } from '../../entities/studio.entity';
-import { InsertStudioTableResult, UpdateStudioTableStatusEntity } from './studio.repository.type';
+  UpdateStudioTableStatusEntity,
+} from './studio.repository.type';
 
 export class StudioRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
@@ -19,6 +21,15 @@ export class StudioRepository implements ModuleLifecycle {
       .where('studio.TABLE_ID = :tableID', { tableID: tableID });
 
     return await builder.getOne();
+  }
+
+  async getStudioCache(): Promise<StudioTableOutput[]> {
+    const builder = this.dbService
+      .getConnection()
+      .createQueryBuilder(Studio, 'studio')
+      .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
+
+    return await builder.getRawMany<StudioTableOutput>();
   }
 
   async getStudioTable(query: GetStudioTableQuery): Promise<StudioTableResult[]> {

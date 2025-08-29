@@ -1,6 +1,7 @@
 // studio-cdn.controller.spec.ts
 import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
+import { LosCdnService } from 'src/los/services/los-cdn/los-cdn.service';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnController } from 'src/studio/controller/v1/studio-cdn/studio-cdn.controller';
 import {
@@ -35,6 +36,10 @@ const mockRouterService = {
   app: mockFastify,
 } as unknown as RouterService;
 
+const mockLosCdnService = {
+  updateCDN: jest.fn(),
+} as unknown as LosCdnService;
+
 const mockLoggerService = {
   info: jest.fn(),
   error: jest.fn(),
@@ -48,6 +53,7 @@ describe('StudioCdnController', () => {
       mockStudioCdnService,
       mockPreHandlersService,
       mockRouterService,
+      mockLosCdnService,
       mockLoggerService,
     );
     jest.clearAllMocks();

@@ -59,7 +59,8 @@ export class StudioStatusController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<GetTableStatusResponseType> => {
-        return await this.studioStatusService.getTableStatus(req.query);
+        const output = await this.studioStatusService.getTableStatus(req.query);
+        return output as GetTableStatusResponseType;
       },
     );
   }
@@ -85,7 +86,8 @@ export class StudioStatusController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<InsertTableStatusResponseType> => {
-        return await this.studioStatusService.insertTableStatus(req.body);
+        const output = await this.studioStatusService.insertTableStatus(req.body);
+        return output as InsertTableStatusResponseType;
       },
     );
   }
@@ -111,7 +113,8 @@ export class StudioStatusController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<UpdateTableStatusResponseType> => {
-        return await this.studioStatusService.updateTableStatus(req.body);
+        const output = await this.studioStatusService.updateTableStatus(req.body);
+        return output as UpdateTableStatusResponseType;
       },
     );
   }
