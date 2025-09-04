@@ -60,22 +60,7 @@ describe('LosSignalService', () => {
       expect(mockUnsubscribe).toHaveBeenCalledTimes(1);
     });
   });
-  /*
-  describe('getToken', () => {
-    it('should return a token from cache', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue('test-token');
-      const token = await (service as any).getToken('device-1');
-      expect(mockCacheService.get).toHaveBeenCalledWith('studio-los-token-device-1');
-      expect(token).toBe('test-token');
-    });
 
-    it('should return null if no token is in cache', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
-      const token = await (service as any).getToken('device-1');
-      expect(token).toBeNull();
-    });
-  });
-*/
   describe('send', () => {
     const mockResponse = { status: 200, data: {}, headers: {}, statusText: '', config: {} };
     const mockError: AxiosError = {

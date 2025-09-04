@@ -10,7 +10,7 @@ import {
   InsertTableCdnResult,
   UpdateTableCdnEntity,
 } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
-import { GetTableCdnOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
+import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { UpdateResult } from 'typeorm';
 
 const mockQueryBuilder = {
@@ -29,7 +29,6 @@ const mockQueryBuilder = {
   getRawMany: jest.fn(),
 };
 
-// Mock TypeORM 的 Repository 和 Connection
 const mockRepository = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
@@ -39,7 +38,6 @@ const mockConnection = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
-// Mock DbService
 const mockDbService = {
   getConnection: jest.fn(() => mockConnection),
 } as unknown as DbService;
@@ -83,14 +81,14 @@ describe('StudioCdnRepository', () => {
     });
   });
 
-  describe('getStudioCdnCache', () => {
-    it('should return an array of GetTableCdnOutput', async () => {
-      const mockResults: GetTableCdnOutput[] = [
+  describe('getStudioCdn', () => {
+    it('should return an array of GetStudioCdnServiceOutput', async () => {
+      const mockResults: GetStudioCdnServiceOutput[] = [
         { tableId: 'cdn-1', cdnDst: { primary: { lo: 'path' } } },
       ];
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
 
-      const result = await repository.getStudioCdnCache();
+      const result = await repository.getStudioCdn();
 
       expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioCdn, 'studio');
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([

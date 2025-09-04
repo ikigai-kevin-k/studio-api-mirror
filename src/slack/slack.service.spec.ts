@@ -8,7 +8,6 @@ import { SlackService } from 'src/slack/slack.service';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
 
-// Mock 掉 Slack WebClient
 const mockChatPostMessage = jest.fn();
 jest.mock('@slack/web-api', () => ({
   WebClient: jest.fn(() => ({
@@ -18,7 +17,6 @@ jest.mock('@slack/web-api', () => ({
   })),
 }));
 
-// Mock 掉所有依賴的服務
 const mockWsService = {
   subscribe: jest.fn(),
 } as unknown as WsService;

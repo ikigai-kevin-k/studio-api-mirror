@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { GetTableCdnOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
+import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { StudioCdn } from '../../entities/studio-cdn.entity';
 import {
   GetTableCdnQuery,
@@ -23,13 +23,13 @@ export class StudioCdnRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudioCdnCache(): Promise<GetTableCdnOutput[]> {
+  async getStudioCdn(): Promise<GetStudioCdnServiceOutput[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioCdn, 'studio')
       .select(['studio."TABLE_ID" as "tableId"', 'studio."CDN" as "cdnDst"']);
 
-    return await builder.getRawMany<GetTableCdnOutput>();
+    return await builder.getRawMany<GetStudioCdnServiceOutput>();
   }
 
   async getTableCdn(query: GetTableCdnQuery) {

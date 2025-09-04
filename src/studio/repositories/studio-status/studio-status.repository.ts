@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { TableStatusOutput } from 'src/studio/services/studio-status/studio-status.service.type';
+import { StudioStatusServiceOutput } from 'src/studio/services/studio-status/studio-status.service.type';
 import { StudioStatus } from '../../entities/studio-status.entity';
 import {
   GetTableStatusQuery,
@@ -23,7 +23,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudioStatusCache(): Promise<TableStatusOutput[]> {
+  async getStudioStatus(): Promise<StudioStatusServiceOutput[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioStatus, 'studio')
@@ -42,7 +42,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
         'studio."NFC_SCANNER" as "nfcScanner"',
       ]);
 
-    return await builder.getRawMany<TableStatusOutput>();
+    return await builder.getRawMany<StudioStatusServiceOutput>();
   }
 
   async getTableStatus(query: GetTableStatusQuery) {

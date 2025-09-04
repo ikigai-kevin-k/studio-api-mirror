@@ -28,12 +28,12 @@ describe('AppConfigService', () => {
     process.env.DB_SLAVE_PASSWORD = 'slavepass';
     process.env.WS_PORT = '';
     process.env.WS_TOKEN = '';
-    process.env.LOS_URL = '';
-    process.env.AM_URL = '';
-    process.env.AM_USER = '';
-    process.env.AM_PASSWORD = '';
+    process.env.LOS_SERVICE_URL = '';
+    process.env.AM_SERVICE_URL = '';
+    process.env.AM_STUDIO_USER = '';
+    process.env.AM_STUDIO_PASSWORD = '';
     process.env.SLACK_TOKEN = '';
-    process.env.SLACK_CHANNEL = '';
+    process.env.SLACK_CHANNEL_ID = '';
     appConfigService = new AppConfigService();
   });
 

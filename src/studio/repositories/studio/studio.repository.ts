@@ -1,7 +1,7 @@
 /* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { StudioTableOutput } from 'src/studio/services/studio/studio.service.type';
+import { StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import {
   GetStudioTableQuery,
@@ -23,13 +23,13 @@ export class StudioRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudioCache(): Promise<StudioTableOutput[]> {
+  async getStudio(): Promise<StudioServiceOutput[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(Studio, 'studio')
       .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
 
-    return await builder.getRawMany<StudioTableOutput>();
+    return await builder.getRawMany<StudioServiceOutput>();
   }
 
   async getStudioTable(query: GetStudioTableQuery): Promise<StudioTableResult[]> {

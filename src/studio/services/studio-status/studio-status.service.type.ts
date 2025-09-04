@@ -1,4 +1,4 @@
-export interface TableStatusOutput {
+export interface StudioStatusServiceOutput {
   tableId: string;
   uptime?: number;
   timestamp?: number;
@@ -13,7 +13,7 @@ export interface TableStatusOutput {
   nfcScanner?: string;
 }
 
-export type UpdateTableStatusInput = {
+export type UpdateStudioStatusServiceInput = {
   uptime?: number;
   timestamp?: Date;
   maintenance?: boolean;

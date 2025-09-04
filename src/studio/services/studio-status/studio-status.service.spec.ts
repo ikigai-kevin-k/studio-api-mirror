@@ -10,8 +10,8 @@ import { StudioStatusRepository } from 'src/studio/repositories/studio-status/st
 import { InsertTableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
 import {
-  TableStatusOutput,
-  UpdateTableStatusInput,
+  StudioStatusServiceOutput,
+  UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
 import { WsService } from 'src/ws/ws.service';
 
@@ -23,7 +23,7 @@ const mockStudioStatusRepository = {
   getTableStatusByTableID: jest.fn(),
   insertTableStatus: jest.fn(),
   updateTableStatus: jest.fn(),
-  getStudioStatusCache: jest.fn(),
+  getStudioStatus: jest.fn(),
 } as unknown as StudioStatusRepository;
 
 const mockCacheService = {
@@ -98,7 +98,7 @@ describe('StudioStatusService', () => {
 
   describe('getCaches', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData = new Map<string, TableStatusOutput>();
+      const mockCacheData = new Map<string, StudioStatusServiceOutput>();
       mockCacheData.set('table1', { tableId: 'table1', uptime: 10 });
       const mockCacheString = JSON.stringify([...mockCacheData]);
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
@@ -110,11 +110,9 @@ describe('StudioStatusService', () => {
     it('should fetch from repository if cache does not exist', async () => {
       (mockCacheService.get as jest.Mock).mockResolvedValue(null);
       const mockRepoData: any[] = [{ tableId: 'table1', uptime: 10 }];
-      (mockStudioStatusRepository.getStudioStatusCache as jest.Mock).mockResolvedValue(
-        mockRepoData,
-      );
+      (mockStudioStatusRepository.getStudioStatus as jest.Mock).mockResolvedValue(mockRepoData);
       const result = await service.getCaches();
-      expect(mockStudioStatusRepository.getStudioStatusCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioStatusRepository.getStudioStatus).toHaveBeenCalledTimes(1);
       const expectedMap = new Map();
       expectedMap.set('table1', mockRepoData[0]);
       expect(result).toEqual(expectedMap);
@@ -123,11 +121,11 @@ describe('StudioStatusService', () => {
 
   describe('refreshCache', () => {
     it('should merge new data into existing cache', async () => {
-      const initialCache = new Map<string, TableStatusOutput>();
+      const initialCache = new Map<string, StudioStatusServiceOutput>();
       initialCache.set('table1', { tableId: 'table1', uptime: 10, maintenance: false });
       jest.spyOn(service, 'getCaches' as any).mockResolvedValue(initialCache);
 
-      const newCacheData: TableStatusOutput = { tableId: 'table1', uptime: 20 };
+      const newCacheData: StudioStatusServiceOutput = { tableId: 'table1', uptime: 20 };
       await service.refreshCache(newCacheData);
       const expectedMap = new Map(initialCache);
       expectedMap.set('table1', { tableId: 'table1', uptime: 20, maintenance: false });
@@ -141,7 +139,7 @@ describe('StudioStatusService', () => {
 
   describe('getTableStatus', () => {
     it('should return status from cache', async () => {
-      const mockOutput: TableStatusOutput = { tableId: 'table1', uptime: 10 };
+      const mockOutput: StudioStatusServiceOutput = { tableId: 'table1', uptime: 10 };
       jest.spyOn(service, 'getCache' as any).mockResolvedValue(mockOutput);
       const result = await service.getTableStatus({ tableId: 'table1' });
       expect(result).toEqual(mockOutput);
@@ -205,7 +203,7 @@ describe('StudioStatusService', () => {
     it('should update and refresh cache', async () => {
       (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(1);
       jest.spyOn(service, 'refreshCache' as any).mockResolvedValue(undefined);
-      const input: UpdateTableStatusInput = { uptime: 10, sdp: 'OK' };
+      const input: UpdateStudioStatusServiceInput = { uptime: 10, sdp: 'OK' };
       const result = await service.updateTableStatusByWebSocket('ws-table', input);
       expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
       expect(result).toEqual({ tableId: 'ws-table', ...input });
@@ -216,7 +214,7 @@ describe('StudioStatusService', () => {
     it('should call updateTableStatusByWebSocket on valid message', async () => {
       const query = new URLSearchParams('id=ws-table');
       const ws = { send: jest.fn() } as any;
-      const input: UpdateTableStatusInput = { uptime: 10 };
+      const input: UpdateStudioStatusServiceInput = { uptime: 10 };
       jest
         .spyOn(service, 'updateTableStatusByWebSocket' as any)
         .mockResolvedValue({ tableId: 'ws-table', uptime: 10 });

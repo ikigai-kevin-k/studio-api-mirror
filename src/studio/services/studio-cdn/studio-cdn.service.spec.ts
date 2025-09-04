@@ -14,12 +14,11 @@ import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
-import { GetTableCdnOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
+import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 
-// Mock 掉所有依賴的服務
 const mockStudioCdnRepository = {
   getTableCdnByTableID: jest.fn(),
-  getStudioCdnCache: jest.fn(),
+  getStudioCdn: jest.fn(),
   insertTableCdn: jest.fn(),
   updateTableCdn: jest.fn(),
 } as unknown as StudioCdnRepository;
@@ -88,7 +87,7 @@ describe('StudioCdnService', () => {
 
   describe('getCaches', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData = new Map<string, GetTableCdnOutput>();
+      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
       mockCacheData.set('cdn1', {
         tableId: 'cdn1',
         cdnDst: {
@@ -109,12 +108,11 @@ describe('StudioCdnService', () => {
       const mockCacheString = JSON.stringify([...mockCacheData]);
 
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
-      const spyGetCdnCache = jest.spyOn(mockStudioCdnRepository, 'getStudioCdnCache');
 
       const result = await service.getCaches();
 
       expect(mockCacheService.get).toHaveBeenCalledWith('cdn');
-      expect(spyGetCdnCache).not.toHaveBeenCalled();
+      expect(mockStudioCdnRepository.getStudioCdn).not.toHaveBeenCalled();
       expect(mockCacheService.set).not.toHaveBeenCalled();
       expect(result).toEqual(mockCacheData);
     });
@@ -122,7 +120,7 @@ describe('StudioCdnService', () => {
     it('should fetch from repository and set cache if cache does not exist', async () => {
       (mockCacheService.get as jest.Mock).mockResolvedValue(null);
 
-      const mockRepositoryData: GetTableCdnOutput[] = [
+      const mockRepositoryData: GetStudioCdnServiceOutput[] = [
         {
           tableId: 'cdn1',
           cdnDst: {
@@ -141,14 +139,12 @@ describe('StudioCdnService', () => {
           },
         },
       ];
-      (mockStudioCdnRepository.getStudioCdnCache as jest.Mock).mockResolvedValue(
-        mockRepositoryData,
-      );
+      (mockStudioCdnRepository.getStudioCdn as jest.Mock).mockResolvedValue(mockRepositoryData);
 
       const result = await service.getCaches();
 
       expect(mockCacheService.get).toHaveBeenCalledWith('cdn');
-      expect(mockStudioCdnRepository.getStudioCdnCache).toHaveBeenCalledTimes(1);
+      expect(mockStudioCdnRepository.getStudioCdn).toHaveBeenCalledTimes(1);
 
       const expectedMap = new Map();
       expectedMap.set('cdn1', mockRepositoryData[0]);
@@ -162,8 +158,8 @@ describe('StudioCdnService', () => {
   describe('getCache', () => {
     it('should return the correct cache entry for a given key', async () => {
       const spyGetCaches = jest.spyOn(service, 'getCaches');
-      const mockCacheData = new Map<string, GetTableCdnOutput>();
-      const entry: GetTableCdnOutput = {
+      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
+      const entry: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
@@ -191,7 +187,7 @@ describe('StudioCdnService', () => {
 
     it('should return undefined if the key is not in cache', async () => {
       const spyGetCaches = jest.spyOn(service, 'getCaches');
-      const mockCacheData = new Map<string, GetTableCdnOutput>();
+      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
       spyGetCaches.mockResolvedValue(mockCacheData);
 
       const result = await service.getCache('non-existent');
@@ -203,7 +199,7 @@ describe('StudioCdnService', () => {
 
   describe('refreshCache', () => {
     it('should merge new data with existing cache and set it', async () => {
-      const initialCacheData = new Map<string, GetTableCdnOutput>();
+      const initialCacheData = new Map<string, GetStudioCdnServiceOutput>();
       initialCacheData.set('cdn1', {
         tableId: 'cdn1',
         cdnDst: {
@@ -223,7 +219,7 @@ describe('StudioCdnService', () => {
       });
       const spyGetCaches = jest.spyOn(service, 'getCaches').mockResolvedValue(initialCacheData);
 
-      const newCacheData: GetTableCdnOutput = {
+      const newCacheData: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
@@ -252,7 +248,7 @@ describe('StudioCdnService', () => {
     });
 
     it('should filter undefined values during merge', async () => {
-      const initialCacheData = new Map<string, GetTableCdnOutput>();
+      const initialCacheData = new Map<string, GetStudioCdnServiceOutput>();
       initialCacheData.set('cdn1', {
         tableId: 'cdn1',
         cdnDst: {
@@ -320,7 +316,7 @@ describe('StudioCdnService', () => {
   describe('getTableCdn', () => {
     it('should return CDN data from cache', async () => {
       const spyGetCache = jest.spyOn(service, 'getCache');
-      const mockCacheOutput: GetTableCdnOutput = {
+      const mockCacheOutput: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {

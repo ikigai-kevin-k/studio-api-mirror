@@ -11,9 +11,9 @@ import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import { UpdateTableCdnEntity } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import {
-  GetTableCdnOutput,
-  InsertTableCdnOutput,
-  UpdateTableCdnOutput,
+  GetStudioCdnServiceOutput,
+  InsertStudioCdnServiceOutput,
+  UpdateStudioCdnServiceOutput,
 } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 
 export class StudioCdnService implements ModuleLifecycle {
@@ -32,7 +32,7 @@ export class StudioCdnService implements ModuleLifecycle {
     return entity;
   }
 
-  async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetTableCdnOutput> {
+  async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetStudioCdnServiceOutput> {
     const output = await this.getCache(type.tableId);
     if (!output) {
       throw new StudioNotFoundError(`table ${type.tableId} not found`);
@@ -40,7 +40,9 @@ export class StudioCdnService implements ModuleLifecycle {
     return output;
   }
 
-  async insertTableCdn(type: InsertStudioTableCdnRequestType): Promise<InsertTableCdnOutput> {
+  async insertTableCdn(
+    type: InsertStudioTableCdnRequestType,
+  ): Promise<InsertStudioCdnServiceOutput> {
     const studio: StudioCdn = new StudioCdn();
     studio.tableId = type.tableId;
     studio.cdnDst = type.cdnDst;
@@ -56,7 +58,9 @@ export class StudioCdnService implements ModuleLifecycle {
     return output;
   }
 
-  async updateTableCdn(type: UpdateStudioTableCdnRequestType): Promise<UpdateTableCdnOutput> {
+  async updateTableCdn(
+    type: UpdateStudioTableCdnRequestType,
+  ): Promise<UpdateStudioCdnServiceOutput> {
     const entity: UpdateTableCdnEntity = {
       tableId: type.tableId,
       cdnDst: type.cdnDst,
@@ -75,12 +79,12 @@ export class StudioCdnService implements ModuleLifecycle {
     return output;
   }
 
-  async getCaches(): Promise<Map<string, GetTableCdnOutput>> {
+  async getCaches(): Promise<Map<string, GetStudioCdnServiceOutput>> {
     const tag = 'cdn';
     const hashTable = await this.cacheService.get(tag);
 
     if (!hashTable) {
-      const caches = await this.studioCdnRepository.getStudioCdnCache();
+      const caches = await this.studioCdnRepository.getStudioCdn();
 
       const cacheMap = new Map();
       for (const cache of caches) {
@@ -95,12 +99,12 @@ export class StudioCdnService implements ModuleLifecycle {
     return new Map(JSON.parse(hashTable));
   }
 
-  async getCache(key: string): Promise<GetTableCdnOutput | undefined> {
+  async getCache(key: string): Promise<GetStudioCdnServiceOutput | undefined> {
     const hashTable = await this.getCaches();
     return hashTable.get(key);
   }
 
-  async refreshCache(cache: GetTableCdnOutput): Promise<void> {
+  async refreshCache(cache: GetStudioCdnServiceOutput): Promise<void> {
     const hashTable = await this.getCaches();
 
     const origin = hashTable.get(cache.tableId);
@@ -109,7 +113,7 @@ export class StudioCdnService implements ModuleLifecycle {
       ...origin,
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
-    } as GetTableCdnOutput;
+    } as GetStudioCdnServiceOutput;
 
     hashTable.set(cache.tableId, result);
 

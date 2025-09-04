@@ -70,18 +70,18 @@ export class AppConfigService {
     };
 
     this.los = {
-      url: String(process.env.LOS_URL),
+      url: String(process.env.LOS_SERVICE_URL),
     };
 
     this.am = {
-      url: String(process.env.AM_URL),
-      user: String(process.env.AM_USER),
-      pw: String(process.env.AM_PASSWORD),
+      url: String(process.env.AM_SERVICE_URL),
+      user: String(process.env.AM_STUDIO_USER),
+      pw: String(process.env.AM_STUDIO_PASSWORD),
     };
 
     this.slack = {
       token: String(process.env.SLACK_TOKEN),
-      channel: String(process.env.SLACK_CHANNEL),
+      channel: String(process.env.SLACK_CHANNEL_ID),
     };
   }
 

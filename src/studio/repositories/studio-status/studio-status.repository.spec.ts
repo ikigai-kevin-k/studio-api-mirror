@@ -98,8 +98,8 @@ describe('StudioStatusRepository', () => {
     });
   });
 
-  describe('getStudioStatusCache', () => {
-    it('should return an array of TableStatusOutput', async () => {
+  describe('getStudioStatus', () => {
+    it('should return an array of StudioStatusServiceOutput', async () => {
       const mockResults = [
         {
           tableId: 'table-1',
@@ -119,7 +119,7 @@ describe('StudioStatusRepository', () => {
 
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
 
-      const result = await repository.getStudioStatusCache();
+      const result = await repository.getStudioStatus();
 
       expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioStatus, 'studio');
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([

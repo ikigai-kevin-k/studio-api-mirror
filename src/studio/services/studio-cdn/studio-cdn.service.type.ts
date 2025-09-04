@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-export interface GetTableCdnOutput {
+export interface GetStudioCdnServiceOutput {
   tableId: string;
   cdnDst: Record<string, any>;
 }
 
-export interface InsertTableCdnOutput {
+export interface InsertStudioCdnServiceOutput {
   tableId: string;
   cdnDst: Record<string, any>;
 }
 
-export interface UpdateTableCdnOutput {
+export interface UpdateStudioCdnServiceOutput {
   tableId: string;
   cdnDst: Record<string, any>;
 }

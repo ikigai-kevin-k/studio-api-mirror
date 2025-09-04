@@ -47,22 +47,7 @@ describe('LosCdnService', () => {
       await expect(service.onDispose()).resolves.toBeUndefined();
     });
   });
-  /*
-  describe('getToken', () => {
-    it('should return a token from cache', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue('test-token');
-      const token = await (service as any).getToken();
-      expect(mockCacheService.get).toHaveBeenCalled();
-      expect(token).toBe('test-token');
-    });
 
-    it('should return null if no token is in cache', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
-      const token = await (service as any).getToken();
-      expect(token).toBeNull();
-    });
-  });
-*/
   describe('send', () => {
     it('should return a response on the first successful attempt', async () => {
       const mockResponse = { status: 200, data: {}, headers: {}, statusText: '', config: {} };

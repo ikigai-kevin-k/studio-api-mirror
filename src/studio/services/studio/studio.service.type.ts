@@ -1,18 +1,18 @@
-export interface StudioTableOutput {
+export interface StudioServiceOutput {
   tableId: string;
   tableStatus: string;
 }
 
-export type GetStudioTableOutput = {
-  list: StudioTableOutput[];
+export type GetStudioServiceOutput = {
+  list: StudioServiceOutput[];
 };
 
-export type InsertStudioTableOutput = {
+export type InsertStudioServiceOutput = {
   tableId: string;
   tableStatus: string;
 };
 
-export type UpdateStudioTableStatusOutput = {
+export type UpdateStudioServiceStatusOutput = {
   tableId: string;
   tableStatus: string;
 };

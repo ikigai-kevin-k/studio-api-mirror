@@ -8,7 +8,7 @@ import {
   InsertStudioTableResult,
   UpdateStudioTableStatusEntity,
 } from 'src/studio/repositories/studio/studio.repository.type';
-import { StudioTableOutput } from 'src/studio/services/studio/studio.service.type';
+import { StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
 import { UpdateResult } from 'typeorm';
 
 const mockQueryBuilder = {
@@ -93,9 +93,9 @@ describe('StudioRepository', () => {
     });
   });
 
-  describe('getStudioCache', () => {
-    it('should return an array of StudioTableOutput', async () => {
-      const mockResults: StudioTableOutput[] = [
+  describe('getStudio', () => {
+    it('should return an array of StudioServiceOutput', async () => {
+      const mockResults: StudioServiceOutput[] = [
         {
           tableId: 'table-1',
           tableStatus: 'active',
@@ -103,7 +103,7 @@ describe('StudioRepository', () => {
       ];
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
 
-      const result = await repository.getStudioCache();
+      const result = await repository.getStudio();
 
       expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(Studio, 'studio');
       expect(mockQueryBuilder.select).toHaveBeenCalledWith([
