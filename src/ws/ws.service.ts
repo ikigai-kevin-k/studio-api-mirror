@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
@@ -59,7 +58,7 @@ export class WsService implements ModuleLifecycle {
     };
   }
 
-  private notify(event: string, query: URLSearchParams, ws: WebSocket, data?: any) {
+  private notify(event: string, query: URLSearchParams, ws: WebSocket, data?: object) {
     const cbs = this.observers.get(event);
     if (!cbs) return;
     for (const cb of cbs) cb(query, ws, data);

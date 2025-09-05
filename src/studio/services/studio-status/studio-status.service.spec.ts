@@ -13,11 +13,6 @@ import {
   StudioStatusServiceOutput,
   UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
-import { WsService } from 'src/ws/ws.service';
-
-const mockWsService = {
-  subscribe: jest.fn(),
-} as unknown as WsService;
 
 const mockStudioStatusRepository = {
   getTableStatusByTableID: jest.fn(),
@@ -41,7 +36,6 @@ describe('StudioStatusService', () => {
 
   beforeEach(() => {
     service = new StudioStatusService(
-      mockWsService,
       mockStudioStatusRepository,
       mockCacheService,
       mockLoggerService,
@@ -49,18 +43,9 @@ describe('StudioStatusService', () => {
     jest.clearAllMocks();
   });
 
-  describe('onInit and onDispose', () => {
-    it('should subscribe to ws events on init and unsubscribe on dispose', async () => {
-      const mockUnsubscribe = jest.fn();
-      (mockWsService.subscribe as jest.Mock).mockReturnValue(mockUnsubscribe);
-
-      await service.onInit();
-
-      expect(mockWsService.subscribe).toHaveBeenCalled();
-
-      await service.onDispose();
-
-      expect(mockUnsubscribe).toHaveBeenCalled();
+  describe('onInit', () => {
+    it('should be callable and return without errors', async () => {
+      await expect(service.onInit()).resolves.toBeUndefined();
     });
   });
 
@@ -207,28 +192,6 @@ describe('StudioStatusService', () => {
       const result = await service.updateTableStatusByWebSocket('ws-table', input);
       expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
       expect(result).toEqual({ tableId: 'ws-table', ...input });
-    });
-  });
-
-  describe('onServiceStatus', () => {
-    it('should call updateTableStatusByWebSocket on valid message', async () => {
-      const query = new URLSearchParams('id=ws-table');
-      const ws = { send: jest.fn() } as any;
-      const input: UpdateStudioStatusServiceInput = { uptime: 10 };
-      jest
-        .spyOn(service, 'updateTableStatusByWebSocket' as any)
-        .mockResolvedValue({ tableId: 'ws-table', uptime: 10 });
-      await (service as any).onServiceStatus(query, ws, input);
-      expect((service as any).updateTableStatusByWebSocket).toHaveBeenCalledWith('ws-table', input);
-      expect(ws.send).toHaveBeenCalled();
-    });
-
-    it('should log error if tableId is missing', async () => {
-      const query = new URLSearchParams('');
-      const ws = { send: jest.fn() } as any;
-      const input = {};
-      await (service as any).onServiceStatus(query, ws, input);
-      expect(mockLoggerService.error).toHaveBeenCalledWith('Error: Ws connect without tableId !!');
     });
   });
 });

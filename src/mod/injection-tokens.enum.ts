@@ -16,14 +16,12 @@ export const InjectionTokensEnum = {
   STUDIO_STATUS_REPOSITORY: 'studioStatusRepository',
   STUDIO_STATUS_SERVICE: 'studioStatusService',
   STUDIO_STATUS_CONTROLLER: 'studioStatusController',
+  STUDIO_STATUS_OBSERVER: 'studioStatusObserver',
 
   WS_SERVICE: 'wsService',
 
-  LOS_AUTH_REPOSITORY: 'losAuthRepository',
-  LOS_AUTH_SERVICE: 'losAuthService',
-  LOS_CDN_SERVICE: 'losCdnService',
   LOS_SIGNAL_SERVICE: 'losSignalService',
-  LOS_CONTROLLER: 'losController',
+  LOS_SIGNAL_OBSERVER: 'losSignalObserver',
 
   SLACK_SERVICE: 'slackService',
 } as const;

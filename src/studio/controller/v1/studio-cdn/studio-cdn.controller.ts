@@ -4,7 +4,6 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { BadRequestResponse, UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { LosCdnService } from 'src/los/services/los-cdn/los-cdn.service';
 import { PreHandlersService, RouterService } from 'src/router';
 import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
@@ -28,7 +27,6 @@ export class StudioCdnController implements ModuleLifecycle {
     private readonly studioCdnService: StudioCdnService,
     private readonly preHandlersService: PreHandlersService,
     private readonly routerService: RouterService,
-    private readonly losCdnService: LosCdnService,
     private readonly logger: LoggerService,
   ) {}
 
@@ -102,7 +100,6 @@ export class StudioCdnController implements ModuleLifecycle {
             secondary: cdnDst['secondary'],
           },
         };
-        this.losCdnService.updateCDN(tableId, output.cdnDst);
         return output;
       },
     );
@@ -137,7 +134,6 @@ export class StudioCdnController implements ModuleLifecycle {
             secondary: cdnDst['secondary'],
           },
         };
-        this.losCdnService.updateCDN(tableId, output.cdnDst);
         return output;
       },
     );

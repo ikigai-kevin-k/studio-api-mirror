@@ -115,8 +115,9 @@ export class StudioService implements ModuleLifecycle {
 
     const result = {
       ...origin,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
+      ...Object.fromEntries(
+        Object.entries(cache).filter(([_key, v]) => _key !== undefined && v !== undefined),
+      ),
     } as StudioServiceOutput;
 
     hashTable.set(cache.tableId, result);

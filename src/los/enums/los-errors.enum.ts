@@ -1,5 +1,0 @@
-export enum LosErrorsEnum {
-  LOS_DEVICE_NOT_FOUND = 17_100,
-  LOS_TOKEN_NOT_FOUND = 17_101,
-  LOS_CONNECT_FAILURE = 17_102,
-}

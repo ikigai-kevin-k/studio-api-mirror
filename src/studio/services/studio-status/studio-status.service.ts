@@ -14,14 +14,9 @@ import {
   StudioStatusServiceOutput,
   UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
-import { WsService } from 'src/ws/ws.service';
-import { Unsubscribe } from 'src/ws/ws.service.type';
-import { WebSocket } from 'ws';
 
 export class StudioStatusService implements ModuleLifecycle {
-  private unSubscribes: Unsubscribe[] = [];
   constructor(
-    private readonly wsService: WsService,
     private readonly studioStatusRepository: StudioStatusRepository,
     private readonly cacheService: CacheService,
     private readonly logger: LoggerService,
@@ -73,8 +68,7 @@ export class StudioStatusService implements ModuleLifecycle {
     const { tableId, timestamp, ...params } = type;
     const entity = {
       ...params,
-      // eslint-disable-next-line unicorn/no-negated-condition
-      timestamp: timestamp != undefined ? new Date(timestamp) : undefined,
+      timestamp: timestamp ? new Date(timestamp) : undefined,
     };
     const result = await this.studioStatusRepository.updateTableStatus(tableId, entity);
     this.logger.info(`result = ${result}`);
@@ -82,12 +76,8 @@ export class StudioStatusService implements ModuleLifecycle {
 
     const output = {
       tableId: tableId,
-      //eslint-disable-next-line unicorn/no-useless-spread
-      ...{
-        ...entity,
-        //eslint-disable-next-line unicorn/no-negated-condition
-        timestamp: entity.timestamp != undefined ? entity.timestamp.getTime() : undefined,
-      },
+      ...entity,
+      timestamp: entity.timestamp ? entity.timestamp.getTime() : undefined,
     };
 
     await this.refreshCache(output);
@@ -104,31 +94,13 @@ export class StudioStatusService implements ModuleLifecycle {
 
     const output = {
       tableId: tableId,
-      //eslint-disable-next-line unicorn/no-useless-spread
-      ...{
-        ...input,
-        //eslint-disable-next-line unicorn/no-negated-condition
-        timestamp: input.timestamp != undefined ? input.timestamp.getTime() : undefined,
-      },
+      ...input,
+      timestamp: input.timestamp ? input.timestamp.getTime() : undefined,
     };
 
     await this.refreshCache(output);
 
     return output;
-  }
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private async onServiceStatus(query: URLSearchParams, ws: WebSocket, data?: any) {
-    try {
-      const tableId = query.get('id');
-      if (!tableId) throw new Error(`Ws connect without tableId !!`);
-
-      const result = await this.updateTableStatusByWebSocket(tableId, data);
-      ws.send(JSON.stringify(result));
-    } catch (error) {
-      const reason = (error as Error).toString();
-      this.logger.error(reason);
-    }
   }
 
   async getCaches(): Promise<Map<string, StudioStatusServiceOutput>> {
@@ -163,8 +135,9 @@ export class StudioStatusService implements ModuleLifecycle {
 
     const result = {
       ...origin,
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      ...Object.fromEntries(Object.entries(cache).filter(([_, v]) => v !== undefined)),
+      ...Object.fromEntries(
+        Object.entries(cache).filter(([_key, v]) => _key !== undefined && v !== undefined),
+      ),
     } as StudioStatusServiceOutput;
 
     hashTable.set(cache.tableId, result);
@@ -172,18 +145,7 @@ export class StudioStatusService implements ModuleLifecycle {
     return await this.cacheService.set('status', JSON.stringify([...hashTable]), 86_400);
   }
 
-  async onInit(): Promise<void> {
-    this.unSubscribes = [
-      this.wsService.subscribe('service_status', this.onServiceStatus.bind(this)),
-      // Provide a provisional handling for the legacy format
-      // this should be removed after the source updates the packet format.
-      this.wsService.subscribe('unknown', this.onServiceStatus.bind(this)),
-    ];
-  }
+  async onInit(): Promise<void> {}
 
-  async onDispose(): Promise<void> {
-    for (const unSubscribe of this.unSubscribes) {
-      unSubscribe();
-    }
-  }
+  async onDispose(): Promise<void> {}
 }
