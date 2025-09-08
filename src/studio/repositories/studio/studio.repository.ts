@@ -1,10 +1,7 @@
-/* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import {
-  GetStudioTableQuery,
   InsertStudioTableResult,
   StudioTableResult,
   UpdateStudioTableStatusEntity,
@@ -23,24 +20,11 @@ export class StudioRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudio(): Promise<StudioServiceOutput[]> {
+  async getStudio(): Promise<StudioTableResult[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(Studio, 'studio')
       .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
-
-    return await builder.getRawMany<StudioServiceOutput>();
-  }
-
-  async getStudioTable(query: GetStudioTableQuery): Promise<StudioTableResult[]> {
-    const builder = this.dbService
-      .getConnection()
-      .createQueryBuilder()
-      .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"'])
-      .from(Studio, 'studio')
-      .where('studio.TABLE_ID IN (:...tableId)', {
-        tableId: query.tableId,
-      });
 
     return await builder.getRawMany<StudioTableResult>();
   }

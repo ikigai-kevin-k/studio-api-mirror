@@ -1,10 +1,7 @@
-/* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { StudioCdn } from '../../entities/studio-cdn.entity';
 import {
-  GetTableCdnQuery,
   GetTableCdnResult,
   InsertTableCdnResult,
   UpdateTableCdnEntity,
@@ -23,24 +20,13 @@ export class StudioCdnRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudioCdn(): Promise<GetStudioCdnServiceOutput[]> {
+  async getStudioCdn(): Promise<GetTableCdnResult[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioCdn, 'studio')
       .select(['studio."TABLE_ID" as "tableId"', 'studio."CDN" as "cdnDst"']);
 
-    return await builder.getRawMany<GetStudioCdnServiceOutput>();
-  }
-
-  async getTableCdn(query: GetTableCdnQuery) {
-    const repository = this.dbService.getConnection();
-    const builder = repository
-      .createQueryBuilder()
-      .select(['studio."CDN" as "cdn"'])
-      .from(StudioCdn, 'studio')
-      .where('studio.TABLE_ID = :tableId', { tableId: query.tableId });
-
-    return await builder.getRawOne<GetTableCdnResult>();
+    return await builder.getRawMany<GetTableCdnResult>();
   }
 
   async insertTableCdn(studioCdn: StudioCdn): Promise<InsertTableCdnResult> {

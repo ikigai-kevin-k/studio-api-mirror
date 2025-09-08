@@ -5,8 +5,6 @@ import { DbService } from 'src/db/db.service';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import {
-  GetTableCdnQuery,
-  GetTableCdnResult,
   InsertTableCdnResult,
   UpdateTableCdnEntity,
 } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
@@ -84,7 +82,7 @@ describe('StudioCdnRepository', () => {
   describe('getStudioCdn', () => {
     it('should return an array of GetStudioCdnServiceOutput', async () => {
       const mockResults: GetStudioCdnServiceOutput[] = [
-        { tableId: 'cdn-1', cdnDst: { primary: { lo: 'path' } } },
+        { tableId: 'cdn-1', cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } } },
       ];
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
 
@@ -100,40 +98,16 @@ describe('StudioCdnRepository', () => {
     });
   });
 
-  describe('getTableCdn', () => {
-    it('should return a GetTableCdnResult object when found', async () => {
-      const query: GetTableCdnQuery = { tableId: 'cdn-table-1' };
-      const mockResult: GetTableCdnResult = { cdnDst: { primary: { lo: 'path' } } };
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockResult);
-
-      const result = await repository.getTableCdn(query);
-
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith(['studio."CDN" as "cdn"']);
-      expect(mockQueryBuilder.from).toHaveBeenCalledWith(StudioCdn, 'studio');
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableId', {
-        tableId: 'cdn-table-1',
-      });
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should return undefined when no result is found', async () => {
-      const query: GetTableCdnQuery = { tableId: 'non-existent' };
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(undefined);
-      const result = await repository.getTableCdn(query);
-      expect(result).toBeUndefined();
-    });
-  });
-
   describe('insertTableCdn', () => {
     it('should insert a StudioCdn and return the result', async () => {
       const mockCdn: StudioCdn = {
         id: 1,
         tableId: 'cdn-table-1',
-        cdnDst: { hi: 'path' },
+        cdnDst: { primary: {} },
       };
       const mockRawResult: InsertTableCdnResult = {
         TABLE_ID: 'cdn-table-1',
-        CDN: { hi: 'path' },
+        CDN: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
       const mockExecuteResult = { raw: [mockRawResult] };
 
@@ -153,7 +127,7 @@ describe('StudioCdnRepository', () => {
     it('should update the cdn and return affected rows count', async () => {
       const updateEntity: UpdateTableCdnEntity = {
         tableId: 'cdn-table-1',
-        cdnDst: { primary: { lo: 'new-path' } },
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
@@ -177,7 +151,7 @@ describe('StudioCdnRepository', () => {
     it('should return 0 if no rows are affected', async () => {
       const updateEntity: UpdateTableCdnEntity = {
         tableId: 'non-existent',
-        cdnDst: { primary: {} },
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
@@ -192,7 +166,7 @@ describe('StudioCdnRepository', () => {
     it('should return -1 if affected is null', async () => {
       const updateEntity: UpdateTableCdnEntity = {
         tableId: 'non-existent',
-        cdnDst: { primary: {} },
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
       const mockUpdateResult = {
         generatedMaps: [],

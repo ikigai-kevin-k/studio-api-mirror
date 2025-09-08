@@ -115,30 +115,6 @@ describe('StudioRepository', () => {
     });
   });
 
-  describe('getStudioTable', () => {
-    it('should return an array of StudioTableResult', async () => {
-      const query = { tableId: ['uniTest'] };
-      const mockResult = [{ tableId: 'uniTest', tableStatus: 'inactive' }];
-
-      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResult);
-
-      const result = await repository.getStudioTable(query);
-
-      expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
-      expect(mockConnection.createQueryBuilder).toHaveBeenCalledTimes(1);
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
-        'studio."TABLE_ID" as "tableId"',
-        'studio."TABLE_STATUS" as "tableStatus"',
-      ]);
-      expect(mockQueryBuilder.from).toHaveBeenCalledWith(Studio, 'studio');
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID IN (:...tableId)', {
-        tableId: ['uniTest'],
-      });
-      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockResult);
-    });
-  });
-
   describe('insertStudio', () => {
     it('should insert or update a studio and return the result', async () => {
       const mockStudio: Studio = {

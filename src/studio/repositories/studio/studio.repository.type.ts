@@ -5,10 +5,6 @@ export type StudioTableResult = {
   tableStatus: string;
 };
 
-export type GetStudioTableQuery = {
-  tableId?: string[];
-};
-
 export type InsertStudioTableResult = {
   TABLE_ID: string;
   TABLE_STATUS: StudioTableStatusEnum;

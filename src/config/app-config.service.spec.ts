@@ -32,8 +32,8 @@ describe('AppConfigService', () => {
     process.env.AM_SERVICE_URL = '';
     process.env.AM_STUDIO_USER = '';
     process.env.AM_STUDIO_PASSWORD = '';
-    process.env.SLACK_TOKEN = '';
-    process.env.SLACK_CHANNEL_ID = '';
+    process.env.SLACK_STUDIO_TOKEN = '';
+    process.env.SLACK_STUDIO_CHANNEL_ID = '';
     appConfigService = new AppConfigService();
   });
 

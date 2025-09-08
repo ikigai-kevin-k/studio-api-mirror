@@ -80,8 +80,8 @@ export class AppConfigService {
     };
 
     this.slack = {
-      token: String(process.env.SLACK_TOKEN),
-      channel: String(process.env.SLACK_CHANNEL_ID),
+      token: String(process.env.SLACK_STUDIO_TOKEN),
+      channel: String(process.env.SLACK_STUDIO_CHANNEL_ID),
     };
   }
 

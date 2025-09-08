@@ -1,10 +1,7 @@
-/* eslint-disable unicorn/no-null */
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
-import { StudioStatusServiceOutput } from 'src/studio/services/studio-status/studio-status.service.type';
 import { StudioStatus } from '../../entities/studio-status.entity';
 import {
-  GetTableStatusQuery,
   GetTableStatusResult,
   InsertTableStatusResult,
   UpdateTableStatusEntity,
@@ -23,7 +20,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
     return await builder.getOne();
   }
 
-  async getStudioStatus(): Promise<StudioStatusServiceOutput[]> {
+  async getStudioStatus(): Promise<GetTableStatusResult[]> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioStatus, 'studio')
@@ -42,30 +39,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
         'studio."NFC_SCANNER" as "nfcScanner"',
       ]);
 
-    return await builder.getRawMany<StudioStatusServiceOutput>();
-  }
-
-  async getTableStatus(query: GetTableStatusQuery) {
-    const repository = this.dbService.getConnection();
-    const builder = repository
-      .createQueryBuilder()
-      .select([
-        'studio."UPTIME" as "uptime"',
-        'studio."TIMESTAMP" as "timestamp"',
-        'studio."MAINTENANCE" as "maintenance"',
-        'studio."SDP" as "sdp"',
-        'studio."IDP" as "idp"',
-        'studio."BROKER" as "broker"',
-        'studio."Z_CAM" as "zCam"',
-        'studio."ROULETTE" as "roulette"',
-        'studio."SHAKER" as "shaker"',
-        'studio."BARCODE_SCANNER" as "barcodeScanner"',
-        'studio."NFC_SCANNER" as "nfcScanner"',
-      ])
-      .from(StudioStatus, 'studio')
-      .where('studio.TABLE_ID = :tableId', { tableId: query.tableId });
-
-    return await builder.getRawOne<GetTableStatusResult>();
+    return await builder.getRawMany<GetTableStatusResult>();
   }
 
   async insertTableStatus(tableId: string): Promise<InsertTableStatusResult> {

@@ -8,8 +8,6 @@
 import { DbService } from 'src/db/db.service';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
-  GetTableStatusQuery,
-  GetTableStatusResult,
   InsertTableStatusResult,
   UpdateTableStatusEntity,
 } from 'src/studio/repositories/studio-status/studio-status.repository.type';
@@ -138,42 +136,6 @@ describe('StudioStatusRepository', () => {
       ]);
       expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockResults);
-    });
-  });
-
-  describe('getTableStatus', () => {
-    it('should return a GetTableStatusResult object when found', async () => {
-      const query: GetTableStatusQuery = { tableId: 'status-table-1' };
-      const mockResult: GetTableStatusResult = {
-        uptime: 1,
-        timestamp: new Date(),
-        maintenance: false,
-        sdp: 'OK',
-        idp: 'OK',
-        broker: 'OK',
-        zCam: 'OK',
-        roulette: 'OK',
-        shaker: 'OK',
-        barcodeScanner: 'OK',
-        nfcScanner: 'OK',
-      };
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockResult);
-
-      const result = await repository.getTableStatus(query);
-
-      expect(mockQueryBuilder.select).toHaveBeenCalledTimes(1);
-      expect(mockQueryBuilder.from).toHaveBeenCalledWith(StudioStatus, 'studio');
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableId', {
-        tableId: 'status-table-1',
-      });
-      expect(result).toEqual(mockResult);
-    });
-
-    it('should return undefined when no result is found', async () => {
-      const query: GetTableStatusQuery = { tableId: 'non-existent' };
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(undefined);
-      const result = await repository.getTableStatus(query);
-      expect(result).toBeUndefined();
     });
   });
 

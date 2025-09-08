@@ -3,8 +3,9 @@ export type GetTableStatusQuery = {
 };
 
 export type GetTableStatusResult = {
+  tableId: string;
   uptime: number;
-  timestamp: Date;
+  timestamp: number;
   maintenance: boolean;
   sdp: string;
   idp: string;
