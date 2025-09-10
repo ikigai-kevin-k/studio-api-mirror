@@ -2,7 +2,7 @@ import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { AppConfigService } from 'src/config';
 import { fetch } from 'undici';
-import { LosSignalServiceInput } from './los-signal.service.type';
+import { LosSignalServiceInput, LosSignalServiceOutput } from './los-signal.service.type';
 
 export class LosSignalService implements ModuleLifecycle {
   constructor(
@@ -13,10 +13,13 @@ export class LosSignalService implements ModuleLifecycle {
   private async getToken(deviceId: string) {
     this.logger.info(`get device = ${deviceId}`);
     // This is a provisional measure that will be replaced with a formal implementation after the Access Manager finalizes the token mechanism.
-    return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzZXNzaW9uSWQiOiJMT1MtZTBhNmIxNWItMTNjOS00NzYwLWExNzItMGVjOTFjODA0MzUzIiwiaWF0IjoxNzU1ODQ3NjQzLCJleHAiOjE3NTg0Nzc0NDN9.XZMve2mVKHlr-GHsekLrUzi5x-RVeXVJAYQsy1Gf9eA';
+    return this.appConfigService.losConfig.token;
   }
 
-  private async send(process: () => Promise<unknown>, maxRetry: number) {
+  private async send(
+    process: () => Promise<LosSignalServiceOutput>,
+    maxRetry: number,
+  ): Promise<LosSignalServiceOutput | undefined> {
     let attempt = 0;
     while (attempt < maxRetry) {
       try {
@@ -29,7 +32,11 @@ export class LosSignalService implements ModuleLifecycle {
     }
   }
 
-  private async sendSignal(tableId: string, token: string, data: LosSignalServiceInput) {
+  private async sendSignal(
+    tableId: string,
+    token: string,
+    data: LosSignalServiceInput,
+  ): Promise<LosSignalServiceOutput> {
     const resp = await fetch(
       `${this.appConfigService.losConfig.url}/v1/internal/tables/${tableId}/broadcast`,
       {
@@ -44,18 +51,25 @@ export class LosSignalService implements ModuleLifecycle {
     );
 
     if (!resp.ok) throw new Error(`HTTP error! status: ${resp.status}`);
-    return await resp.json();
+    return (await resp.json()) as LosSignalServiceOutput;
   }
 
-  async updateSignal(tableId: string, deviceId: string, data: LosSignalServiceInput) {
+  async updateSignal(
+    tableId: string,
+    deviceId: string,
+    data: LosSignalServiceInput,
+  ): Promise<LosSignalServiceOutput> {
     const token = await this.getToken(deviceId);
     if (!token) throw new Error(`gameCode: ${tableId}, device: ${deviceId}, token is null !!`);
-    const resp = await this.send(() => this.sendSignal(tableId, token, data), 3);
+    const resp = await this.send(
+      () => this.sendSignal(tableId, token, data),
+      this.appConfigService.losConfig.retry,
+    );
     if (!resp)
       throw new Error(
         `gameCode: ${tableId}, device: ${deviceId}, send los updateSignal failure !!`,
       );
-    return resp as string;
+    return resp;
   }
 
   async onInit(): Promise<void> {}

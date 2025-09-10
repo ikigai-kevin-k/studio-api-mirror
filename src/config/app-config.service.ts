@@ -71,6 +71,8 @@ export class AppConfigService {
 
     this.los = {
       url: String(process.env.LOS_SERVICE_URL),
+      retry: Number(process.env.LOS_MAX_RETRY),
+      token: String(process.env.LOS_SERVICE_TEMP_TOKEN),
     };
 
     this.am = {
@@ -134,8 +136,8 @@ export class AppConfigService {
   }
 
   /** los url config */
-  private los!: { url: string };
-  get losConfig(): { url: string } {
+  private los!: { url: string; retry: number; token: string };
+  get losConfig(): { url: string; retry: number; token: string } {
     return this.los;
   }
 

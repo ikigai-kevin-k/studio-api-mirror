@@ -69,7 +69,6 @@ describe('LosSignalObserver', () => {
         'device-1',
         mockData.signal,
       );
-      expect(mockLoggerService.info).toHaveBeenCalledWith('success');
     });
 
     it('should use fallback deviceId if not provided', async () => {

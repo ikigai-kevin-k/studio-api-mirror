@@ -22,8 +22,7 @@ export class LosSignalObserver implements ModuleLifecycle {
       if (!tableId) throw new Error('Unknown tableId Exception Signal !!');
       const deviceId = query.get('device') ?? this.appConfigService.amConfig.user;
       const input = data as LosSignalObserverInput;
-      const result = await this.losSignalService.updateSignal(tableId, deviceId, input.signal);
-      this.logger.info(result);
+      await this.losSignalService.updateSignal(tableId, deviceId, input.signal);
     } catch (error) {
       const reason = (error as Error).toString();
       this.logger.error(reason);
