@@ -24,25 +24,12 @@ export class StudioService implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  async getStudioTableByTableID(tableId: string): Promise<Studio> {
-    const entity = await this.studioRepository.getStudioTableByTableID(tableId);
-
-    if (!entity) {
-      throw new StudioNotFoundError(`table ${tableId} not found`);
-    }
-    return entity;
-  }
-
   async getStudioTable(type: GetStudioTableRequestType): Promise<GetStudioServiceOutput> {
-    const cacheMap = await this.getCaches();
-
     const studioReturning: StudioServiceOutput[] = [];
 
     for (const tableId of type.tableId ?? []) {
-      const data = cacheMap.get(tableId);
-      if (data) {
-        studioReturning.push(data as StudioServiceOutput);
-      }
+      const data = await this.getCache(tableId);
+      if (data) studioReturning.push(data);
     }
 
     return {
@@ -88,30 +75,21 @@ export class StudioService implements ModuleLifecycle {
     return output;
   }
 
-  async getCaches(): Promise<Map<string, StudioServiceOutput>> {
-    const tag = 'studio';
-    const hashTable = await this.cacheService.get(tag);
+  async getCache(key: string): Promise<StudioServiceOutput | undefined> {
+    const tag = `studio-${key}`;
+    const raw = await this.cacheService.get(tag);
 
-    if (!hashTable) {
-      const caches = await this.studioRepository.getStudio();
-
-      const cacheMap = new Map();
-      for (const cache of caches) {
-        cacheMap.set(cache.tableId, cache);
-      }
-
-      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
-
-      return cacheMap;
+    if (!raw) {
+      const output = await this.studioRepository.getStudioTableByTableID(key);
+      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
+      return output;
     }
 
-    return new Map(JSON.parse(hashTable));
+    return JSON.parse(raw) as StudioServiceOutput;
   }
 
   async refreshCache(cache: StudioServiceOutput): Promise<void> {
-    const hashTable = await this.getCaches();
-
-    const origin = hashTable.get(cache.tableId);
+    const origin = await this.getCache(cache.tableId);
 
     const result = {
       ...origin,
@@ -120,9 +98,7 @@ export class StudioService implements ModuleLifecycle {
       ),
     } as StudioServiceOutput;
 
-    hashTable.set(cache.tableId, result);
-
-    return await this.cacheService.set('studio', JSON.stringify([...hashTable]), 86_400);
+    return await this.cacheService.set(`studio-${cache.tableId}`, JSON.stringify(result), 86_400);
   }
 
   async onInit(): Promise<void> {}

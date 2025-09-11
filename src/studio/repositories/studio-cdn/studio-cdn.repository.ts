@@ -10,23 +10,15 @@ import {
 export class StudioCdnRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getTableCdnByTableID(tableID: string): Promise<StudioCdn | null> {
+  async getTableCdnByTableID(tableID: string): Promise<GetTableCdnResult | undefined> {
     const builder = this.dbService
       .getConnection()
       .getRepository(StudioCdn)
       .createQueryBuilder('studio')
-      .where('studio.TABLE_ID = :tableID', { tableID: tableID });
-
-    return await builder.getOne();
-  }
-
-  async getStudioCdn(): Promise<GetTableCdnResult[]> {
-    const builder = this.dbService
-      .getConnection()
-      .createQueryBuilder(StudioCdn, 'studio')
+      .where('studio.TABLE_ID = :tableID', { tableID: tableID })
       .select(['studio."TABLE_ID" as "tableId"', 'studio."CDN" as "cdnDst"']);
 
-    return await builder.getRawMany<GetTableCdnResult>();
+    return await builder.getRawOne<GetTableCdnResult>();
   }
 
   async insertTableCdn(studioCdn: StudioCdn): Promise<InsertTableCdnResult> {

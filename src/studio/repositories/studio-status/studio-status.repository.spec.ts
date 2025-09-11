@@ -8,6 +8,7 @@
 import { DbService } from 'src/db/db.service';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
+  GetTableStatusResult,
   InsertTableStatusResult,
   UpdateTableStatusEntity,
 } from 'src/studio/repositories/studio-status/studio-status.repository.type';
@@ -62,11 +63,10 @@ describe('StudioStatusRepository', () => {
 
   describe('getTableStatusByTableID', () => {
     it('should return a StudioStatus object when found', async () => {
-      const mockStatus: StudioStatus = {
-        id: 1,
+      const mockStatus: GetTableStatusResult = {
         tableId: 'status-table-1',
         uptime: 1,
-        timestamp: new Date(),
+        timestamp: 0,
         maintenance: false,
         sdp: 'OK',
         idp: 'OK',
@@ -78,11 +78,10 @@ describe('StudioStatusRepository', () => {
         nfcScanner: 'OK',
       };
 
-      (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockStatus);
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockStatus);
 
       const result = await repository.getTableStatusByTableID('status-table-1');
 
-      expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioStatus);
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
         tableID: 'status-table-1',
       });
@@ -90,52 +89,9 @@ describe('StudioStatusRepository', () => {
     });
 
     it('should return null when no StudioStatus is found', async () => {
-      (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(null);
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(null);
       const result = await repository.getTableStatusByTableID('non-existent');
       expect(result).toBeNull();
-    });
-  });
-
-  describe('getStudioStatus', () => {
-    it('should return an array of StudioStatusServiceOutput', async () => {
-      const mockResults = [
-        {
-          tableId: 'table-1',
-          uptime: 1,
-          timestamp: 0,
-          maintenance: false,
-          sdp: 'OK',
-          idp: 'OK',
-          broker: 'OK',
-          zCam: 'OK',
-          roulette: 'OK',
-          shaker: 'OK',
-          barcodeScanner: 'OK',
-          nfcScanner: 'OK',
-        },
-      ];
-
-      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
-
-      const result = await repository.getStudioStatus();
-
-      expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioStatus, 'studio');
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
-        'studio."TABLE_ID" as "tableId"',
-        'studio."UPTIME" as "uptime"',
-        '(EXTRACT(EPOCH FROM studio."TIMESTAMP") * 1000)::bigint as "timestamp"',
-        'studio."MAINTENANCE" as "maintenance"',
-        'studio."SDP" as "sdp"',
-        'studio."IDP" as "idp"',
-        'studio."BROKER" as "broker"',
-        'studio."Z_CAM" as "zCam"',
-        'studio."ROULETTE" as "roulette"',
-        'studio."SHAKER" as "shaker"',
-        'studio."BARCODE_SCANNER" as "barcodeScanner"',
-        'studio."NFC_SCANNER" as "nfcScanner"',
-      ]);
-      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockResults);
     });
   });
 

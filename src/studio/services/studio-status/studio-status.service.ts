@@ -7,7 +7,6 @@ import {
   UpdateTableStatusRequestType,
   UpdateTableStatusResponseType,
 } from 'src/studio/controller/v1/studio-status/studio-status.type';
-import { StudioStatus } from 'src/studio/entities/studio-status.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
@@ -21,15 +20,6 @@ export class StudioStatusService implements ModuleLifecycle {
     private readonly cacheService: CacheService,
     private readonly logger: LoggerService,
   ) {}
-
-  async getTableStatusByTableID(tableId: string): Promise<StudioStatus> {
-    const entity = await this.studioStatusRepository.getTableStatusByTableID(tableId);
-
-    if (!entity) {
-      throw new StudioNotFoundError(`table ${tableId} not found`);
-    }
-    return entity;
-  }
 
   async getTableStatus(type: GetTableStatusRequestType): Promise<StudioStatusServiceOutput> {
     const output = await this.getCache(type.tableId);
@@ -103,35 +93,21 @@ export class StudioStatusService implements ModuleLifecycle {
     return output;
   }
 
-  async getCaches(): Promise<Map<string, StudioStatusServiceOutput>> {
-    const tag = 'status';
-    const hashTable = await this.cacheService.get(tag);
+  async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
+    const tag = `studio-status-${key}`;
+    const raw = await this.cacheService.get(tag);
 
-    if (!hashTable) {
-      const caches = await this.studioStatusRepository.getStudioStatus();
-
-      const cacheMap = new Map();
-      for (const cache of caches) {
-        cacheMap.set(cache.tableId, cache);
-      }
-
-      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
-
-      return cacheMap;
+    if (!raw) {
+      const output = await this.studioStatusRepository.getTableStatusByTableID(key);
+      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
+      return output;
     }
 
-    return new Map(JSON.parse(hashTable));
-  }
-
-  async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
-    const hashTable = await this.getCaches();
-    return hashTable.get(key);
+    return JSON.parse(raw) as StudioStatusServiceOutput;
   }
 
   async refreshCache(cache: StudioStatusServiceOutput): Promise<void> {
-    const hashTable = await this.getCaches();
-
-    const origin = hashTable.get(cache.tableId);
+    const origin = await this.getCache(cache.tableId);
 
     const result = {
       ...origin,
@@ -140,9 +116,11 @@ export class StudioStatusService implements ModuleLifecycle {
       ),
     } as StudioStatusServiceOutput;
 
-    hashTable.set(cache.tableId, result);
-
-    return await this.cacheService.set('status', JSON.stringify([...hashTable]), 86_400);
+    return await this.cacheService.set(
+      `studio-status-${cache.tableId}`,
+      JSON.stringify(result),
+      86_400,
+    );
   }
 
   async onInit(): Promise<void> {}

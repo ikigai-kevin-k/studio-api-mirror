@@ -10,9 +10,9 @@ import {
   InsertStudioTableCdnRequestType,
   UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
-import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
+import { GetTableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 
@@ -47,48 +47,9 @@ describe('StudioCdnService', () => {
     });
   });
 
-  describe('getTableCdnByTableID', () => {
-    it('should return a StudioCdn entity if found', async () => {
-      const mockCdn: StudioCdn = {
-        id: 1,
-        tableId: 'cdn-table-1',
-        cdnDst: {
-          primary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-          secondary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-        },
-      };
-      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCdn);
-
-      const result = await service.getTableCdnByTableID('cdn-table-1');
-
-      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('cdn-table-1');
-      expect(result).toEqual(mockCdn);
-    });
-
-    it('should throw StudioNotFoundError if not found', async () => {
-      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(null);
-
-      await expect(service.getTableCdnByTableID('non-existent')).rejects.toThrow(
-        StudioNotFoundError,
-      );
-      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('non-existent');
-    });
-  });
-
-  describe('getCaches', () => {
-    it('should return data from cache if it exists', async () => {
-      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
-      mockCacheData.set('cdn1', {
+  describe('getCache', () => {
+    it('should return the correct cache entry for a given key', async () => {
+      const mockCacheData: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
@@ -104,62 +65,20 @@ describe('StudioCdnService', () => {
             hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
-      });
-      const mockCacheString = JSON.stringify([...mockCacheData]);
-
+      };
+      const mockCacheString = JSON.stringify(mockCacheData);
       (mockCacheService.get as jest.Mock).mockResolvedValue(mockCacheString);
 
-      const result = await service.getCaches();
-
-      expect(mockCacheService.get).toHaveBeenCalledWith('cdn');
-      expect(mockStudioCdnRepository.getStudioCdn).not.toHaveBeenCalled();
-      expect(mockCacheService.set).not.toHaveBeenCalled();
+      const result = await service.getCache('cdn1');
+      expect(mockCacheService.get).toHaveBeenCalledWith('studio-cdn-cdn1');
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledTimes(0);
       expect(result).toEqual(mockCacheData);
     });
 
     it('should fetch from repository and set cache if cache does not exist', async () => {
       (mockCacheService.get as jest.Mock).mockResolvedValue(null);
 
-      const mockRepositoryData: GetStudioCdnServiceOutput[] = [
-        {
-          tableId: 'cdn1',
-          cdnDst: {
-            primary: {
-              lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-              me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-              hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-              hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-            },
-            secondary: {
-              lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-              me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-              hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-              hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-            },
-          },
-        },
-      ];
-      (mockStudioCdnRepository.getStudioCdn as jest.Mock).mockResolvedValue(mockRepositoryData);
-
-      const result = await service.getCaches();
-
-      expect(mockCacheService.get).toHaveBeenCalledWith('cdn');
-      expect(mockStudioCdnRepository.getStudioCdn).toHaveBeenCalledTimes(1);
-
-      const expectedMap = new Map();
-      expectedMap.set('cdn1', mockRepositoryData[0]);
-      const expectedCacheString = JSON.stringify([...expectedMap]);
-
-      expect(mockCacheService.set).toHaveBeenCalledWith('cdn', expectedCacheString, 86_400);
-      expect(result).toEqual(expectedMap);
-    });
-  });
-
-  describe('getCache', () => {
-    it('should return the correct cache entry for a given key', async () => {
-      const spyGetCaches = jest.spyOn(service, 'getCaches');
-      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
-      const entry: GetStudioCdnServiceOutput = {
+      const mockCacheData: GetTableCdnResult = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
@@ -176,48 +95,55 @@ describe('StudioCdnService', () => {
           },
         },
       };
-      mockCacheData.set('cdn1', entry);
-      spyGetCaches.mockResolvedValue(mockCacheData);
+      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCacheData);
 
       const result = await service.getCache('cdn1');
 
-      expect(spyGetCaches).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(entry);
+      expect(mockCacheService.get).toHaveBeenCalledWith('studio-cdn-cdn1');
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('cdn1');
+
+      expect(mockCacheService.set).toHaveBeenCalledWith(
+        'studio-cdn-cdn1',
+        JSON.stringify(mockCacheData),
+        86_400,
+      );
+      expect(result).toEqual(mockCacheData);
     });
 
-    it('should return undefined if the key is not in cache', async () => {
-      const spyGetCaches = jest.spyOn(service, 'getCaches');
-      const mockCacheData = new Map<string, GetStudioCdnServiceOutput>();
-      spyGetCaches.mockResolvedValue(mockCacheData);
+    it('should return undefined if the key is not in db', async () => {
+      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
+      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(undefined);
 
-      const result = await service.getCache('non-existent');
+      const result = await service.getCache('cdn1');
 
-      expect(spyGetCaches).toHaveBeenCalledTimes(1);
+      expect(mockCacheService.get).toHaveBeenCalledWith('studio-cdn-cdn1');
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('cdn1');
+
+      expect(mockCacheService.set).toHaveBeenCalledTimes(0);
       expect(result).toBeUndefined();
     });
   });
 
   describe('refreshCache', () => {
     it('should merge new data with existing cache and set it', async () => {
-      const initialCacheData = new Map<string, GetStudioCdnServiceOutput>();
-      initialCacheData.set('cdn1', {
+      const initialCacheData: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+            lo: '',
+            me: '',
+            hi: '',
+            hd: '',
           },
           secondary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+            lo: '',
+            me: '',
+            hi: '',
+            hd: '',
           },
         },
-      });
-      const spyGetCaches = jest.spyOn(service, 'getCaches').mockResolvedValue(initialCacheData);
+      };
+      const spyGetCaches = jest.spyOn(service, 'getCache').mockResolvedValue(initialCacheData);
 
       const newCacheData: GetStudioCdnServiceOutput = {
         tableId: 'cdn1',
@@ -238,78 +164,12 @@ describe('StudioCdnService', () => {
       };
 
       await service.refreshCache(newCacheData);
-
-      const expectedUpdatedMap = new Map(initialCacheData);
-      expectedUpdatedMap.set('cdn1', newCacheData);
-      const expectedCacheString = JSON.stringify([...expectedUpdatedMap]);
-
-      expect(spyGetCaches).toHaveBeenCalledTimes(1);
-      expect(mockCacheService.set).toHaveBeenCalledWith('cdn', expectedCacheString, 86_400);
-    });
-
-    it('should filter undefined values during merge', async () => {
-      const initialCacheData = new Map<string, GetStudioCdnServiceOutput>();
-      initialCacheData.set('cdn1', {
-        tableId: 'cdn1',
-        cdnDst: {
-          primary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-          secondary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-        },
-      });
-      const spyGetCaches = jest.spyOn(service, 'getCaches').mockResolvedValue(initialCacheData);
-
-      const newCacheData: any = {
-        tableId: 'cdn1',
-        cdnDst: {
-          primary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-          secondary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-        },
-      };
-
-      await service.refreshCache(newCacheData);
-
-      const expectedResult = {
-        tableId: 'cdn1',
-        cdnDst: {
-          primary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-          secondary: {
-            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
-            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
-            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
-            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
-          },
-        },
-      };
-      const expectedMap = new Map();
-      expectedMap.set('cdn1', expectedResult);
-      const expectedCacheString = JSON.stringify([...expectedMap]);
-
-      expect(mockCacheService.set).toHaveBeenCalledWith('cdn', expectedCacheString, 86_400);
+      expect(spyGetCaches).toHaveBeenCalledWith('cdn1');
+      expect(mockCacheService.set).toHaveBeenCalledWith(
+        'studio-cdn-cdn1',
+        JSON.stringify(newCacheData),
+        86_400,
+      );
     });
   });
 

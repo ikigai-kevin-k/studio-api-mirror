@@ -5,10 +5,10 @@ import { DbService } from 'src/db/db.service';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import {
+  GetTableCdnResult,
   InsertTableCdnResult,
   UpdateTableCdnEntity,
 } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
-import { GetStudioCdnServiceOutput } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 import { UpdateResult } from 'typeorm';
 
 const mockQueryBuilder = {
@@ -56,12 +56,11 @@ describe('StudioCdnRepository', () => {
 
   describe('getTableCdnByTableID', () => {
     it('should return a StudioCdn object when found', async () => {
-      const mockCdn: StudioCdn = {
-        id: 1,
+      const mockCdn: GetTableCdnResult = {
         tableId: 'cdn-table-1',
-        cdnDst: { hi: 'path' },
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
-      (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(mockCdn);
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockCdn);
 
       const result = await repository.getTableCdnByTableID('cdn-table-1');
 
@@ -73,28 +72,9 @@ describe('StudioCdnRepository', () => {
     });
 
     it('should return null when no StudioCdn is found', async () => {
-      (mockQueryBuilder.getOne as jest.Mock).mockResolvedValue(null);
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(null);
       const result = await repository.getTableCdnByTableID('non-existent');
       expect(result).toBeNull();
-    });
-  });
-
-  describe('getStudioCdn', () => {
-    it('should return an array of GetStudioCdnServiceOutput', async () => {
-      const mockResults: GetStudioCdnServiceOutput[] = [
-        { tableId: 'cdn-1', cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } } },
-      ];
-      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValue(mockResults);
-
-      const result = await repository.getStudioCdn();
-
-      expect(mockConnection.createQueryBuilder).toHaveBeenCalledWith(StudioCdn, 'studio');
-      expect(mockQueryBuilder.select).toHaveBeenCalledWith([
-        'studio."TABLE_ID" as "tableId"',
-        'studio."CDN" as "cdnDst"',
-      ]);
-      expect(mockQueryBuilder.getRawMany).toHaveBeenCalledTimes(1);
-      expect(result).toEqual(mockResults);
     });
   });
 

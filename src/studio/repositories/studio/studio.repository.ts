@@ -10,23 +10,15 @@ import {
 export class StudioRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getStudioTableByTableID(tableID: string): Promise<Studio | null> {
+  async getStudioTableByTableID(tableID: string): Promise<StudioTableResult | undefined> {
     const builder = this.dbService
       .getConnection()
       .getRepository(Studio)
       .createQueryBuilder('studio')
-      .where('studio.TABLE_ID = :tableID', { tableID: tableID });
-
-    return await builder.getOne();
-  }
-
-  async getStudio(): Promise<StudioTableResult[]> {
-    const builder = this.dbService
-      .getConnection()
-      .createQueryBuilder(Studio, 'studio')
+      .where('studio.TABLE_ID = :tableID', { tableID: tableID })
       .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
 
-    return await builder.getRawMany<StudioTableResult>();
+    return await builder.getRawOne<StudioTableResult>();
   }
 
   async insertStudioTable(studio: Studio): Promise<InsertStudioTableResult> {

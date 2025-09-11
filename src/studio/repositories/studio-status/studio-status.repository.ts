@@ -10,20 +10,11 @@ import {
 export class StudioStatusRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getTableStatusByTableID(tableID: string): Promise<StudioStatus | null> {
-    const builder = this.dbService
-      .getConnection()
-      .getRepository(StudioStatus)
-      .createQueryBuilder('studio')
-      .where('studio.TABLE_ID = :tableID', { tableID: tableID });
-
-    return await builder.getOne();
-  }
-
-  async getStudioStatus(): Promise<GetTableStatusResult[]> {
+  async getTableStatusByTableID(tableID: string): Promise<GetTableStatusResult | undefined> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioStatus, 'studio')
+      .where('studio.TABLE_ID = :tableID', { tableID: tableID })
       .select([
         'studio."TABLE_ID" as "tableId"',
         'studio."UPTIME" as "uptime"',
@@ -39,7 +30,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
         'studio."NFC_SCANNER" as "nfcScanner"',
       ]);
 
-    return await builder.getRawMany<GetTableStatusResult>();
+    return await builder.getRawOne<GetTableStatusResult>();
   }
 
   async insertTableStatus(tableId: string): Promise<InsertTableStatusResult> {

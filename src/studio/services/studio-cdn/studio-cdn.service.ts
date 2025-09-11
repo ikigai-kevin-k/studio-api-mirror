@@ -23,15 +23,6 @@ export class StudioCdnService implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  async getTableCdnByTableID(tableId: string): Promise<StudioCdn> {
-    const entity = await this.studioCdnRepository.getTableCdnByTableID(tableId);
-
-    if (!entity) {
-      throw new StudioNotFoundError(`table ${tableId} not found`);
-    }
-    return entity;
-  }
-
   async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetStudioCdnServiceOutput> {
     const output = await this.getCache(type.tableId);
     if (!output) {
@@ -79,35 +70,19 @@ export class StudioCdnService implements ModuleLifecycle {
     return output;
   }
 
-  async getCaches(): Promise<Map<string, GetStudioCdnServiceOutput>> {
-    const tag = 'cdn';
-    const hashTable = await this.cacheService.get(tag);
-
-    if (!hashTable) {
-      const caches = await this.studioCdnRepository.getStudioCdn();
-
-      const cacheMap = new Map();
-      for (const cache of caches) {
-        cacheMap.set(cache.tableId, cache);
-      }
-
-      await this.cacheService.set(tag, JSON.stringify([...cacheMap]), 86_400);
-
-      return cacheMap;
-    }
-
-    return new Map(JSON.parse(hashTable));
-  }
-
   async getCache(key: string): Promise<GetStudioCdnServiceOutput | undefined> {
-    const hashTable = await this.getCaches();
-    return hashTable.get(key);
+    const tag = `studio-cdn-${key}`;
+    const raw = await this.cacheService.get(tag);
+    if (!raw) {
+      const output = await this.studioCdnRepository.getTableCdnByTableID(key);
+      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
+      return output;
+    }
+    return JSON.parse(raw) as GetStudioCdnServiceOutput;
   }
 
   async refreshCache(cache: GetStudioCdnServiceOutput): Promise<void> {
-    const hashTable = await this.getCaches();
-
-    const origin = hashTable.get(cache.tableId);
+    const origin = await this.getCache(cache.tableId);
 
     const result = {
       ...origin,
@@ -116,9 +91,11 @@ export class StudioCdnService implements ModuleLifecycle {
       ),
     } as GetStudioCdnServiceOutput;
 
-    hashTable.set(cache.tableId, result);
-
-    return await this.cacheService.set('cdn', JSON.stringify([...hashTable]), 86_400);
+    return await this.cacheService.set(
+      `studio-cdn-${cache.tableId}`,
+      JSON.stringify(result),
+      86_400,
+    );
   }
 
   async onInit(): Promise<void> {}
