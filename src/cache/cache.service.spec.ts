@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable unicorn/numeric-separators-style */
 import { LoggerService } from '@ikigaians/logger';
 import { AppConfigService } from 'src/config/app-config.service';
@@ -50,8 +51,8 @@ describe('CacheService', () => {
     }>;
 
     it('should return undefined if the key does not exist', async () => {
-      cacheService.has = jest.fn();
-      (cacheService.has as jest.Mock).mockResolvedValue(false);
+      cacheService.hGetAll = jest.fn();
+      (cacheService.hGetAll as jest.Mock).mockResolvedValue({});
       const result = await cacheService.getHashAs(mockKey, mockSchema);
       expect(result).toBeUndefined();
     });
