@@ -68,6 +68,7 @@ jobs:
       app-name: 'studio-api'
       env-name: QAT
       region: ${{ inputs.region }}
+    secrets: inherit
       
   manual_dispatch_UAT:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'uat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'UAT' }}
