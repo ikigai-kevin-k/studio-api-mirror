@@ -19,9 +19,6 @@ export class CacheService extends RedisService implements ModuleLifecycle {
   }
 
   async getHashAs<T>(key: string, schema: Schema<T>): Promise<T | undefined> {
-    const isExist = await this.has(key);
-    if (!isExist) return undefined;
-
     const hash = await this.hGetAll(key);
     const output = {} as T;
 
