@@ -11,6 +11,7 @@ import { UpdateStudioTableStatusEntity } from 'src/studio/repositories/studio/st
 import {
   GetStudioServiceOutput,
   InsertStudioServiceOutput,
+  schema,
   StudioServiceOutput,
   UpdateStudioServiceStatusOutput,
 } from 'src/studio/services/studio/studio.service.type';
@@ -49,8 +50,6 @@ export class StudioService implements ModuleLifecycle {
       tableStatus: studioReturning.TABLE_STATUS,
     };
 
-    await this.refreshCache(output);
-
     return output;
   }
 
@@ -70,35 +69,26 @@ export class StudioService implements ModuleLifecycle {
       tableStatus: type.tableStatus,
     };
 
-    await this.refreshCache(output);
+    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
 
     return output;
   }
 
-  async getCache(key: string): Promise<StudioServiceOutput | undefined> {
-    const tag = `studio-${key}`;
-    const raw = await this.cacheService.get(tag);
+  private getCacheKey(gameCode: string) {
+    return `studio-${gameCode}`;
+  }
 
-    if (!raw) {
+  async getCache(key: string): Promise<StudioServiceOutput | undefined> {
+    const tag = this.getCacheKey(key);
+
+    const cache = await this.cacheService.getHashAs<StudioServiceOutput>(tag, schema);
+    if (!cache) {
       const output = await this.studioRepository.getStudioTableByTableID(key);
-      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
+      if (output) await this.cacheService.setHash(tag, output);
       return output;
     }
 
-    return JSON.parse(raw) as StudioServiceOutput;
-  }
-
-  async refreshCache(cache: StudioServiceOutput): Promise<void> {
-    const origin = await this.getCache(cache.tableId);
-
-    const result = {
-      ...origin,
-      ...Object.fromEntries(
-        Object.entries(cache).filter(([_key, v]) => _key !== undefined && v !== undefined),
-      ),
-    } as StudioServiceOutput;
-
-    return await this.cacheService.set(`studio-${cache.tableId}`, JSON.stringify(result), 86_400);
+    return cache;
   }
 
   async onInit(): Promise<void> {}

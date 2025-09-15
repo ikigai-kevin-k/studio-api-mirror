@@ -1,3 +1,5 @@
+import { Schema } from 'src/cache/cache.service.type';
+
 interface StudioCdnSet {
   lo: string;
   me: string;
@@ -9,6 +11,11 @@ export interface GetStudioCdnServiceOutput {
   tableId: string;
   cdnDst: Record<string, StudioCdnSet>;
 }
+
+export const schema: Schema<GetStudioCdnServiceOutput> = {
+  tableId: 'string',
+  cdnDst: 'object',
+};
 
 export interface InsertStudioCdnServiceOutput {
   tableId: string;

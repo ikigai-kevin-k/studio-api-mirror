@@ -1,6 +1,8 @@
+/* eslint-disable unicorn/numeric-separators-style */
 import { LoggerService } from '@ikigaians/logger';
 import { AppConfigService } from 'src/config/app-config.service';
 import { CacheService } from './cache.service';
+import { Schema } from './cache.service.type';
 
 describe('CacheService', () => {
   let logger: LoggerService;
@@ -29,5 +31,136 @@ describe('CacheService', () => {
     cacheService.disconnect = jest.fn();
     await cacheService.onDispose();
     expect(cacheService.disconnect).toHaveBeenCalled();
+  });
+
+  describe('getHashAs', () => {
+    const mockKey = 'test-key';
+    const mockSchema = {
+      str: 'string',
+      num: 'number',
+      bool: 'boolean',
+      date: 'date',
+      obj: 'object',
+    } as Schema<{
+      str: string;
+      num: number;
+      bool: boolean;
+      date: Date;
+      obj: object;
+    }>;
+
+    it('should return undefined if the key does not exist', async () => {
+      cacheService.has = jest.fn();
+      (cacheService.has as jest.Mock).mockResolvedValue(false);
+      const result = await cacheService.getHashAs(mockKey, mockSchema);
+      expect(result).toBeUndefined();
+    });
+
+    it('should return an object with correctly parsed values if the key exists', async () => {
+      cacheService.has = jest.fn();
+      cacheService.hGetAll = jest.fn();
+      (cacheService.has as jest.Mock).mockResolvedValue(true);
+      (cacheService.hGetAll as jest.Mock).mockResolvedValue({
+        str: 'hello',
+        num: '123',
+        bool: 'true',
+        date: '1672531200000',
+        obj: '{"a":1}',
+      });
+
+      const result = await cacheService.getHashAs(mockKey, mockSchema);
+
+      expect(result).toEqual({
+        str: 'hello',
+        num: 123,
+        bool: true,
+        date: new Date(1672531200000),
+        obj: { a: 1 },
+      });
+    });
+
+    it('should return undefined if a field in the schema is missing from the hash', async () => {
+      cacheService.has = jest.fn();
+      cacheService.hGetAll = jest.fn();
+      (cacheService.has as jest.Mock).mockResolvedValue(true);
+      (cacheService.hGetAll as jest.Mock).mockResolvedValue({
+        str: 'hello',
+        num: '123',
+      });
+
+      const result = await cacheService.getHashAs(mockKey, mockSchema);
+      expect(result).toBeUndefined();
+    });
+  });
+
+  describe('setHash', () => {
+    const mockKey = 'test-key';
+    const mockTtl = 3600;
+
+    it('should correctly set a hash with various data types', async () => {
+      const mockCache = {
+        str: 'hello',
+        num: 123,
+        bool: true,
+        date: new Date(1672531200000),
+        obj: { a: 1 },
+        undef: undefined,
+      };
+
+      cacheService.hSet = jest.fn();
+      cacheService.expire = jest.fn();
+
+      await cacheService.setHash(mockKey, mockCache, mockTtl);
+
+      expect(cacheService.hSet).toHaveBeenCalledWith(
+        mockKey,
+        new Map([
+          ['str', 'hello'],
+          ['num', '123'],
+          ['bool', 'true'],
+          ['date', '1672531200000'],
+          ['obj', '{"a":1}'],
+        ]),
+      );
+      expect(cacheService.expire).toHaveBeenCalledWith(mockKey, mockTtl);
+    });
+
+    it('should not call hSet or expire if the cache object is empty after filtering', async () => {
+      const mockCache = {
+        undef: undefined,
+      };
+
+      cacheService.hSet = jest.fn();
+      cacheService.expire = jest.fn();
+
+      await cacheService.setHash(mockKey, mockCache);
+
+      expect(cacheService.hSet).not.toHaveBeenCalled();
+      expect(cacheService.expire).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('refresh', () => {
+    const mockKey = 'test-key';
+    const mockCache = { str: 'new-value' };
+    const mockTtl = 3600;
+
+    it('should call setHash if the key exists', async () => {
+      const spySetHash = jest.spyOn(cacheService, 'setHash');
+      cacheService.hSet = jest.fn();
+      cacheService.expire = jest.fn();
+      cacheService.has = jest.fn();
+      (cacheService.has as jest.Mock).mockResolvedValue(true);
+      await cacheService.refresh(mockKey, mockCache, mockTtl);
+      expect(spySetHash).toHaveBeenCalledWith(mockKey, mockCache, mockTtl);
+    });
+
+    it('should not call setHash if the key does not exist', async () => {
+      const spySetHash = jest.spyOn(cacheService, 'setHash');
+      cacheService.has = jest.fn();
+      (cacheService.has as jest.Mock).mockResolvedValue(false);
+      await cacheService.refresh(mockKey, mockCache, mockTtl);
+      expect(spySetHash).not.toHaveBeenCalled();
+    });
   });
 });

@@ -10,6 +10,7 @@ import {
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
+  schema,
   StudioStatusServiceOutput,
   UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
@@ -47,8 +48,6 @@ export class StudioStatusService implements ModuleLifecycle {
       nfcScanner: studioReturning.NFC_SCANNER,
     };
 
-    await this.refreshCache(output);
-
     return output;
   }
 
@@ -61,16 +60,15 @@ export class StudioStatusService implements ModuleLifecycle {
       timestamp: timestamp ? new Date(timestamp) : undefined,
     };
     const result = await this.studioStatusRepository.updateTableStatus(tableId, entity);
-    this.logger.info(`result = ${result}`);
-    if (result <= 0) throw new StudioNotFoundError(`tableId ${tableId} hasn't changed`);
+    if (result <= 0) throw new StudioNotFoundError(`gameCode ${tableId} hasn't changed`);
 
     const output = {
       tableId: tableId,
-      ...entity,
-      timestamp: entity.timestamp ? entity.timestamp.getTime() : undefined,
+      timestamp,
+      ...params,
     };
 
-    await this.refreshCache(output);
+    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
 
     return output;
   }
@@ -88,39 +86,26 @@ export class StudioStatusService implements ModuleLifecycle {
       timestamp: input.timestamp ? input.timestamp.getTime() : undefined,
     };
 
-    await this.refreshCache(output);
+    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
 
     return output;
   }
 
-  async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
-    const tag = `studio-status-${key}`;
-    const raw = await this.cacheService.get(tag);
+  private getCacheKey(gameCode: string) {
+    return `studio-status-${gameCode}`;
+  }
 
-    if (!raw) {
+  async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
+    const tag = this.getCacheKey(key);
+    const cache = await this.cacheService.getHashAs<StudioStatusServiceOutput>(tag, schema);
+
+    if (!cache) {
       const output = await this.studioStatusRepository.getTableStatusByTableID(key);
-      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
+      if (output) await this.cacheService.setHash(tag, output);
       return output;
     }
 
-    return JSON.parse(raw) as StudioStatusServiceOutput;
-  }
-
-  async refreshCache(cache: StudioStatusServiceOutput): Promise<void> {
-    const origin = await this.getCache(cache.tableId);
-
-    const result = {
-      ...origin,
-      ...Object.fromEntries(
-        Object.entries(cache).filter(([_key, v]) => _key !== undefined && v !== undefined),
-      ),
-    } as StudioStatusServiceOutput;
-
-    return await this.cacheService.set(
-      `studio-status-${cache.tableId}`,
-      JSON.stringify(result),
-      86_400,
-    );
+    return cache;
   }
 
   async onInit(): Promise<void> {}

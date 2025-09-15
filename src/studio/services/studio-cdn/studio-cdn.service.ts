@@ -13,6 +13,7 @@ import { UpdateTableCdnEntity } from 'src/studio/repositories/studio-cdn/studio-
 import {
   GetStudioCdnServiceOutput,
   InsertStudioCdnServiceOutput,
+  schema,
   UpdateStudioCdnServiceOutput,
 } from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 
@@ -44,8 +45,6 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: studioReturning.CDN,
     };
 
-    await this.refreshCache(output);
-
     return output;
   }
 
@@ -65,37 +64,24 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: type.cdnDst,
     };
 
-    await this.refreshCache(output);
+    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
 
     return output;
   }
 
-  async getCache(key: string): Promise<GetStudioCdnServiceOutput | undefined> {
-    const tag = `studio-cdn-${key}`;
-    const raw = await this.cacheService.get(tag);
-    if (!raw) {
-      const output = await this.studioCdnRepository.getTableCdnByTableID(key);
-      if (output) await this.cacheService.set(tag, JSON.stringify(output), 86_400);
-      return output;
-    }
-    return JSON.parse(raw) as GetStudioCdnServiceOutput;
+  private getCacheKey(gameCode: string) {
+    return `studio-cdn-${gameCode}`;
   }
 
-  async refreshCache(cache: GetStudioCdnServiceOutput): Promise<void> {
-    const origin = await this.getCache(cache.tableId);
-
-    const result = {
-      ...origin,
-      ...Object.fromEntries(
-        Object.entries(cache).filter(([_key, v]) => _key !== undefined && v !== undefined),
-      ),
-    } as GetStudioCdnServiceOutput;
-
-    return await this.cacheService.set(
-      `studio-cdn-${cache.tableId}`,
-      JSON.stringify(result),
-      86_400,
-    );
+  async getCache(key: string): Promise<GetStudioCdnServiceOutput | undefined> {
+    const tag = this.getCacheKey(key);
+    const cache = await this.cacheService.getHashAs<GetStudioCdnServiceOutput>(tag, schema);
+    if (!cache) {
+      const output = await this.studioCdnRepository.getTableCdnByTableID(key);
+      if (output) await this.cacheService.setHash(tag, output);
+      return output;
+    }
+    return cache;
   }
 
   async onInit(): Promise<void> {}

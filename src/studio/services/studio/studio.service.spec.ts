@@ -15,7 +15,7 @@ import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioRepository } from 'src/studio/repositories/studio/studio.repository';
 import { InsertStudioTableResult } from 'src/studio/repositories/studio/studio.repository.type';
 import { StudioService } from 'src/studio/services/studio/studio.service';
-import { StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
+import { schema, StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
 
 const mockStudioRepository = {
   getStudioTableByTableID: jest.fn(),
@@ -25,8 +25,9 @@ const mockStudioRepository = {
 } as unknown as StudioRepository;
 
 const mockCacheService = {
-  get: jest.fn(),
-  set: jest.fn(),
+  getHashAs: jest.fn(),
+  setHash: jest.fn(),
+  refresh: jest.fn(),
 } as unknown as CacheService;
 
 const mockLoggerService = {
@@ -48,6 +49,12 @@ describe('StudioService', () => {
     });
   });
 
+  describe('getCacheKey', () => {
+    it('should return cache key', async () => {
+      expect((service as any).getCacheKey('gameCode')).toBe('studio-gameCode');
+    });
+  });
+
   describe('getCache', () => {
     it('should return data from cache if it exists', async () => {
       const mockCacheData: StudioServiceOutput = {
@@ -55,20 +62,20 @@ describe('StudioService', () => {
         tableStatus: 'ACTIVE',
       };
 
-      (mockCacheService.get as jest.Mock).mockResolvedValue(JSON.stringify(mockCacheData));
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(mockCacheData);
       const spyGetStudio = jest.spyOn(mockStudioRepository, 'getStudioTableByTableID');
-      const spySetCache = jest.spyOn(mockCacheService, 'set');
+      const spySetCache = jest.spyOn(mockCacheService, 'setHash');
 
       const result = await service.getCache('table1');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studio-table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-table1', schema);
       expect(spyGetStudio).not.toHaveBeenCalled();
       expect(spySetCache).not.toHaveBeenCalled();
       expect(result).toEqual(mockCacheData);
     });
 
     it('should fetch from repository and set cache if cache does not exist', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
 
       const mockRepositoryData: StudioServiceOutput = {
         tableId: 'table1',
@@ -80,55 +87,27 @@ describe('StudioService', () => {
 
       const result = await service.getCache('table1');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studio-table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-table1', schema);
       expect(mockStudioRepository.getStudioTableByTableID).toHaveBeenCalledWith('table1');
 
-      expect(mockCacheService.set).toHaveBeenCalledWith(
-        'studio-table1',
-        JSON.stringify(mockRepositoryData),
-        86_400,
-      );
+      expect(mockCacheService.setHash).toHaveBeenCalledWith('studio-table1', mockRepositoryData);
 
       expect(result).toEqual(mockRepositoryData);
     });
 
     it('should return undefined if db does not exist', async () => {
-      (mockCacheService.get as jest.Mock).mockResolvedValue(null);
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
 
       (mockStudioRepository.getStudioTableByTableID as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.getCache('table1');
 
-      expect(mockCacheService.get).toHaveBeenCalledWith('studio-table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-table1', schema);
       expect(mockStudioRepository.getStudioTableByTableID).toHaveBeenCalledWith('table1');
 
-      expect(mockCacheService.set).toHaveBeenCalledTimes(0);
+      expect(mockCacheService.setHash).toHaveBeenCalledTimes(0);
 
       expect(result).toBeUndefined();
-    });
-  });
-
-  describe('refreshCache', () => {
-    it('should merge new data with existing cache and set it', async () => {
-      const initialCacheData: StudioServiceOutput = {
-        tableId: 'table1',
-        tableStatus: 'INACTIVE',
-      };
-      const spyGetCaches = jest.spyOn(service, 'getCache').mockResolvedValue(initialCacheData);
-
-      const newCacheData: StudioServiceOutput = {
-        tableId: 'table1',
-        tableStatus: 'ACTIVE',
-      } as StudioServiceOutput;
-
-      await service.refreshCache(newCacheData);
-
-      expect(spyGetCaches).toHaveBeenCalledTimes(1);
-      expect(mockCacheService.set).toHaveBeenCalledWith(
-        'studio-table1',
-        JSON.stringify(newCacheData),
-        86_400,
-      );
     });
   });
 
@@ -168,7 +147,6 @@ describe('StudioService', () => {
         TABLE_STATUS: StudioTableStatusEnum.ACTIVE,
       };
 
-      const spyRefreshCache = jest.spyOn(service, 'refreshCache').mockResolvedValue(undefined);
       (mockStudioRepository.insertStudioTable as jest.Mock).mockResolvedValue(mockRepoResult);
 
       const result = await service.insertStudioTable(request);
@@ -185,7 +163,6 @@ describe('StudioService', () => {
         tableStatus: mockRepoResult.TABLE_STATUS,
       };
 
-      expect(spyRefreshCache).toHaveBeenCalledWith(expectedOutput);
       expect(result).toEqual(expectedOutput);
     });
   });
@@ -198,7 +175,6 @@ describe('StudioService', () => {
       };
       const affectedRows = 1;
 
-      const spyRefreshCache = jest.spyOn(service, 'refreshCache').mockResolvedValue(undefined);
       (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(affectedRows);
 
       const result = await service.updateStudioTableStatus(request);
@@ -214,7 +190,7 @@ describe('StudioService', () => {
         tableId: request.tableId,
         tableStatus: request.tableStatus,
       };
-      expect(spyRefreshCache).toHaveBeenCalledWith(expectedOutput);
+      expect(mockCacheService.refresh).toHaveBeenCalledWith('studio-table-1', expectedOutput);
 
       expect(result).toEqual(expectedOutput);
     });
@@ -226,11 +202,10 @@ describe('StudioService', () => {
       };
       const affectedRows = 0;
 
-      const spyRefreshCache = jest.spyOn(service, 'refreshCache').mockResolvedValue(undefined);
       (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(affectedRows);
 
       await expect(service.updateStudioTableStatus(request)).rejects.toThrow(StudioNotFoundError);
-      expect(spyRefreshCache).not.toHaveBeenCalled();
+      expect(mockCacheService.refresh).not.toHaveBeenCalled();
     });
   });
 });
