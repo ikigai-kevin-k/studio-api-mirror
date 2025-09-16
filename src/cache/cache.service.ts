@@ -20,11 +20,13 @@ export class CacheService extends RedisService implements ModuleLifecycle {
 
   async getHashAs<T>(key: string, schema: Schema<T>): Promise<T | undefined> {
     const hash = await this.hGetAll(key);
+    if (Object.keys(hash).length === 0) return undefined;
+
     const output = {} as T;
 
     for (const key of Object.keys(schema) as (keyof T)[]) {
       const rawValue = hash[key as string];
-      if (rawValue === undefined) return;
+      if (rawValue === undefined) continue;
 
       const type = schema[key];
       const parser = reverseParsers[type];

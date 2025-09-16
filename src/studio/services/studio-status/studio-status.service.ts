@@ -48,6 +48,8 @@ export class StudioStatusService implements ModuleLifecycle {
       nfcScanner: studioReturning.NFC_SCANNER,
     };
 
+    await this.refreshCache(output.tableId, output);
+
     return output;
   }
 
@@ -68,7 +70,7 @@ export class StudioStatusService implements ModuleLifecycle {
       ...params,
     };
 
-    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
+    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -86,7 +88,7 @@ export class StudioStatusService implements ModuleLifecycle {
       timestamp: input.timestamp ? input.timestamp.getTime() : undefined,
     };
 
-    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
+    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -98,14 +100,17 @@ export class StudioStatusService implements ModuleLifecycle {
   async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
     const tag = this.getCacheKey(key);
     const cache = await this.cacheService.getHashAs<StudioStatusServiceOutput>(tag, schema);
-
-    if (!cache) {
+    if (cache === undefined) {
       const output = await this.studioStatusRepository.getTableStatusByTableID(key);
       if (output) await this.cacheService.setHash(tag, output);
       return output;
     }
-
     return cache;
+  }
+
+  private async refreshCache(gameCode: string, data: object) {
+    const cache = await this.getCache(gameCode);
+    await this.cacheService.setHash(this.getCacheKey(gameCode), { ...cache, ...data });
   }
 
   async onInit(): Promise<void> {}

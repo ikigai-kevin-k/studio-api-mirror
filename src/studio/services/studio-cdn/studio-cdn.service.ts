@@ -45,6 +45,8 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: studioReturning.CDN,
     };
 
+    await this.refreshCache(output.tableId, output);
+
     return output;
   }
 
@@ -64,7 +66,7 @@ export class StudioCdnService implements ModuleLifecycle {
       cdnDst: type.cdnDst,
     };
 
-    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
+    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -76,12 +78,17 @@ export class StudioCdnService implements ModuleLifecycle {
   async getCache(key: string): Promise<GetStudioCdnServiceOutput | undefined> {
     const tag = this.getCacheKey(key);
     const cache = await this.cacheService.getHashAs<GetStudioCdnServiceOutput>(tag, schema);
-    if (!cache) {
+    if (cache === undefined) {
       const output = await this.studioCdnRepository.getTableCdnByTableID(key);
       if (output) await this.cacheService.setHash(tag, output);
       return output;
     }
     return cache;
+  }
+
+  private async refreshCache(gameCode: string, data: object) {
+    const cache = await this.getCache(gameCode);
+    await this.cacheService.setHash(this.getCacheKey(gameCode), { ...cache, ...data });
   }
 
   async onInit(): Promise<void> {}

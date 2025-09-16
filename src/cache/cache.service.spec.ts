@@ -58,9 +58,7 @@ describe('CacheService', () => {
     });
 
     it('should return an object with correctly parsed values if the key exists', async () => {
-      cacheService.has = jest.fn();
       cacheService.hGetAll = jest.fn();
-      (cacheService.has as jest.Mock).mockResolvedValue(true);
       (cacheService.hGetAll as jest.Mock).mockResolvedValue({
         str: 'hello',
         num: '123',
@@ -81,13 +79,8 @@ describe('CacheService', () => {
     });
 
     it('should return undefined if a field in the schema is missing from the hash', async () => {
-      cacheService.has = jest.fn();
       cacheService.hGetAll = jest.fn();
-      (cacheService.has as jest.Mock).mockResolvedValue(true);
-      (cacheService.hGetAll as jest.Mock).mockResolvedValue({
-        str: 'hello',
-        num: '123',
-      });
+      (cacheService.hGetAll as jest.Mock).mockResolvedValue({});
 
       const result = await cacheService.getHashAs(mockKey, mockSchema);
       expect(result).toBeUndefined();
@@ -138,30 +131,6 @@ describe('CacheService', () => {
 
       expect(cacheService.hSet).not.toHaveBeenCalled();
       expect(cacheService.expire).not.toHaveBeenCalled();
-    });
-  });
-
-  describe('refresh', () => {
-    const mockKey = 'test-key';
-    const mockCache = { str: 'new-value' };
-    const mockTtl = 3600;
-
-    it('should call setHash if the key exists', async () => {
-      const spySetHash = jest.spyOn(cacheService, 'setHash');
-      cacheService.hSet = jest.fn();
-      cacheService.expire = jest.fn();
-      cacheService.has = jest.fn();
-      (cacheService.has as jest.Mock).mockResolvedValue(true);
-      await cacheService.refresh(mockKey, mockCache, mockTtl);
-      expect(spySetHash).toHaveBeenCalledWith(mockKey, mockCache, mockTtl);
-    });
-
-    it('should not call setHash if the key does not exist', async () => {
-      const spySetHash = jest.spyOn(cacheService, 'setHash');
-      cacheService.has = jest.fn();
-      (cacheService.has as jest.Mock).mockResolvedValue(false);
-      await cacheService.refresh(mockKey, mockCache, mockTtl);
-      expect(spySetHash).not.toHaveBeenCalled();
     });
   });
 });

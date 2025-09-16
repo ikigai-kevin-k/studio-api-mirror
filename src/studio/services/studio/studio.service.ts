@@ -50,6 +50,8 @@ export class StudioService implements ModuleLifecycle {
       tableStatus: studioReturning.TABLE_STATUS,
     };
 
+    await this.refreshCache(output.tableId, output);
+
     return output;
   }
 
@@ -69,7 +71,7 @@ export class StudioService implements ModuleLifecycle {
       tableStatus: type.tableStatus,
     };
 
-    await this.cacheService.refresh(this.getCacheKey(output.tableId), output);
+    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -80,15 +82,18 @@ export class StudioService implements ModuleLifecycle {
 
   async getCache(key: string): Promise<StudioServiceOutput | undefined> {
     const tag = this.getCacheKey(key);
-
     const cache = await this.cacheService.getHashAs<StudioServiceOutput>(tag, schema);
-    if (!cache) {
+    if (cache === undefined) {
       const output = await this.studioRepository.getStudioTableByTableID(key);
       if (output) await this.cacheService.setHash(tag, output);
       return output;
     }
-
     return cache;
+  }
+
+  private async refreshCache(gameCode: string, data: object) {
+    const cache = await this.getCache(gameCode);
+    await this.cacheService.setHash(this.getCacheKey(gameCode), { ...cache, ...data });
   }
 
   async onInit(): Promise<void> {}

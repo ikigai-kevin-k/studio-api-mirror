@@ -116,7 +116,7 @@ describe('StudioCdnService', () => {
     });
 
     it('should return undefined if the key is not in db', async () => {
-      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(null);
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
       (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(undefined);
 
       const result = await service.getCache('cdn1');
@@ -230,7 +230,6 @@ describe('StudioCdnService', () => {
         expect.objectContaining({ tableId: request.tableId }),
       );
       const expectedOutput = { tableId: request.tableId, cdnDst: request.cdnDst };
-      expect(mockCacheService.refresh).toHaveBeenCalledWith('studio-cdn-test', expectedOutput);
       expect(result).toEqual(expectedOutput);
     });
 

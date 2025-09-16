@@ -190,7 +190,6 @@ describe('StudioService', () => {
         tableId: request.tableId,
         tableStatus: request.tableStatus,
       };
-      expect(mockCacheService.refresh).toHaveBeenCalledWith('studio-table-1', expectedOutput);
 
       expect(result).toEqual(expectedOutput);
     });
