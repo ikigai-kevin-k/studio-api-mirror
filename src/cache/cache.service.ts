@@ -51,11 +51,4 @@ export class CacheService extends RedisService implements ModuleLifecycle {
       await this.expire(key, ttl);
     }
   }
-
-  async refresh(key: string, cache: object, ttl: number = 86_400): Promise<void> {
-    const isExist = await this.has(key);
-    if (!isExist) return;
-
-    return await this.setHash(key, cache, ttl);
-  }
 }

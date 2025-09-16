@@ -80,7 +80,8 @@ export class StudioStatusService implements ModuleLifecycle {
     input: UpdateStudioStatusServiceInput,
   ): Promise<StudioStatusServiceOutput> {
     this.logger.info(JSON.stringify(input));
-    await this.studioStatusRepository.updateTableStatus(tableId, input);
+    const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
+    if (result <= 0) throw new Error(`gameCode ${tableId} hasn't changed`);
 
     const output = {
       tableId: tableId,
@@ -109,8 +110,13 @@ export class StudioStatusService implements ModuleLifecycle {
   }
 
   private async refreshCache(gameCode: string, data: object) {
-    const cache = await this.getCache(gameCode);
-    await this.cacheService.setHash(this.getCacheKey(gameCode), { ...cache, ...data });
+    const cacheKey = this.getCacheKey(gameCode);
+    const isExist = await this.cacheService.has(cacheKey);
+    if (!isExist) {
+      const output = await this.studioStatusRepository.getTableStatusByTableID(gameCode);
+      data = { ...output, ...data };
+    }
+    await this.cacheService.setHash(cacheKey, data);
   }
 
   async onInit(): Promise<void> {}

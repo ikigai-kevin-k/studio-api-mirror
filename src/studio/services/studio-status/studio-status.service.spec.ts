@@ -25,6 +25,7 @@ const mockCacheService = {
   getHashAs: jest.fn(),
   setHash: jest.fn(),
   refresh: jest.fn(),
+  has: jest.fn(),
 } as unknown as CacheService;
 
 const mockLoggerService = {
@@ -162,6 +163,15 @@ describe('StudioStatusService', () => {
       const result = await service.updateTableStatusByWebSocket('ws-table', input);
       expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
       expect(result).toEqual({ tableId: 'ws-table', ...input });
+    });
+
+    it('should throw error', async () => {
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(0);
+      const input: UpdateStudioStatusServiceInput = { uptime: 10, sdp: 'OK' };
+      await expect(service.updateTableStatusByWebSocket('ws-table', input)).rejects.toThrow(
+        `gameCode ws-table hasn't changed`,
+      );
+      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
     });
   });
 });

@@ -87,8 +87,13 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   private async refreshCache(gameCode: string, data: object) {
-    const cache = await this.getCache(gameCode);
-    await this.cacheService.setHash(this.getCacheKey(gameCode), { ...cache, ...data });
+    const cacheKey = this.getCacheKey(gameCode);
+    const isExist = await this.cacheService.has(cacheKey);
+    if (!isExist) {
+      const output = await this.studioCdnRepository.getTableCdnByTableID(gameCode);
+      data = { ...output, ...data };
+    }
+    await this.cacheService.setHash(cacheKey, data);
   }
 
   async onInit(): Promise<void> {}

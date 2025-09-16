@@ -30,6 +30,7 @@ const mockCacheService = {
   getHashAs: jest.fn(),
   setHash: jest.fn(),
   refresh: jest.fn(),
+  has: jest.fn(),
 } as unknown as CacheService;
 
 const mockLoggerService = {
@@ -256,7 +257,6 @@ describe('StudioCdnService', () => {
       (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(affectedRows);
 
       await expect(service.updateTableCdn(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockCacheService.refresh).not.toHaveBeenCalled();
     });
   });
 });
