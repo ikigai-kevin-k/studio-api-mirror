@@ -9,7 +9,10 @@ import {
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
-import { UpdateTableCdnEntity } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
+import {
+  TableCdnResult,
+  UpdateTableCdnEntity,
+} from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import {
   GetStudioCdnServiceOutput,
   InsertStudioCdnServiceOutput,
@@ -39,12 +42,7 @@ export class StudioCdnService implements ModuleLifecycle {
     studio.tableId = type.tableId;
     studio.cdnDst = type.cdnDst;
 
-    const studioReturning = await this.studioCdnRepository.insertTableCdn(studio);
-    const output = {
-      tableId: studioReturning.TABLE_ID,
-      cdnDst: studioReturning.CDN,
-    };
-
+    const output = await this.studioCdnRepository.insertTableCdn(studio);
     await this.refreshCache(output.tableId, output);
 
     return output;
@@ -59,16 +57,15 @@ export class StudioCdnService implements ModuleLifecycle {
     };
 
     const result = await this.studioCdnRepository.updateTableCdn(entity);
-    if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
+    if (result === undefined)
+      throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
 
-    const output = {
+    await this.refreshCache(result.tableId, result);
+
+    return {
       tableId: type.tableId,
       cdnDst: type.cdnDst,
     };
-
-    await this.refreshCache(output.tableId, output);
-
-    return output;
   }
 
   private getCacheKey(gameCode: string) {
@@ -86,13 +83,8 @@ export class StudioCdnService implements ModuleLifecycle {
     return cache;
   }
 
-  private async refreshCache(gameCode: string, data: object) {
+  private async refreshCache(gameCode: string, data: TableCdnResult) {
     const cacheKey = this.getCacheKey(gameCode);
-    const isExist = await this.cacheService.has(cacheKey);
-    if (!isExist) {
-      const output = await this.studioCdnRepository.getTableCdnByTableID(gameCode);
-      data = { ...output, ...data };
-    }
     await this.cacheService.setHash(cacheKey, data);
   }
 

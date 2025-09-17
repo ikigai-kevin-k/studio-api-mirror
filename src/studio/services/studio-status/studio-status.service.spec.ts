@@ -6,7 +6,7 @@ import { LoggerService } from '@ikigaians/logger';
 import { CacheService } from 'src/cache/cache.service';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
-import { InsertTableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
+import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
 import {
   schema,
@@ -115,19 +115,19 @@ describe('StudioStatusService', () => {
 
   describe('insertTableStatus', () => {
     it('should insert and refresh cache', async () => {
-      const mockRepoResult: InsertTableStatusResult = {
-        TABLE_ID: 'table1',
-        UPTIME: 0,
-        TIMESTAMP: new Date(),
-        MAINTENANCE: false,
-        SDP: '',
-        IDP: '',
-        BROKER: '',
-        Z_CAM: '',
-        ROULETTE: '',
-        SHAKER: '',
-        BARCODE_SCANNER: '',
-        NFC_SCANNER: '',
+      const mockRepoResult: TableStatusResult = {
+        tableId: 'table1',
+        uptime: 0,
+        timestamp: 0,
+        maintenance: false,
+        sdp: '',
+        idp: '',
+        broker: '',
+        zCam: '',
+        roulette: '',
+        shaker: '',
+        barcodeScanner: '',
+        nfcScanner: '',
       };
       (mockStudioStatusRepository.insertTableStatus as jest.Mock).mockResolvedValue(mockRepoResult);
       const result = await service.insertTableStatus({ tableId: 'table1' });
@@ -148,7 +148,7 @@ describe('StudioStatusService', () => {
     });
 
     it('should throw error if no rows affected', async () => {
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(0);
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(undefined);
       const type = { tableId: 'table1', uptime: 10 };
       await expect(service.updateTableStatus(type)).rejects.toThrow(
         new StudioNotFoundError(`gameCode table1 hasn't changed`),
@@ -166,7 +166,7 @@ describe('StudioStatusService', () => {
     });
 
     it('should throw error', async () => {
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(0);
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(undefined);
       const input: UpdateStudioStatusServiceInput = { uptime: 10, sdp: 'OK' };
       await expect(service.updateTableStatusByWebSocket('ws-table', input)).rejects.toThrow(
         `gameCode ws-table hasn't changed`,

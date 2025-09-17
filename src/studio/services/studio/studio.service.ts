@@ -7,7 +7,10 @@ import {
   UpdateStudioTableStatusRequestType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
-import { UpdateStudioTableStatusEntity } from 'src/studio/repositories/studio/studio.repository.type';
+import {
+  StudioTableResult,
+  UpdateStudioTableStatusEntity,
+} from 'src/studio/repositories/studio/studio.repository.type';
 import {
   GetStudioServiceOutput,
   InsertStudioServiceOutput,
@@ -43,13 +46,7 @@ export class StudioService implements ModuleLifecycle {
     studio.tableId = type.tableId;
     studio.tableStatus = type.tableStatus;
 
-    const studioReturning = await this.studioRepository.insertStudioTable(studio);
-
-    const output = {
-      tableId: studioReturning.TABLE_ID,
-      tableStatus: studioReturning.TABLE_STATUS,
-    };
-
+    const output = await this.studioRepository.insertStudioTable(studio);
     await this.refreshCache(output.tableId, output);
 
     return output;
@@ -64,14 +61,15 @@ export class StudioService implements ModuleLifecycle {
     };
 
     const result = await this.studioRepository.updateStudioTableStatus(entity);
-    if (result <= 0) throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
+    if (result === undefined)
+      throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
+
+    await this.refreshCache(result.tableId, result);
 
     const output = {
       tableId: type.tableId,
       tableStatus: type.tableStatus,
     };
-
-    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -91,13 +89,8 @@ export class StudioService implements ModuleLifecycle {
     return cache;
   }
 
-  private async refreshCache(gameCode: string, data: object) {
+  private async refreshCache(gameCode: string, data: StudioTableResult) {
     const cacheKey = this.getCacheKey(gameCode);
-    const isExist = await this.cacheService.has(cacheKey);
-    if (!isExist) {
-      const output = await this.studioRepository.getStudioTableByTableID(gameCode);
-      data = { ...output, ...data };
-    }
     await this.cacheService.setHash(cacheKey, data);
   }
 

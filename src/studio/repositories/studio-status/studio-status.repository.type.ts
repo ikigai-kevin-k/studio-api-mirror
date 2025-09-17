@@ -1,8 +1,4 @@
-export type GetTableStatusQuery = {
-  tableId?: string;
-};
-
-export type GetTableStatusResult = {
+export type TableStatusResult = {
   tableId: string;
   uptime: number;
   timestamp: number;
@@ -17,7 +13,7 @@ export type GetTableStatusResult = {
   nfcScanner: string;
 };
 
-export type InsertTableStatusResult = {
+export type TableStatusSchema = {
   TABLE_ID: string;
   UPTIME: number;
   TIMESTAMP: Date;

@@ -5,14 +5,14 @@ interface TableCdnSet {
   hd: string;
 }
 
-export type GetTableCdnResult = {
-  tableId: string;
-  cdnDst: Record<string, TableCdnSet>;
-};
-
-export type InsertTableCdnResult = {
+export type TableCdnSchema = {
   TABLE_ID: string;
   CDN: Record<string, TableCdnSet>;
+};
+
+export type TableCdnResult = {
+  tableId: string;
+  cdnDst: Record<string, TableCdnSet>;
 };
 
 export type UpdateTableCdnEntity = {

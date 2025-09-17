@@ -13,7 +13,7 @@ import {
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioRepository } from 'src/studio/repositories/studio/studio.repository';
-import { InsertStudioTableResult } from 'src/studio/repositories/studio/studio.repository.type';
+import { StudioTableResult } from 'src/studio/repositories/studio/studio.repository.type';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 import { schema, StudioServiceOutput } from 'src/studio/services/studio/studio.service.type';
 
@@ -143,9 +143,9 @@ describe('StudioService', () => {
         tableStatus: StudioTableStatusEnum.ACTIVE,
       };
 
-      const mockRepoResult: InsertStudioTableResult = {
-        TABLE_ID: 'table-new',
-        TABLE_STATUS: StudioTableStatusEnum.ACTIVE,
+      const mockRepoResult: StudioTableResult = {
+        tableId: 'table-new',
+        tableStatus: StudioTableStatusEnum.ACTIVE,
       };
 
       (mockStudioRepository.insertStudioTable as jest.Mock).mockResolvedValue(mockRepoResult);
@@ -159,12 +159,7 @@ describe('StudioService', () => {
         }),
       );
 
-      const expectedOutput = {
-        tableId: mockRepoResult.TABLE_ID,
-        tableStatus: mockRepoResult.TABLE_STATUS,
-      };
-
-      expect(result).toEqual(expectedOutput);
+      expect(result).toEqual(mockRepoResult);
     });
   });
 
@@ -200,9 +195,8 @@ describe('StudioService', () => {
         tableId: 'non-existent',
         tableStatus: StudioTableStatusEnum.FAILURE,
       };
-      const affectedRows = 0;
 
-      (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(affectedRows);
+      (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(undefined);
 
       await expect(service.updateStudioTableStatus(request)).rejects.toThrow(StudioNotFoundError);
     });

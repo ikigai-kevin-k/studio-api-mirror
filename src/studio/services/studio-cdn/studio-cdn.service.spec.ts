@@ -12,7 +12,7 @@ import {
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
-import { GetTableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
+import { TableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import {
   GetStudioCdnServiceOutput,
@@ -88,7 +88,7 @@ describe('StudioCdnService', () => {
     it('should fetch from repository and set cache if cache does not exist', async () => {
       (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
 
-      const mockCacheData: GetTableCdnResult = {
+      const mockCacheData: TableCdnResult = {
         tableId: 'cdn1',
         cdnDst: {
           primary: {
@@ -188,7 +188,23 @@ describe('StudioCdnService', () => {
           },
         },
       };
-      const mockRepoResult = { TABLE_ID: 'cdn-new', CDN: {} };
+      const mockRepoResult = {
+        tableId: 'cdn-new',
+        cdnDst: {
+          primary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+          },
+          secondary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+          },
+        },
+      };
 
       (mockStudioCdnRepository.insertTableCdn as jest.Mock).mockResolvedValue(mockRepoResult);
 
@@ -197,8 +213,7 @@ describe('StudioCdnService', () => {
       expect(mockStudioCdnRepository.insertTableCdn).toHaveBeenCalledWith(
         expect.objectContaining({ tableId: request.tableId }),
       );
-      const expectedOutput = { tableId: mockRepoResult.TABLE_ID, cdnDst: mockRepoResult.CDN };
-      expect(result).toEqual(expectedOutput);
+      expect(result).toEqual(request);
     });
   });
 
@@ -252,9 +267,8 @@ describe('StudioCdnService', () => {
           },
         },
       };
-      const affectedRows = 0;
 
-      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(affectedRows);
+      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(undefined);
 
       await expect(service.updateTableCdn(request)).rejects.toThrow(StudioNotFoundError);
     });

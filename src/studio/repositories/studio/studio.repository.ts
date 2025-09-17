@@ -2,8 +2,8 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import { Studio } from '../../entities/studio.entity';
 import {
-  InsertStudioTableResult,
   StudioTableResult,
+  StudioTableSchema,
   UpdateStudioTableStatusEntity,
 } from './studio.repository.type';
 
@@ -21,19 +21,26 @@ export class StudioRepository implements ModuleLifecycle {
     return await builder.getRawOne<StudioTableResult>();
   }
 
-  async insertStudioTable(studio: Studio): Promise<InsertStudioTableResult> {
+  async insertStudioTable(studio: Studio): Promise<StudioTableResult> {
     const result = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .insert()
       .into(Studio)
       .values(studio)
-      .returning(['tableId', 'tableStatus'])
+      .returning('*')
       .execute();
-    return result.raw[0] as InsertStudioTableResult;
+
+    const data = result.raw[0] as StudioTableSchema;
+    return {
+      tableId: data.TABLE_ID,
+      tableStatus: data.TABLE_STATUS,
+    };
   }
 
-  async updateStudioTableStatus(entity: UpdateStudioTableStatusEntity): Promise<number> {
+  async updateStudioTableStatus(
+    entity: UpdateStudioTableStatusEntity,
+  ): Promise<StudioTableResult | undefined> {
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
@@ -44,9 +51,16 @@ export class StudioRepository implements ModuleLifecycle {
       .where({
         tableId: entity.tableId,
       })
+      .returning('*')
       .execute();
 
-    return updateResult.affected ?? -1;
+    if (updateResult.affected === 0) return undefined;
+
+    const data = updateResult.raw[0] as StudioTableSchema;
+    return {
+      tableId: data.TABLE_ID,
+      tableStatus: data.TABLE_STATUS,
+    };
   }
 
   async onInit(): Promise<void> {}

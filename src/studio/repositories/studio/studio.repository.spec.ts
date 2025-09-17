@@ -5,8 +5,8 @@ import { Studio } from 'src/studio/entities/studio.entity';
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioRepository } from 'src/studio/repositories/studio/studio.repository';
 import {
-  InsertStudioTableResult,
   StudioTableResult,
+  StudioTableSchema,
   UpdateStudioTableStatusEntity,
 } from 'src/studio/repositories/studio/studio.repository.type';
 import { UpdateResult } from 'typeorm';
@@ -99,11 +99,15 @@ describe('StudioRepository', () => {
         tableId: 'uniTest',
         tableStatus: StudioTableStatusEnum.INACTIVE,
       };
-      const mockRawResult: InsertStudioTableResult = {
+      const mockRawResult: StudioTableSchema = {
         TABLE_ID: 'uniTest',
         TABLE_STATUS: StudioTableStatusEnum.INACTIVE,
       };
       const mockExecuteResult = { raw: [mockRawResult] };
+      const mockResult: StudioTableResult = {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
+      };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockExecuteResult);
 
@@ -113,8 +117,8 @@ describe('StudioRepository', () => {
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(Studio);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith(mockStudio);
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith(['tableId', 'tableStatus']);
-      expect(result).toEqual(mockRawResult);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mockResult);
     });
   });
 
@@ -126,8 +130,12 @@ describe('StudioRepository', () => {
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
-        raw: [],
+        raw: [{ TABLE_ID: 'uniTest', TABLE_STATUS: StudioTableStatusEnum.INACTIVE }],
         affected: 1,
+      };
+      const mockRawResult: StudioTableResult = {
+        tableId: 'uniTest',
+        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
@@ -142,10 +150,11 @@ describe('StudioRepository', () => {
       expect(mockQueryBuilder.where).toHaveBeenCalledWith({
         tableId: updateEntity.tableId,
       });
-      expect(result).toBe(1);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mockRawResult);
     });
 
-    it('should return 0 if no rows are affected', async () => {
+    it('should return undefined if no rows are affected', async () => {
       const updateEntity: UpdateStudioTableStatusEntity = {
         tableId: 'non-existent-table',
         tableStatus: StudioTableStatusEnum.INACTIVE,
@@ -160,25 +169,7 @@ describe('StudioRepository', () => {
 
       const result = await repository.updateStudioTableStatus(updateEntity);
 
-      expect(result).toBe(0);
-    });
-
-    it('should return -1 if affected is null', async () => {
-      const updateEntity: UpdateStudioTableStatusEntity = {
-        tableId: 'non-existent-table',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
-      };
-      const mockUpdateResult = {
-        generatedMaps: [],
-        raw: [],
-        affected: null,
-      };
-
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
-      const result = await repository.updateStudioTableStatus(updateEntity);
-
-      expect(result).toBe(-1);
+      expect(result).toBeUndefined();
     });
   });
 });

@@ -8,8 +8,8 @@
 import { DbService } from 'src/db/db.service';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import {
-  GetTableStatusResult,
-  InsertTableStatusResult,
+  TableStatusResult,
+  TableStatusSchema,
   UpdateTableStatusEntity,
 } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import { UpdateResult } from 'typeorm';
@@ -63,7 +63,7 @@ describe('StudioStatusRepository', () => {
 
   describe('getTableStatusByTableID', () => {
     it('should return a StudioStatus object when found', async () => {
-      const mockStatus: GetTableStatusResult = {
+      const mockStatus: TableStatusResult = {
         tableId: 'status-table-1',
         uptime: 1,
         timestamp: 0,
@@ -98,10 +98,11 @@ describe('StudioStatusRepository', () => {
   describe('insertTableStatus', () => {
     it('should insert a new status and return the result', async () => {
       const mockTableId = 'status-table-1';
-      const mockRawResult: InsertTableStatusResult = {
+      const timestamp = new Date();
+      const mockRawResult: TableStatusSchema = {
         TABLE_ID: mockTableId,
         UPTIME: 0,
-        TIMESTAMP: new Date(),
+        TIMESTAMP: timestamp,
         MAINTENANCE: false,
         SDP: '',
         IDP: '',
@@ -113,6 +114,20 @@ describe('StudioStatusRepository', () => {
         NFC_SCANNER: '',
       };
       const mockExecuteResult = { raw: [mockRawResult] };
+      const mockResult: TableStatusResult = {
+        tableId: mockTableId,
+        uptime: 0,
+        timestamp: timestamp.getTime(),
+        maintenance: false,
+        sdp: '',
+        idp: '',
+        broker: '',
+        zCam: '',
+        roulette: '',
+        shaker: '',
+        barcodeScanner: '',
+        nfcScanner: '',
+      };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockExecuteResult);
 
@@ -121,32 +136,49 @@ describe('StudioStatusRepository', () => {
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioStatus);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith({ tableId: mockTableId });
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith([
-        'tableId',
-        'uptime',
-        'timestamp',
-        'maintenance',
-        'sdp',
-        'idp',
-        'broker',
-        'zCam',
-        'roulette',
-        'shaker',
-        'barcodeScanner',
-        'nfcScanner',
-      ]);
-      expect(result).toEqual(mockRawResult);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mockResult);
     });
   });
 
   describe('updateTableStatus', () => {
     it('should update the status and return affected rows count', async () => {
       const tableId = 'status-table-1';
+      const timestamp = new Date();
       const updateEntity: UpdateTableStatusEntity = { uptime: 5, sdp: 'OK' };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
-        raw: [],
+        raw: [
+          {
+            TABLE_ID: tableId,
+            UPTIME: 0,
+            TIMESTAMP: timestamp,
+            MAINTENANCE: false,
+            SDP: '',
+            IDP: '',
+            BROKER: '',
+            Z_CAM: '',
+            ROULETTE: '',
+            SHAKER: '',
+            BARCODE_SCANNER: '',
+            NFC_SCANNER: '',
+          },
+        ],
         affected: 1,
+      };
+      const mockResult: TableStatusResult = {
+        tableId: tableId,
+        uptime: 0,
+        timestamp: timestamp.getTime(),
+        maintenance: false,
+        sdp: '',
+        idp: '',
+        broker: '',
+        zCam: '',
+        roulette: '',
+        shaker: '',
+        barcodeScanner: '',
+        nfcScanner: '',
       };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
@@ -160,28 +192,11 @@ describe('StudioStatusRepository', () => {
         'NOT (uptime = :uptime AND sdp = :sdp)',
       );
       expect(mockQueryBuilder.setParameters).toHaveBeenCalledWith(updateEntity);
-      expect(result).toBe(1);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mockResult);
     });
 
-    it('should handle an empty entity without throwing an error', async () => {
-      const tableId = 'status-table-1';
-      const updateEntity: UpdateTableStatusEntity = {};
-      const mockUpdateResult: UpdateResult = {
-        generatedMaps: [],
-        raw: [],
-        affected: 1,
-      };
-
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-
-      const result = await repository.updateTableStatus(tableId, updateEntity);
-
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', { tableId });
-      expect(mockQueryBuilder.andWhere).toHaveBeenCalledWith('NOT ()');
-      expect(result).toBe(1);
-    });
-
-    it('should return 0 if no rows are affected but query succeeds', async () => {
+    it('should return undefined if no rows are affected but query succeeds', async () => {
       const tableId = 'status-table-1';
       const updateEntity: UpdateTableStatusEntity = { uptime: 5 };
       const mockUpdateResult: UpdateResult = {
@@ -191,20 +206,7 @@ describe('StudioStatusRepository', () => {
       };
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
       const result = await repository.updateTableStatus(tableId, updateEntity);
-      expect(result).toBe(0);
-    });
-
-    it('should return -1 if affected is null', async () => {
-      const tableId = 'status-table-1';
-      const updateEntity: UpdateTableStatusEntity = { uptime: 5 };
-      const mockUpdateResult = {
-        generatedMaps: [],
-        raw: [],
-        affected: null,
-      };
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-      const result = await repository.updateTableStatus(tableId, updateEntity);
-      expect(result).toBe(-1);
+      expect(result).toBeUndefined();
     });
   });
 });

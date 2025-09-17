@@ -2,15 +2,15 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import { StudioStatus } from '../../entities/studio-status.entity';
 import {
-  GetTableStatusResult,
-  InsertTableStatusResult,
+  TableStatusResult,
+  TableStatusSchema,
   UpdateTableStatusEntity,
 } from './studio-status.repository.type';
 
 export class StudioStatusRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getTableStatusByTableID(tableID: string): Promise<GetTableStatusResult | undefined> {
+  async getTableStatusByTableID(tableID: string): Promise<TableStatusResult | undefined> {
     const builder = this.dbService
       .getConnection()
       .createQueryBuilder(StudioStatus, 'studio')
@@ -30,35 +30,40 @@ export class StudioStatusRepository implements ModuleLifecycle {
         'studio."NFC_SCANNER" as "nfcScanner"',
       ]);
 
-    return await builder.getRawOne<GetTableStatusResult>();
+    return await builder.getRawOne<TableStatusResult>();
   }
 
-  async insertTableStatus(tableId: string): Promise<InsertTableStatusResult> {
+  async insertTableStatus(tableId: string): Promise<TableStatusResult> {
     const result = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .insert()
       .into(StudioStatus)
       .values({ tableId: tableId })
-      .returning([
-        'tableId',
-        'uptime',
-        'timestamp',
-        'maintenance',
-        'sdp',
-        'idp',
-        'broker',
-        'zCam',
-        'roulette',
-        'shaker',
-        'barcodeScanner',
-        'nfcScanner',
-      ])
+      .returning('*')
       .execute();
-    return result.raw[0] as InsertTableStatusResult;
+
+    const data = result.raw[0] as TableStatusSchema;
+    return {
+      tableId: data.TABLE_ID,
+      uptime: data.UPTIME,
+      timestamp: data.TIMESTAMP.getTime(),
+      maintenance: data.MAINTENANCE,
+      sdp: data.SDP,
+      idp: data.IDP,
+      broker: data.BROKER,
+      zCam: data.Z_CAM,
+      roulette: data.ROULETTE,
+      shaker: data.SHAKER,
+      barcodeScanner: data.BARCODE_SCANNER,
+      nfcScanner: data.NFC_SCANNER,
+    };
   }
 
-  async updateTableStatus(tableId: string, entity: UpdateTableStatusEntity): Promise<number> {
+  async updateTableStatus(
+    tableId: string,
+    entity: UpdateTableStatusEntity,
+  ): Promise<TableStatusResult | undefined> {
     const whereClause = Object.keys(entity)
       .map((key) => `${key} = :${key}`)
       .join(' AND ');
@@ -71,9 +76,26 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .where('tableId = :tableId', { tableId })
       .andWhere(`NOT (${whereClause})`)
       .setParameters(entity)
+      .returning('*')
       .execute();
 
-    return updateResult.affected ?? -1;
+    if (updateResult.affected === 0) return undefined;
+
+    const data = updateResult.raw[0] as TableStatusSchema;
+    return {
+      tableId: data.TABLE_ID,
+      uptime: data.UPTIME,
+      timestamp: data.TIMESTAMP.getTime(),
+      maintenance: data.MAINTENANCE,
+      sdp: data.SDP,
+      idp: data.IDP,
+      broker: data.BROKER,
+      zCam: data.Z_CAM,
+      roulette: data.ROULETTE,
+      shaker: data.SHAKER,
+      barcodeScanner: data.BARCODE_SCANNER,
+      nfcScanner: data.NFC_SCANNER,
+    };
   }
 
   async onInit(): Promise<void> {}

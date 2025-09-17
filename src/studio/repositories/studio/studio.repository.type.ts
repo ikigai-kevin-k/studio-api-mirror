@@ -5,7 +5,7 @@ export type StudioTableResult = {
   tableStatus: string;
 };
 
-export type InsertStudioTableResult = {
+export type StudioTableSchema = {
   TABLE_ID: string;
   TABLE_STATUS: StudioTableStatusEnum;
 };

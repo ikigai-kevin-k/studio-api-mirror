@@ -5,8 +5,8 @@ import { DbService } from 'src/db/db.service';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import {
-  GetTableCdnResult,
-  InsertTableCdnResult,
+  TableCdnResult,
+  TableCdnSchema,
   UpdateTableCdnEntity,
 } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import { UpdateResult } from 'typeorm';
@@ -56,7 +56,7 @@ describe('StudioCdnRepository', () => {
 
   describe('getTableCdnByTableID', () => {
     it('should return a StudioCdn object when found', async () => {
-      const mockCdn: GetTableCdnResult = {
+      const mockCdn: TableCdnResult = {
         tableId: 'cdn-table-1',
         cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
@@ -85,11 +85,15 @@ describe('StudioCdnRepository', () => {
         tableId: 'cdn-table-1',
         cdnDst: { primary: {} },
       };
-      const mockRawResult: InsertTableCdnResult = {
+      const mockRawResult: TableCdnSchema = {
         TABLE_ID: 'cdn-table-1',
         CDN: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
       const mockExecuteResult = { raw: [mockRawResult] };
+      const mocResult: TableCdnResult = {
+        tableId: 'cdn-table-1',
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
+      };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockExecuteResult);
 
@@ -98,8 +102,8 @@ describe('StudioCdnRepository', () => {
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioCdn);
       expect(mockQueryBuilder.values).toHaveBeenCalledWith(mockCdn);
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith(['tableId', 'cdnDst']);
-      expect(result).toEqual(mockRawResult);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mocResult);
     });
   });
 
@@ -111,8 +115,17 @@ describe('StudioCdnRepository', () => {
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
-        raw: [],
+        raw: [
+          {
+            TABLE_ID: 'cdn-table-1',
+            CDN: { primary: { lo: '', me: '', hi: '', hd: '' } },
+          },
+        ],
         affected: 1,
+      };
+      const mockResult: UpdateTableCdnEntity = {
+        tableId: 'cdn-table-1',
+        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
@@ -124,11 +137,11 @@ describe('StudioCdnRepository', () => {
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', {
         tableId: 'cdn-table-1',
       });
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith(['tableId', 'cdnDst']);
-      expect(result).toBe(1);
+      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(result).toEqual(mockResult);
     });
 
-    it('should return 0 if no rows are affected', async () => {
+    it('should return undefined if no rows are affected', async () => {
       const updateEntity: UpdateTableCdnEntity = {
         tableId: 'non-existent',
         cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
@@ -140,22 +153,7 @@ describe('StudioCdnRepository', () => {
       };
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
       const result = await repository.updateTableCdn(updateEntity);
-      expect(result).toBe(0);
-    });
-
-    it('should return -1 if affected is null', async () => {
-      const updateEntity: UpdateTableCdnEntity = {
-        tableId: 'non-existent',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
-      };
-      const mockUpdateResult = {
-        generatedMaps: [],
-        raw: [],
-        affected: null,
-      };
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-      const result = await repository.updateTableCdn(updateEntity);
-      expect(result).toBe(-1);
+      expect(result).toBeUndefined();
     });
   });
 });

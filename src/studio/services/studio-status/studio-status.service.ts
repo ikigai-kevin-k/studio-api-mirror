@@ -9,6 +9,7 @@ import {
 } from 'src/studio/controller/v1/studio-status/studio-status.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
+import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import {
   schema,
   StudioStatusServiceOutput,
@@ -32,22 +33,7 @@ export class StudioStatusService implements ModuleLifecycle {
   }
 
   async insertTableStatus(type: InsertTableStatusRequestType): Promise<StudioStatusServiceOutput> {
-    const studioReturning = await this.studioStatusRepository.insertTableStatus(type.tableId);
-    const output = {
-      tableId: studioReturning.TABLE_ID,
-      uptime: studioReturning.UPTIME,
-      timestamp: studioReturning.TIMESTAMP.getTime(),
-      maintenance: studioReturning.MAINTENANCE,
-      sdp: studioReturning.SDP,
-      idp: studioReturning.IDP,
-      broker: studioReturning.BROKER,
-      zCam: studioReturning.Z_CAM,
-      roulette: studioReturning.ROULETTE,
-      shaker: studioReturning.SHAKER,
-      barcodeScanner: studioReturning.BARCODE_SCANNER,
-      nfcScanner: studioReturning.NFC_SCANNER,
-    };
-
+    const output = await this.studioStatusRepository.insertTableStatus(type.tableId);
     await this.refreshCache(output.tableId, output);
 
     return output;
@@ -62,15 +48,15 @@ export class StudioStatusService implements ModuleLifecycle {
       timestamp: timestamp ? new Date(timestamp) : undefined,
     };
     const result = await this.studioStatusRepository.updateTableStatus(tableId, entity);
-    if (result <= 0) throw new StudioNotFoundError(`gameCode ${tableId} hasn't changed`);
+    if (result === undefined) throw new StudioNotFoundError(`gameCode ${tableId} hasn't changed`);
+
+    await this.refreshCache(result.tableId, result);
 
     const output = {
       tableId: tableId,
       timestamp,
       ...params,
     };
-
-    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -81,15 +67,15 @@ export class StudioStatusService implements ModuleLifecycle {
   ): Promise<StudioStatusServiceOutput> {
     this.logger.info(JSON.stringify(input));
     const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
-    if (result <= 0) throw new Error(`gameCode ${tableId} hasn't changed`);
+    if (result === undefined) throw new Error(`gameCode ${tableId} hasn't changed`);
+
+    await this.refreshCache(result.tableId, result);
 
     const output = {
       tableId: tableId,
       ...input,
       timestamp: input.timestamp ? input.timestamp.getTime() : undefined,
     };
-
-    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -109,13 +95,8 @@ export class StudioStatusService implements ModuleLifecycle {
     return cache;
   }
 
-  private async refreshCache(gameCode: string, data: object) {
+  private async refreshCache(gameCode: string, data: TableStatusResult) {
     const cacheKey = this.getCacheKey(gameCode);
-    const isExist = await this.cacheService.has(cacheKey);
-    if (!isExist) {
-      const output = await this.studioStatusRepository.getTableStatusByTableID(gameCode);
-      data = { ...output, ...data };
-    }
     await this.cacheService.setHash(cacheKey, data);
   }
 
