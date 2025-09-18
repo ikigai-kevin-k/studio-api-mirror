@@ -22,10 +22,6 @@ export class HealthcheckController implements ModuleLifecycle {
   }
 
   getStatus(app: FastifyInstance) {
-    const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
-      this.preHandlersService,
-    );
-
     return app.get(
       RoutesEnum.V1_HEALTHCHECK,
       {
@@ -37,7 +33,6 @@ export class HealthcheckController implements ModuleLifecycle {
           tags: ['service', 'healthcheck'],
           security: [{ serviceApiAuth: [] }],
         },
-        preHandler: [serviceAuth],
       },
       async (): Promise<HealthcheckType> => {
         return await this.healthcheckService.getStatus();
