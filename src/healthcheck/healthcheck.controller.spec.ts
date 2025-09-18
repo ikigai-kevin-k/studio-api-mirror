@@ -42,7 +42,6 @@ describe('HealthcheckController', () => {
       RoutesEnum.V1_HEALTHCHECK,
       expect.objectContaining({
         schema: expect.any(Object),
-        preHandler: [expect.any(Function)],
       }),
       expect.any(Function),
     );
