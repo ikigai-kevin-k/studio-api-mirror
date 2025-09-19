@@ -1,52 +1,7 @@
-import { StudioCacheData } from '../studio-cache/studio-cache.service.type';
+import { Schema } from 'src/cache/cache.service.type';
 
-export type GetTableStatusQuery = {
-  tableId?: string;
-};
-
-export type TableStatusResult = {
-  uptime: number;
-  timestamp: Date;
-  maintenance: boolean;
-  sdp: string;
-  idp: string;
-  broker: string;
-  zCam: string;
-  roulette: string;
-  shaker: string;
-  barcodeScanner: string;
-  nfcScanner: string;
-};
-
-export interface GetTableStatusOutput extends StudioCacheData {
-  uptime: number;
-  timestamp: number;
-  maintenance: boolean;
-  sdp: string;
-  idp: string;
-  broker: string;
-  zCam: string;
-  roulette: string;
-  shaker: string;
-  barcodeScanner: string;
-  nfcScanner: string;
-}
-
-export interface InsertTableStatusOutput extends StudioCacheData {
-  uptime: number;
-  timestamp: number;
-  maintenance: boolean;
-  sdp: string;
-  idp: string;
-  broker: string;
-  zCam: string;
-  roulette: string;
-  shaker: string;
-  barcodeScanner: string;
-  nfcScanner: string;
-}
-
-export type UpdateTableStatusInput = {
+export interface StudioStatusServiceOutput {
+  tableId: string;
   uptime?: number;
   timestamp?: number;
   maintenance?: boolean;
@@ -58,12 +13,26 @@ export type UpdateTableStatusInput = {
   shaker?: string;
   barcodeScanner?: string;
   nfcScanner?: string;
+}
+
+export const schema: Schema<StudioStatusServiceOutput> = {
+  tableId: 'string',
+  uptime: 'number',
+  timestamp: 'number',
+  maintenance: 'boolean',
+  sdp: 'string',
+  idp: 'string',
+  broker: 'string',
+  zCam: 'string',
+  roulette: 'string',
+  shaker: 'string',
+  barcodeScanner: 'string',
+  nfcScanner: 'string',
 };
 
-export type UpdateTableStatusOutput = {
-  tableId: string;
+export type UpdateStudioStatusServiceInput = {
   uptime?: number;
-  timestamp?: number;
+  timestamp?: Date;
   maintenance?: boolean;
   sdp?: string;
   idp?: string;

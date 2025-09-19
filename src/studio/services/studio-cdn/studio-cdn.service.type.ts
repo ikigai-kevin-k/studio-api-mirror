@@ -1,23 +1,28 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+import { Schema } from 'src/cache/cache.service.type';
 
-import { StudioCacheData } from '../studio-cache/studio-cache.service.type';
-
-export type GetTableCdnQuery = {
-  tableId?: string;
-};
-
-export type TableCdnResult = {
-  cdnDst: Record<string, any>;
-};
-
-export interface GetTableCdnOutput extends StudioCacheData {
-  cdnDst: Record<string, any>;
+interface StudioCdnSet {
+  lo: string;
+  me: string;
+  hi: string;
+  hd: string;
 }
 
-export interface InsertTableCdnOutput extends StudioCacheData {
-  cdnDst: Record<string, any>;
+export interface GetStudioCdnServiceOutput {
+  tableId: string;
+  cdnDst: Record<string, StudioCdnSet>;
 }
 
-export interface UpdateTableCdnOutput extends StudioCacheData {
-  cdnDst: Record<string, any>;
+export const schema: Schema<GetStudioCdnServiceOutput> = {
+  tableId: 'string',
+  cdnDst: 'object',
+};
+
+export interface InsertStudioCdnServiceOutput {
+  tableId: string;
+  cdnDst: Record<string, StudioCdnSet>;
+}
+
+export interface UpdateStudioCdnServiceOutput {
+  tableId: string;
+  cdnDst: Record<string, StudioCdnSet>;
 }

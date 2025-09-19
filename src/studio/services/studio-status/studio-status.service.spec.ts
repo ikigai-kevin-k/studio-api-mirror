@@ -1,35 +1,32 @@
+// studio-status.service.spec.ts
 /* eslint-disable unicorn/no-null */
 /* eslint-disable unicorn/no-useless-undefined */
-// studio-status.service.spec.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
-import {
-  GetTableStatusRequestType,
-  InsertTableStatusRequestType,
-  UpdateTableStatusRequestType,
-} from 'src/studio/controller/v1/studio-status/studio-status.type';
-import { StudioStatus } from 'src/studio/entities/studio-status.entity';
-import { StudioDeviceStatusEnum, StudioServiceStatusEnum } from 'src/studio/enums/studio.enums';
+import { CacheService } from 'src/cache/cache.service';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
-import { InsertTableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
-import { StudioCacheService } from 'src/studio/services/studio-cache/studio-cache.service';
+import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
 import {
-  GetTableStatusOutput,
-  InsertTableStatusOutput,
+  schema,
+  StudioStatusServiceOutput,
+  UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
 
 const mockStudioStatusRepository = {
   getTableStatusByTableID: jest.fn(),
   insertTableStatus: jest.fn(),
   updateTableStatus: jest.fn(),
-  updateTableStatusByWebSocket: jest.fn(),
+  getStudioStatus: jest.fn(),
 } as unknown as StudioStatusRepository;
 
-const mockStudioCacheService = {
-  getCache: jest.fn(),
-  refreshCache: jest.fn(),
-} as unknown as StudioCacheService;
+const mockCacheService = {
+  getHashAs: jest.fn(),
+  setHash: jest.fn(),
+  refresh: jest.fn(),
+  has: jest.fn(),
+} as unknown as CacheService;
 
 const mockLoggerService = {
   info: jest.fn(),
@@ -42,7 +39,7 @@ describe('StudioStatusService', () => {
   beforeEach(() => {
     service = new StudioStatusService(
       mockStudioStatusRepository,
-      mockStudioCacheService,
+      mockCacheService,
       mockLoggerService,
     );
     jest.clearAllMocks();
@@ -54,200 +51,127 @@ describe('StudioStatusService', () => {
     });
   });
 
-  describe('getTableStatusByTableID', () => {
-    it('should return a StudioStatus entity if found', async () => {
-      const mockStatus: StudioStatus = {
-        id: 1,
-        tableId: 'uniTest',
-        uptime: 10,
-        timestamp: new Date(),
-        maintenance: false,
-        sdp: StudioServiceStatusEnum.STANDBY,
-        idp: StudioServiceStatusEnum.STANDBY,
-        broker: StudioDeviceStatusEnum.DOWN,
-        zCam: StudioDeviceStatusEnum.DOWN,
-        roulette: StudioDeviceStatusEnum.DOWN,
-        shaker: StudioDeviceStatusEnum.DOWN,
-        barcodeScanner: StudioDeviceStatusEnum.DOWN,
-        nfcScanner: StudioDeviceStatusEnum.DOWN,
-      };
-      (mockStudioStatusRepository.getTableStatusByTableID as jest.Mock).mockResolvedValue(
-        mockStatus,
-      );
+  describe('getCacheKey', () => {
+    it('should return cache key', async () => {
+      expect((service as any).getCacheKey('gameCode')).toBe('studio-status-gameCode');
+    });
+  });
 
-      const result = await service.getTableStatusByTableID('uniTest');
+  describe('getCache', () => {
+    it('should return data from cache if it exists', async () => {
+      const mockCacheData: StudioStatusServiceOutput = { tableId: 'table1', uptime: 10 };
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(mockCacheData);
 
-      expect(mockStudioStatusRepository.getTableStatusByTableID).toHaveBeenCalledWith('uniTest');
-      expect(result).toEqual(mockStatus);
+      const result = await service.getCache('table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith(`studio-status-table1`, schema);
+      expect(result).toEqual(mockCacheData);
     });
 
-    it('should throw StudioNotFoundError if not found', async () => {
-      (mockStudioStatusRepository.getTableStatusByTableID as jest.Mock).mockResolvedValue(null);
+    it('should fetch from repository if cache does not exist', async () => {
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
 
-      await expect(service.getTableStatusByTableID('non-existent')).rejects.toThrow(
-        StudioNotFoundError,
+      const mockCacheData: StudioStatusServiceOutput = { tableId: 'table1', uptime: 10 };
+      (mockStudioStatusRepository.getTableStatusByTableID as jest.Mock).mockResolvedValue(
+        mockCacheData,
       );
-      expect(mockStudioStatusRepository.getTableStatusByTableID).toHaveBeenCalledWith(
-        'non-existent',
+
+      const result = await service.getCache('table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith(`studio-status-table1`, schema);
+      expect(mockStudioStatusRepository.getTableStatusByTableID).toHaveBeenCalledTimes(1);
+      expect(mockCacheService.setHash).toHaveBeenCalledWith(`studio-status-table1`, mockCacheData);
+      expect(result).toEqual(mockCacheData);
+    });
+
+    it('should return undefined if db does not exist', async () => {
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
+
+      (mockStudioStatusRepository.getTableStatusByTableID as jest.Mock).mockResolvedValue(
+        undefined,
       );
+
+      const result = await service.getCache('table1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith(`studio-status-table1`, schema);
+      expect(mockStudioStatusRepository.getTableStatusByTableID).toHaveBeenCalledWith('table1');
+      expect(mockCacheService.setHash).toHaveBeenCalledTimes(0);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('getTableStatus', () => {
-    it('should return status data from cache', async () => {
-      const mockCacheData: GetTableStatusOutput = {
-        tableId: 'uniTest',
-        uptime: 10,
-        timestamp: Date.now(),
-        maintenance: false,
-        sdp: StudioServiceStatusEnum.STANDBY,
-        idp: StudioServiceStatusEnum.STANDBY,
-        broker: StudioDeviceStatusEnum.DOWN,
-        zCam: StudioDeviceStatusEnum.DOWN,
-        roulette: StudioDeviceStatusEnum.DOWN,
-        shaker: StudioDeviceStatusEnum.DOWN,
-        barcodeScanner: StudioDeviceStatusEnum.DOWN,
-        nfcScanner: StudioDeviceStatusEnum.DOWN,
-      };
-
-      (mockStudioCacheService.getCache as jest.Mock).mockResolvedValue(mockCacheData);
-
-      const request: GetTableStatusRequestType = { tableId: 'uniTest' };
-
-      const result = await service.getTableStatus(request);
-
-      expect(mockStudioCacheService.getCache).toHaveBeenCalledWith('status', 'uniTest');
-      expect(result).toEqual(mockCacheData);
+    it('should return status from cache', async () => {
+      const mockOutput: StudioStatusServiceOutput = { tableId: 'table1', uptime: 10 };
+      jest.spyOn(service, 'getCache' as any).mockResolvedValue(mockOutput);
+      const result = await service.getTableStatus({ tableId: 'table1' });
+      expect(result).toEqual(mockOutput);
     });
 
-    it('should throw StudioNotFoundError if status data is not in cache', async () => {
-      (mockStudioCacheService.getCache as jest.Mock).mockResolvedValue(undefined);
-
-      const request: GetTableStatusRequestType = { tableId: 'non-existent' };
-
-      await expect(service.getTableStatus(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockStudioCacheService.getCache).toHaveBeenCalledWith('status', 'non-existent');
+    it('should throw error if status not in cache', async () => {
+      jest.spyOn(service, 'getCache' as any).mockResolvedValue(undefined);
+      await expect(service.getTableStatus({ tableId: 'non-existent' })).rejects.toThrow(
+        StudioNotFoundError,
+      );
     });
   });
 
   describe('insertTableStatus', () => {
-    it('should insert a new status entry and refresh cache', async () => {
-      const request: InsertTableStatusRequestType = { tableId: 'uniTest' };
-      const now = new Date();
-
-      const mockRepoResult: InsertTableStatusResult = {
-        TABLE_ID: 'uniTest',
-        UPTIME: 0,
-        TIMESTAMP: now,
-        MAINTENANCE: false,
-        SDP: StudioServiceStatusEnum.DOWN,
-        IDP: StudioServiceStatusEnum.DOWN,
-        BROKER: StudioDeviceStatusEnum.DOWN,
-        Z_CAM: StudioDeviceStatusEnum.DOWN,
-        ROULETTE: StudioDeviceStatusEnum.DOWN,
-        SHAKER: StudioDeviceStatusEnum.DOWN,
-        BARCODE_SCANNER: StudioDeviceStatusEnum.DOWN,
-        NFC_SCANNER: StudioDeviceStatusEnum.DOWN,
-      };
-
-      (mockStudioStatusRepository.insertTableStatus as jest.Mock).mockResolvedValue(mockRepoResult);
-
-      const result = await service.insertTableStatus(request);
-
-      expect(mockStudioStatusRepository.insertTableStatus).toHaveBeenCalledWith('uniTest');
-
-      const expectedOutput: InsertTableStatusOutput = {
-        tableId: 'uniTest',
+    it('should insert and refresh cache', async () => {
+      const mockRepoResult: TableStatusResult = {
+        tableId: 'table1',
         uptime: 0,
-        timestamp: result.timestamp,
+        timestamp: 0,
         maintenance: false,
-        sdp: StudioServiceStatusEnum.DOWN,
-        idp: StudioServiceStatusEnum.DOWN,
-        broker: StudioDeviceStatusEnum.DOWN,
-        zCam: StudioDeviceStatusEnum.DOWN,
-        roulette: StudioDeviceStatusEnum.DOWN,
-        shaker: StudioDeviceStatusEnum.DOWN,
-        barcodeScanner: StudioDeviceStatusEnum.DOWN,
-        nfcScanner: StudioDeviceStatusEnum.DOWN,
+        sdp: '',
+        idp: '',
+        broker: '',
+        zCam: '',
+        roulette: '',
+        shaker: '',
+        barcodeScanner: '',
+        nfcScanner: '',
       };
-
-      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('status', expectedOutput);
-      expect(result).toEqual(expectedOutput);
+      (mockStudioStatusRepository.insertTableStatus as jest.Mock).mockResolvedValue(mockRepoResult);
+      const result = await service.insertTableStatus({ tableId: 'table1' });
+      expect(mockStudioStatusRepository.insertTableStatus).toHaveBeenCalledWith('table1');
+      expect(result.tableId).toBe('table1');
     });
   });
 
   describe('updateTableStatus', () => {
-    it('should update status and refresh the cache', async () => {
-      const request: UpdateTableStatusRequestType = {
-        tableId: 'status-table-1',
-        uptime: 100,
-        sdp: StudioServiceStatusEnum.STANDBY,
-      };
-      const affectedRows = 1;
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
-
-      const result = await service.updateTableStatus(request);
-
-      const expectedEntity = { uptime: 100, sdp: StudioServiceStatusEnum.STANDBY };
-      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith(
-        'status-table-1',
-        expectedEntity,
-      );
-
-      const expectedOutput = {
-        tableId: request.tableId,
-        ...expectedEntity,
-      };
-      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('status', expectedOutput);
-
-      expect(result).toEqual(expectedOutput);
+    it('should update and refresh cache on success', async () => {
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(1);
+      const type = { tableId: 'table1', uptime: 10 };
+      const result = await service.updateTableStatus(type);
+      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('table1', {
+        uptime: 10,
+      });
+      expect(result).toEqual({ tableId: 'table1', uptime: 10 });
     });
 
-    it('should throw StudioNotFoundError if no rows are updated', async () => {
-      const request: UpdateTableStatusRequestType = {
-        tableId: 'non-existent',
-        uptime: 100,
-      };
-      const affectedRows = 0;
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
-
-      await expect(service.updateTableStatus(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
+    it('should throw error if no rows affected', async () => {
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(undefined);
+      const type = { tableId: 'table1', uptime: 10 };
+      await expect(service.updateTableStatus(type)).rejects.toThrow(
+        new StudioNotFoundError(`gameCode table1 hasn't changed`),
+      );
     });
   });
 
   describe('updateTableStatusByWebSocket', () => {
-    it('should update status and refresh the cache', async () => {
-      const tableId = 'status-table-1';
-      const input = { maintenance: true };
-      const affectedRows = 1;
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
-
-      const result = await service.updateTableStatusByWebSocket(tableId, input);
-
-      const expectedEntity = { maintenance: true };
-      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith(
-        tableId,
-        expectedEntity,
-      );
-
-      const expectedOutput = {
-        tableId: tableId,
-        ...expectedEntity,
-      };
-      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('status', expectedOutput);
-
-      expect(result).toEqual(expectedOutput);
+    it('should update and refresh cache', async () => {
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(1);
+      const input: UpdateStudioStatusServiceInput = { uptime: 10, sdp: 'OK' };
+      const result = await service.updateTableStatusByWebSocket('ws-table', input);
+      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
+      expect(result).toEqual({ tableId: 'ws-table', ...input });
     });
 
-    it('should throw StudioNotFoundError if no rows are updated', async () => {
-      const tableId = 'non-existent';
-      const input = { maintenance: true };
-      const affectedRows = 0;
-      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(affectedRows);
-
-      await expect(service.updateTableStatusByWebSocket(tableId, input)).rejects.toThrow(Error);
-      expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
+    it('should throw error', async () => {
+      (mockStudioStatusRepository.updateTableStatus as jest.Mock).mockResolvedValue(undefined);
+      const input: UpdateStudioStatusServiceInput = { uptime: 10, sdp: 'OK' };
+      await expect(service.updateTableStatusByWebSocket('ws-table', input)).rejects.toThrow(
+        `gameCode ws-table hasn't changed`,
+      );
+      expect(mockStudioStatusRepository.updateTableStatus).toHaveBeenCalledWith('ws-table', input);
     });
   });
 });

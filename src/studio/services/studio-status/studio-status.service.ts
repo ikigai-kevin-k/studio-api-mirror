@@ -1,65 +1,40 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { CacheService } from 'src/cache/cache.service';
 import {
   GetTableStatusRequestType,
   InsertTableStatusRequestType,
   UpdateTableStatusRequestType,
   UpdateTableStatusResponseType,
 } from 'src/studio/controller/v1/studio-status/studio-status.type';
-import { StudioStatus } from 'src/studio/entities/studio-status.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
+import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import {
-  GetTableStatusOutput,
-  InsertTableStatusOutput,
-  UpdateTableStatusInput,
-  UpdateTableStatusOutput,
+  schema,
+  StudioStatusServiceOutput,
+  UpdateStudioStatusServiceInput,
 } from 'src/studio/services/studio-status/studio-status.service.type';
-import { StudioCacheService } from '../studio-cache/studio-cache.service';
 
 export class StudioStatusService implements ModuleLifecycle {
   constructor(
     private readonly studioStatusRepository: StudioStatusRepository,
-    private readonly studioCacheService: StudioCacheService,
+    private readonly cacheService: CacheService,
     private readonly logger: LoggerService,
   ) {}
 
-  async getTableStatusByTableID(tableId: string): Promise<StudioStatus> {
-    const entity = await this.studioStatusRepository.getTableStatusByTableID(tableId);
-
-    if (!entity) {
-      throw new StudioNotFoundError(`table ${tableId} not found`);
-    }
-    return entity;
-  }
-
-  async getTableStatus(type: GetTableStatusRequestType): Promise<GetTableStatusOutput> {
-    const output = await this.studioCacheService.getCache('status', type.tableId);
+  async getTableStatus(type: GetTableStatusRequestType): Promise<StudioStatusServiceOutput> {
+    const output = await this.getCache(type.tableId);
     if (!output) {
       throw new StudioNotFoundError(`table ${type.tableId} not found`);
     }
 
-    return output as GetTableStatusOutput;
+    return output as StudioStatusServiceOutput;
   }
 
-  async insertTableStatus(type: InsertTableStatusRequestType): Promise<InsertTableStatusOutput> {
-    const studioReturning = await this.studioStatusRepository.insertTableStatus(type.tableId);
-    const output = {
-      tableId: studioReturning.TABLE_ID,
-      uptime: studioReturning.UPTIME,
-      timestamp: studioReturning.TIMESTAMP.getTime(),
-      maintenance: studioReturning.MAINTENANCE,
-      sdp: studioReturning.SDP,
-      idp: studioReturning.IDP,
-      broker: studioReturning.BROKER,
-      zCam: studioReturning.Z_CAM,
-      roulette: studioReturning.ROULETTE,
-      shaker: studioReturning.SHAKER,
-      barcodeScanner: studioReturning.BARCODE_SCANNER,
-      nfcScanner: studioReturning.NFC_SCANNER,
-    };
-
-    await this.studioCacheService.refreshCache('status', output);
+  async insertTableStatus(type: InsertTableStatusRequestType): Promise<StudioStatusServiceOutput> {
+    const output = await this.studioStatusRepository.insertTableStatus(type.tableId);
+    await this.refreshCache(output.tableId, output);
 
     return output;
   }
@@ -67,40 +42,65 @@ export class StudioStatusService implements ModuleLifecycle {
   async updateTableStatus(
     type: UpdateTableStatusRequestType,
   ): Promise<UpdateTableStatusResponseType> {
-    const { tableId, ...entity } = type;
-    this.logger.info(JSON.stringify(entity));
+    const { tableId, timestamp, ...params } = type;
+    const entity = {
+      ...params,
+      timestamp: timestamp ? new Date(timestamp) : undefined,
+    };
     const result = await this.studioStatusRepository.updateTableStatus(tableId, entity);
-    this.logger.info(`result = ${result}`);
-    if (result <= 0) throw new StudioNotFoundError(`tableId ${tableId} hasn't changed`);
+    if (result === undefined) throw new StudioNotFoundError(`gameCode ${tableId} hasn't changed`);
+
+    await this.refreshCache(result.tableId, result);
 
     const output = {
       tableId: tableId,
-      ...entity,
+      timestamp,
+      ...params,
     };
-
-    await this.studioCacheService.refreshCache('status', output);
 
     return output;
   }
 
   async updateTableStatusByWebSocket(
     tableId: string,
-    input: UpdateTableStatusInput,
-  ): Promise<UpdateTableStatusOutput> {
+    input: UpdateStudioStatusServiceInput,
+  ): Promise<StudioStatusServiceOutput> {
     this.logger.info(JSON.stringify(input));
     const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
-    this.logger.info(`result = ${result}`);
-    if (result <= 0) throw new Error(`tableId ${tableId} hasn't changed`);
+    if (result === undefined) throw new Error(`gameCode ${tableId} hasn't changed`);
+
+    await this.refreshCache(result.tableId, result);
 
     const output = {
       tableId: tableId,
       ...input,
+      timestamp: input.timestamp ? input.timestamp.getTime() : undefined,
     };
-
-    await this.studioCacheService.refreshCache('status', output);
 
     return output;
   }
 
+  private getCacheKey(gameCode: string) {
+    return `studio-status-${gameCode}`;
+  }
+
+  async getCache(key: string): Promise<StudioStatusServiceOutput | undefined> {
+    const tag = this.getCacheKey(key);
+    const cache = await this.cacheService.getHashAs<StudioStatusServiceOutput>(tag, schema);
+    if (cache === undefined) {
+      const output = await this.studioStatusRepository.getTableStatusByTableID(key);
+      if (output) await this.cacheService.setHash(tag, output);
+      return output;
+    }
+    return cache;
+  }
+
+  private async refreshCache(gameCode: string, data: TableStatusResult) {
+    const cacheKey = this.getCacheKey(gameCode);
+    await this.cacheService.setHash(cacheKey, data);
+  }
+
   async onInit(): Promise<void> {}
+
+  async onDispose(): Promise<void> {}
 }

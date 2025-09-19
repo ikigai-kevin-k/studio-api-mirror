@@ -93,13 +93,14 @@ export class StudioCdnController implements ModuleLifecycle {
       },
       async (req): Promise<InsertStudioTableCdnResponseType> => {
         const { tableId, cdnDst } = await this.studioCdnService.insertTableCdn(req.body);
-        return {
+        const output = {
           tableId: tableId,
           cdnDst: {
             primary: cdnDst['primary'],
             secondary: cdnDst['secondary'],
           },
         };
+        return output;
       },
     );
   }
@@ -126,13 +127,14 @@ export class StudioCdnController implements ModuleLifecycle {
       },
       async (req): Promise<UpdateStudioTableCdnResponseType> => {
         const { tableId, cdnDst } = await this.studioCdnService.updateTableCdn(req.body);
-        return {
+        const output = {
           tableId: tableId,
           cdnDst: {
             primary: cdnDst['primary'],
             secondary: cdnDst['secondary'],
           },
         };
+        return output;
       },
     );
   }

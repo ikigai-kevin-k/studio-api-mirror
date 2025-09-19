@@ -147,7 +147,7 @@ describe('WsService', () => {
 
       const mockWs = {} as WebSocket;
       const mockQuery = new URLSearchParams('token=test');
-      const mockData = 'test-message';
+      const mockData = { message: 'test-message' };
 
       service['notify']('message', mockQuery, mockWs, mockData);
 

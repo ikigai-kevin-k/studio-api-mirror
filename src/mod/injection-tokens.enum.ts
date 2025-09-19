@@ -5,9 +5,6 @@ export const InjectionTokensEnum = {
   DB_SERVICE: 'dbService',
   DB_LOGGER_SERVICE: 'dbLoggerService',
 
-  STUDIO_CACHE_REPOSITORY: 'studioCacheRepository',
-  STUDIO_CACHE_SERVICE: 'studioCacheService',
-
   STUDIO_REPOSITORY: 'studioRepository',
   STUDIO_SERVICE: 'studioService',
   STUDIO_CONTROLLER: 'studioController',
@@ -19,8 +16,12 @@ export const InjectionTokensEnum = {
   STUDIO_STATUS_REPOSITORY: 'studioStatusRepository',
   STUDIO_STATUS_SERVICE: 'studioStatusService',
   STUDIO_STATUS_CONTROLLER: 'studioStatusController',
-
-  STUDIO_WS_SERVICE: 'studioWsService',
+  STUDIO_STATUS_OBSERVER: 'studioStatusObserver',
 
   WS_SERVICE: 'wsService',
+
+  LOS_SIGNAL_SERVICE: 'losSignalService',
+  LOS_SIGNAL_OBSERVER: 'losSignalObserver',
+
+  SLACK_SERVICE: 'slackService',
 } as const;

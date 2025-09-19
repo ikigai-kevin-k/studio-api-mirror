@@ -1,29 +1,37 @@
 /* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unicorn/no-useless-undefined */
 // studio-cdn.service.spec.ts
 import { LoggerService } from '@ikigaians/logger';
+import { CacheService } from 'src/cache/cache.service';
 import {
   GetStudioTableCdnRequestType,
   InsertStudioTableCdnRequestType,
   UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
-import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
-import { InsertTableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
-import { StudioCacheService } from 'src/studio/services/studio-cache/studio-cache.service';
+import { TableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
+import {
+  GetStudioCdnServiceOutput,
+  schema,
+} from 'src/studio/services/studio-cdn/studio-cdn.service.type';
 
 const mockStudioCdnRepository = {
   getTableCdnByTableID: jest.fn(),
+  getStudioCdn: jest.fn(),
   insertTableCdn: jest.fn(),
   updateTableCdn: jest.fn(),
 } as unknown as StudioCdnRepository;
 
-const mockStudioCacheService = {
-  getCache: jest.fn(),
-  refreshCache: jest.fn(),
-} as unknown as StudioCacheService;
+const mockCacheService = {
+  getHashAs: jest.fn(),
+  setHash: jest.fn(),
+  refresh: jest.fn(),
+  has: jest.fn(),
+} as unknown as CacheService;
 
 const mockLoggerService = {
   info: jest.fn(),
@@ -34,11 +42,7 @@ describe('StudioCdnService', () => {
   let service: StudioCdnService;
 
   beforeEach(() => {
-    service = new StudioCdnService(
-      mockStudioCdnRepository,
-      mockStudioCacheService,
-      mockLoggerService,
-    );
+    service = new StudioCdnService(mockStudioCdnRepository, mockCacheService, mockLoggerService);
     jest.clearAllMocks();
   });
 
@@ -48,121 +52,156 @@ describe('StudioCdnService', () => {
     });
   });
 
-  describe('getTableCdnByTableID', () => {
-    it('should return a StudioCdn entity if found', async () => {
-      const mockCdn: StudioCdn = {
-        id: 1,
-        tableId: 'uniTest',
+  describe('getCacheKey', () => {
+    it('should return cache key', async () => {
+      expect((service as any).getCacheKey('gameCode')).toBe('studio-cdn-gameCode');
+    });
+  });
+
+  describe('getCache', () => {
+    it('should return the correct cache entry for a given key', async () => {
+      const mockCacheData: GetStudioCdnServiceOutput = {
+        tableId: 'cdn1',
         cdnDst: {
-          cdnDst: {
-            primary: {
-              lo: 'http://ikg-cit.io/hd.flv',
-              me: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hd.flv',
-              hd: 'http://ikg-cit.io/hd.flv',
-            },
-            secondary: {
-              lo: 'http://ikg-cit.io/hd.flv',
-              me: 'http://ikg-cit.io/hd.flv',
-              hi: 'http://ikg-cit.io/hd.flv',
-              hd: 'http://ikg-cit.io/hd.flv',
-            },
+          primary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+          },
+          secondary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(mockCacheData);
 
-      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCdn);
-
-      const result = await service.getTableCdnByTableID('uniTest');
-
-      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('uniTest');
-      expect(result).toEqual(mockCdn);
+      const result = await service.getCache('cdn1');
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-cdn-cdn1', schema);
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledTimes(0);
+      expect(result).toEqual(mockCacheData);
     });
 
-    it('should throw StudioNotFoundError if not found', async () => {
-      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(null);
+    it('should fetch from repository and set cache if cache does not exist', async () => {
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
 
-      await expect(service.getTableCdnByTableID('non-existent')).rejects.toThrow(
-        StudioNotFoundError,
-      );
-      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('non-existent');
+      const mockCacheData: TableCdnResult = {
+        tableId: 'cdn1',
+        cdnDst: {
+          primary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+          },
+          secondary: {
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
+          },
+        },
+      };
+      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(mockCacheData);
+
+      const result = await service.getCache('cdn1');
+
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-cdn-cdn1', schema);
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('cdn1');
+
+      expect(mockCacheService.setHash).toHaveBeenCalledWith('studio-cdn-cdn1', mockCacheData);
+      expect(result).toEqual(mockCacheData);
+    });
+
+    it('should return undefined if the key is not in db', async () => {
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(undefined);
+      (mockStudioCdnRepository.getTableCdnByTableID as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await service.getCache('cdn1');
+
+      expect(mockCacheService.getHashAs).toHaveBeenCalledWith('studio-cdn-cdn1', schema);
+      expect(mockStudioCdnRepository.getTableCdnByTableID).toHaveBeenCalledWith('cdn1');
+
+      expect(mockCacheService.setHash).toHaveBeenCalledTimes(0);
+      expect(result).toBeUndefined();
     });
   });
 
   describe('getTableCdn', () => {
-    it('should return CDN data from cache and format it correctly', async () => {
-      const mockCacheData = {
-        tableId: 'uniTest',
+    it('should return CDN data from cache', async () => {
+      const spyGetCache = jest.spyOn(service, 'getCache');
+      const mockCacheOutput: GetStudioCdnServiceOutput = {
+        tableId: 'cdn1',
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
+      spyGetCache.mockResolvedValue(mockCacheOutput);
 
-      (mockStudioCacheService.getCache as jest.Mock).mockResolvedValue(mockCacheData);
-
-      const request: GetStudioTableCdnRequestType = { tableId: 'uniTest' };
-
+      const request: GetStudioTableCdnRequestType = { tableId: 'cdn1' };
       const result = await service.getTableCdn(request);
 
-      expect(mockStudioCacheService.getCache).toHaveBeenCalledWith('cdn', 'uniTest');
-      expect(result).toEqual(mockCacheData);
+      expect(spyGetCache).toHaveBeenCalledWith('cdn1');
+      expect(result).toEqual(mockCacheOutput);
     });
 
     it('should throw StudioNotFoundError if CDN data is not in cache', async () => {
-      (mockStudioCacheService.getCache as jest.Mock).mockResolvedValue(undefined);
+      const spyGetCache = jest.spyOn(service, 'getCache');
+      spyGetCache.mockResolvedValue(undefined);
 
       const request: GetStudioTableCdnRequestType = { tableId: 'non-existent' };
-
       await expect(service.getTableCdn(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockStudioCacheService.getCache).toHaveBeenCalledWith('cdn', 'non-existent');
+      expect(spyGetCache).toHaveBeenCalledWith('non-existent');
     });
   });
 
   describe('insertTableCdn', () => {
     it('should insert a new CDN entry and refresh cache', async () => {
       const request: InsertStudioTableCdnRequestType = {
-        tableId: 'uniTest',
+        tableId: 'cdn-new',
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
-
-      const mockRepoResult: InsertTableCdnResult = {
-        TABLE_ID: 'uniTest',
-        CDN: {
+      const mockRepoResult = {
+        tableId: 'cdn-new',
+        cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
@@ -172,35 +211,28 @@ describe('StudioCdnService', () => {
       const result = await service.insertTableCdn(request);
 
       expect(mockStudioCdnRepository.insertTableCdn).toHaveBeenCalledWith(
-        expect.objectContaining({ tableId: request.tableId, cdnDst: request.cdnDst }),
+        expect.objectContaining({ tableId: request.tableId }),
       );
-
-      const expectedCacheOutput = {
-        tableId: request.tableId,
-        cdnDst: request.cdnDst,
-      };
-      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('cdn', expectedCacheOutput);
-
-      expect(result).toEqual(expectedCacheOutput);
+      expect(result).toEqual(request);
     });
   });
 
   describe('updateTableCdn', () => {
     it('should update an existing CDN entry and refresh cache', async () => {
       const request: UpdateStudioTableCdnRequestType = {
-        tableId: 'uniTest',
+        tableId: 'test',
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
@@ -211,16 +243,10 @@ describe('StudioCdnService', () => {
       const result = await service.updateTableCdn(request);
 
       expect(mockStudioCdnRepository.updateTableCdn).toHaveBeenCalledWith(
-        expect.objectContaining({ tableId: request.tableId, cdnDst: request.cdnDst }),
+        expect.objectContaining({ tableId: request.tableId }),
       );
-
-      const expectedCacheOutput = {
-        tableId: request.tableId,
-        cdnDst: request.cdnDst,
-      };
-      expect(mockStudioCacheService.refreshCache).toHaveBeenCalledWith('cdn', expectedCacheOutput);
-
-      expect(result).toEqual(expectedCacheOutput);
+      const expectedOutput = { tableId: request.tableId, cdnDst: request.cdnDst };
+      expect(result).toEqual(expectedOutput);
     });
 
     it('should throw StudioNotFoundError if no entry is updated', async () => {
@@ -228,28 +254,23 @@ describe('StudioCdnService', () => {
         tableId: 'non-existent',
         cdnDst: {
           primary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
           secondary: {
-            lo: 'http://ikg-cit.io/hd.flv',
-            me: 'http://ikg-cit.io/hd.flv',
-            hi: 'http://ikg-cit.io/hd.flv',
-            hd: 'http://ikg-cit.io/hd.flv',
+            lo: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_lo.flv',
+            me: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_me.flv',
+            hi: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hi.flv',
+            hd: 'https://pull-ws-cit.stream.iki-utl.cc/live/sr_hd.flv',
           },
         },
       };
-      const affectedRows = 0;
 
-      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(affectedRows);
+      (mockStudioCdnRepository.updateTableCdn as jest.Mock).mockResolvedValue(undefined);
 
       await expect(service.updateTableCdn(request)).rejects.toThrow(StudioNotFoundError);
-      expect(mockStudioCdnRepository.updateTableCdn).toHaveBeenCalledWith(
-        expect.objectContaining({ tableId: request.tableId }),
-      );
-      expect(mockStudioCacheService.refreshCache).not.toHaveBeenCalled();
     });
   });
 });

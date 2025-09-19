@@ -26,6 +26,14 @@ describe('AppConfigService', () => {
     process.env.DB_SLAVE_PORT = '1234';
     process.env.DB_SLAVE_USER = 'slaveuser';
     process.env.DB_SLAVE_PASSWORD = 'slavepass';
+    process.env.WS_PORT = '';
+    process.env.WS_TOKEN = '';
+    process.env.LOS_SERVICE_URL = '';
+    process.env.AM_SERVICE_URL = '';
+    process.env.AM_STUDIO_USER = '';
+    process.env.AM_STUDIO_PASSWORD = '';
+    process.env.SLACK_STUDIO_TOKEN = '';
+    process.env.SLACK_STUDIO_CHANNEL_ID = '';
     appConfigService = new AppConfigService();
   });
 
@@ -69,5 +77,25 @@ describe('AppConfigService', () => {
     expect(appConfigService.cacheConfig.username).toBe('redisuser');
     expect(appConfigService.cacheConfig.tls).toBe(false);
     expect(appConfigService.cacheConfig.isCluster).toBe(false);
+  });
+
+  it('should provide wsConfig', () => {
+    expect(appConfigService.wsConfig.port).toBeDefined();
+    expect(appConfigService.wsConfig.token).toBeDefined();
+  });
+
+  it('should provide losConfig', () => {
+    expect(appConfigService.losConfig.url).toBeDefined();
+  });
+
+  it('should provide amConfig', () => {
+    expect(appConfigService.amConfig.url).toBeDefined();
+    expect(appConfigService.amConfig.user).toBeDefined();
+    expect(appConfigService.amConfig.pw).toBeDefined();
+  });
+
+  it('should provide slackConfig', () => {
+    expect(appConfigService.slackConfig.token).toBeDefined();
+    expect(appConfigService.slackConfig.channel).toBeDefined();
   });
 });
