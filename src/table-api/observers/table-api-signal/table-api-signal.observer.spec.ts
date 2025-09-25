@@ -5,10 +5,10 @@ import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
-import { TableApiSignalService } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service';
+import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
-import { TableApiSignalObserver } from './tableapi-signal.observer';
+import { TableApiSignalObserver } from './table-api-signal.observer';
 
 const mockWsService = {
   subscribe: jest.fn(),

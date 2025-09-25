@@ -1,9 +1,9 @@
 import { ModuleProfile } from '@ikigaians/mod';
 import { InjectionTokensEnum } from 'src/mod/injection-tokens.enum';
-import { TableApiSignalObserver } from 'src/tableapi/observers/tablapi-signal/tableapi-signal.observer';
-import { TableApiCdnService } from 'src/tableapi/services/tableapi-cdn/tableapi-cdn.service';
-import { TableApiSignalService } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service';
-import { TableApiTableService } from './services/tableapi-table/tableapi-table.service';
+import { TableApiSignalObserver } from 'src/table-api/observers/table-api-signal/table-api-signal.observer';
+import { TableApiCdnService } from 'src/table-api/services/table-api-cdn/table-api-cdn.service';
+import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
+import { TableApiTableService } from './services/table-api-table/table-api-table.service';
 
 export const TableApiModule: ModuleProfile[] = [
   [InjectionTokensEnum.TABLE_API_TABLE_SERVICE, TableApiTableService],

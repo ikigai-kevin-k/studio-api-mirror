@@ -6,11 +6,11 @@ import {
   ErrorSignalRequestType,
   TableApiErrorSignalResponseType,
 } from 'src/qa/controller/v1/qa-signal-simulator/qa-signal-simulator.controller.type';
-import { TableApiConnectFailureError } from 'src/tableapi/errors/tableapi.error';
-import { TableApiSchema } from 'src/tableapi/schema/tableapi.schema';
+import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
+import { TableApiSchema } from 'src/table-api/schema/table-api.schema';
 import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
-import { TableApiSignalServiceInput } from './tableapi-signal.service.type';
+import { TableApiSignalServiceInput } from './table-api-signal.service.type';
 
 export class TableApiSignalService implements ModuleLifecycle {
   constructor(

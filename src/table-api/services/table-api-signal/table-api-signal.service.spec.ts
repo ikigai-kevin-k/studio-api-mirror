@@ -4,9 +4,9 @@
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
 import { ErrorSignalRequestType } from 'src/qa/controller/v1/qa-signal-simulator/qa-signal-simulator.controller.type';
-import { TableApiConnectFailureError } from 'src/tableapi/errors/tableapi.error';
-import { TableApiSignalService } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service';
-import { TableApiSignalServiceInput } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service.type';
+import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
+import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
+import { TableApiSignalServiceInput } from 'src/table-api/services/table-api-signal/table-api-signal.service.type';
 import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
 

@@ -2,12 +2,12 @@
 import { getLiveTableSessionHeaders } from '@ikigaians/web';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
-import { TableApiConnectFailureError } from 'src/tableapi/errors/tableapi.error';
-import { TableApiSchema } from 'src/tableapi/schema/tableapi.schema';
+import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
+import { TableApiSchema } from 'src/table-api/schema/table-api.schema';
 import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
-import { TableApiCdnService } from './tableapi-cdn.service';
-import { TableApiCdnServiceInput } from './tableapi-cdn.type';
+import { TableApiCdnService } from './table-api-cdn.service';
+import { TableApiCdnServiceInput } from './table-api-cdn.type';
 
 const mockAppConfigService = {
   tableApiConfig: {

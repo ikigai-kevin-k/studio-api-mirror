@@ -4,12 +4,12 @@ import { SlackService } from 'src/slack/slack.service';
 import { StudioNotFoundError, StudioWsAuthError } from 'src/studio/errors/studio.error';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
-import { TableApiSignalService } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service';
+import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
 import { StudioApiError } from 'src/utils/error-utils';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
 import { WebSocket } from 'ws';
-import { TableApiSignalObserverInput } from './tableapi-signal.observer.type';
+import { TableApiSignalObserverInput } from './table-api-signal.observer.type';
 
 export class TableApiSignalObserver implements ModuleLifecycle {
   private unSubscribes: Unsubscribe[] = [];

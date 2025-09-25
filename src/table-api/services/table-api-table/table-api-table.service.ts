@@ -3,8 +3,8 @@ import { getLiveTableSessionHeaders } from '@ikigaians/web';
 import { CacheService } from 'src/cache/cache.service';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
-import { TableApiConnectFailureError } from 'src/tableapi/errors/tableapi.error';
-import { TableApiSchema } from 'src/tableapi/schema/tableapi.schema';
+import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
+import { TableApiSchema } from 'src/table-api/schema/table-api.schema';
 import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
 

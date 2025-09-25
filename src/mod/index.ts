@@ -10,7 +10,7 @@ import { QaSimulatorModule } from 'src/qa';
 import { RouterModule } from 'src/router';
 import { SlackModule } from 'src/slack';
 import { StudioModule } from 'src/studio';
-import { TableApiModule } from 'src/tableapi';
+import { TableApiModule } from 'src/table-api';
 import { WsModule } from 'src/ws';
 import { InjectionTokensEnum } from './injection-tokens.enum';
 

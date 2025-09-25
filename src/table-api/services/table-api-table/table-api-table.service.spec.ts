@@ -6,7 +6,7 @@ import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
 import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
-import { TableApiTableService } from './tableapi-table.service';
+import { TableApiTableService } from './table-api-table.service';
 
 jest.mock('undici');
 const mockedFetch = fetch as jest.Mock;

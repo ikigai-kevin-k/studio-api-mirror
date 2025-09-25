@@ -1,5 +1,5 @@
 import { IkiError } from '@ikigaians/common';
-import { TableApiErrorsEnum } from '../enums/tableapi-errors.enum';
+import { TableApiErrorsEnum } from '../enums/table-api-errors.enum';
 
 export class TableApiConnectFailureError extends IkiError {
   readonly code: TableApiErrorsEnum;

@@ -9,7 +9,7 @@ import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
-import { TableApiSignalService } from 'src/tableapi/services/tableapi-signal/tableapi-signal.service';
+import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
 import {
   ErrorSignalBody,
   ErrorSignalParams,
