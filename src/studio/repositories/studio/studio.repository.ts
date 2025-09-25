@@ -16,7 +16,11 @@ export class StudioRepository implements ModuleLifecycle {
       .getRepository(Studio)
       .createQueryBuilder('studio')
       .where('studio.TABLE_ID = :tableID', { tableID: tableID })
-      .select(['studio."TABLE_ID" as "tableId"', 'studio."TABLE_STATUS" as "tableStatus"']);
+      .select([
+        'studio."TABLE_ID" as "tableId"',
+        'studio."TABLE_STATUS" as "tableStatus"',
+        'studio."GAME_ID" as "gameId"',
+      ]);
 
     return await builder.getRawOne<StudioTableResult>();
   }
@@ -35,22 +39,26 @@ export class StudioRepository implements ModuleLifecycle {
     return {
       tableId: data.TABLE_ID,
       tableStatus: data.TABLE_STATUS,
+      gameId: data.GAME_ID,
     };
   }
 
-  async updateStudioTableStatus(
+  async updateStudioTable(
+    tableId: string,
     entity: UpdateStudioTableStatusEntity,
   ): Promise<StudioTableResult | undefined> {
+    const whereClause = Object.keys(entity)
+      .map((key) => `${key} = :${key}`)
+      .join(' AND ');
+
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .update(Studio)
-      .set({
-        tableStatus: entity.tableStatus,
-      })
-      .where({
-        tableId: entity.tableId,
-      })
+      .set(entity)
+      .where('tableId = :tableId', { tableId })
+      .andWhere(`NOT (${whereClause})`)
+      .setParameters(entity)
       .returning('*')
       .execute();
 
@@ -60,6 +68,7 @@ export class StudioRepository implements ModuleLifecycle {
     return {
       tableId: data.TABLE_ID,
       tableStatus: data.TABLE_STATUS,
+      gameId: data.GAME_ID,
     };
   }
 

@@ -69,6 +69,11 @@ export class AppConfigService {
       token: String(process.env.WS_TOKEN),
     };
 
+    this.tableApi = {
+      url: String(process.env.TABLE_API_SERVICE_URL),
+      maxRetry: Number(process.env.TABLE_API_MAX_RETRY),
+    };
+
     this.los = {
       url: String(process.env.LOS_SERVICE_URL),
       retry: Number(process.env.LOS_MAX_RETRY),
@@ -139,6 +144,12 @@ export class AppConfigService {
   private los!: { url: string; retry: number; token: string };
   get losConfig(): { url: string; retry: number; token: string } {
     return this.los;
+  }
+
+  /** table api url config */
+  private tableApi!: { url: string; maxRetry: number };
+  get tableApiConfig(): { url: string; maxRetry: number } {
+    return this.tableApi;
   }
 
   /** access manager config */

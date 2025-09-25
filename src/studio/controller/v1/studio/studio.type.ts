@@ -13,6 +13,7 @@ export const GetStudioTableResponse = Type.Object({
     Type.Object({
       tableId: Type.String(),
       tableStatus: Type.String(),
+      gameId: Type.String(),
     }),
   ),
 });
@@ -21,7 +22,8 @@ export type GetStudioTableResponseType = Static<typeof GetStudioTableResponse>;
 
 export const InsertStudioTableRequest = Type.Object({
   tableId: Type.String(),
-  tableStatus: StringEnum(StudioTableStatusEnum),
+  tableStatus: Type.Optional(StringEnum(StudioTableStatusEnum)),
+  gameId: Type.Optional(Type.String()),
 });
 
 export type InsertStudioTableRequestType = Static<typeof InsertStudioTableRequest>;
@@ -29,20 +31,23 @@ export type InsertStudioTableRequestType = Static<typeof InsertStudioTableReques
 export const InsertStudioTableResponse = Type.Object({
   tableId: Type.String(),
   tableStatus: Type.String(),
+  gameId: Type.String(),
 });
 
 export type InsertStudioTableResponseType = Static<typeof InsertStudioTableResponse>;
 
 export const UpdateStudioTableStatusRequest = Type.Object({
   tableId: Type.String(),
-  tableStatus: StringEnum(StudioTableStatusEnum),
+  tableStatus: Type.Optional(StringEnum(StudioTableStatusEnum)),
+  gameId: Type.Optional(Type.String()),
 });
 
 export type UpdateStudioTableStatusRequestType = Static<typeof UpdateStudioTableStatusRequest>;
 
 export const UpdateStudioTableStatusResponse = Type.Object({
   tableId: Type.String(),
-  tableStatus: Type.String(),
+  tableStatus: Type.Optional(Type.String()),
+  gameId: Type.Optional(Type.String()),
 });
 
 export type UpdateStudioTableStatusResponseType = Static<typeof UpdateStudioTableStatusResponse>;

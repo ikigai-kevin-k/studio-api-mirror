@@ -5,13 +5,14 @@
 /* eslint-disable unicorn/no-useless-undefined */
 import { LoggerService } from '@ikigaians/logger';
 import { CacheService } from 'src/cache/cache.service';
+import { UNKNOWN_GAME_CODE } from 'src/studio/const/studio.const';
 import {
   GetStudioTableRequestType,
   InsertStudioTableRequestType,
   UpdateStudioTableStatusRequestType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioRepository } from 'src/studio/repositories/studio/studio.repository';
 import { StudioTableResult } from 'src/studio/repositories/studio/studio.repository.type';
 import { StudioService } from 'src/studio/services/studio/studio.service';
@@ -21,7 +22,7 @@ const mockStudioRepository = {
   getStudioTableByTableID: jest.fn(),
   getStudio: jest.fn(),
   insertStudioTable: jest.fn(),
-  updateStudioTableStatus: jest.fn(),
+  updateStudioTable: jest.fn(),
 } as unknown as StudioRepository;
 
 const mockCacheService = {
@@ -44,6 +45,10 @@ describe('StudioService', () => {
     jest.clearAllMocks();
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   describe('onInit', () => {
     it('should be callable and return without errors', async () => {
       await expect(service.onInit()).resolves.toBeUndefined();
@@ -61,6 +66,7 @@ describe('StudioService', () => {
       const mockCacheData: StudioServiceOutput = {
         tableId: 'table1',
         tableStatus: 'ACTIVE',
+        gameId: 'game1',
       };
 
       (mockCacheService.getHashAs as jest.Mock).mockResolvedValue(mockCacheData);
@@ -81,6 +87,7 @@ describe('StudioService', () => {
       const mockRepositoryData: StudioServiceOutput = {
         tableId: 'table1',
         tableStatus: 'ACTIVE',
+        gameId: 'game1',
       };
       (mockStudioRepository.getStudioTableByTableID as jest.Mock).mockResolvedValue(
         mockRepositoryData,
@@ -118,6 +125,7 @@ describe('StudioService', () => {
       spyGetCaches.mockResolvedValueOnce({
         tableId: 'table1',
         tableStatus: 'ACTIVE',
+        gameId: 'game1',
       });
 
       const request: GetStudioTableRequestType = {
@@ -131,21 +139,22 @@ describe('StudioService', () => {
         {
           tableId: 'table1',
           tableStatus: 'ACTIVE',
+          gameId: 'game1',
         },
       ]);
     });
   });
 
   describe('insertStudioTable', () => {
-    it('should insert a new studio and refresh the cache', async () => {
+    it('should insert a new studio and refresh the cache (tableId Only)', async () => {
       const request: InsertStudioTableRequestType = {
         tableId: 'table-new',
-        tableStatus: StudioTableStatusEnum.ACTIVE,
       };
 
       const mockRepoResult: StudioTableResult = {
         tableId: 'table-new',
-        tableStatus: StudioTableStatusEnum.ACTIVE,
+        tableStatus: StudioTableStatusEnum.FAILURE,
+        gameId: UNKNOWN_GAME_CODE,
       };
 
       (mockStudioRepository.insertStudioTable as jest.Mock).mockResolvedValue(mockRepoResult);
@@ -155,7 +164,36 @@ describe('StudioService', () => {
       expect(mockStudioRepository.insertStudioTable).toHaveBeenCalledWith(
         expect.objectContaining({
           tableId: request.tableId,
-          tableStatus: request.tableStatus,
+          tableStatus: StudioTableStatusEnum.FAILURE,
+          gameId: UNKNOWN_GAME_CODE,
+        }),
+      );
+
+      expect(result).toEqual(mockRepoResult);
+    });
+
+    it('should insert a new studio and refresh the cache', async () => {
+      const request: InsertStudioTableRequestType = {
+        tableId: 'table-new',
+        tableStatus: StudioTableStatusEnum.ACTIVE,
+        gameId: 'ARO-001',
+      };
+
+      const mockRepoResult: StudioTableResult = {
+        tableId: 'table-new',
+        tableStatus: StudioTableStatusEnum.ACTIVE,
+        gameId: 'ARO-001',
+      };
+
+      (mockStudioRepository.insertStudioTable as jest.Mock).mockResolvedValue(mockRepoResult);
+
+      const result = await service.insertStudioTable(request);
+
+      expect(mockStudioRepository.insertStudioTable).toHaveBeenCalledWith(
+        expect.objectContaining({
+          tableId: request.tableId,
+          tableStatus: StudioTableStatusEnum.ACTIVE,
+          gameId: 'ARO-001',
         }),
       );
 
@@ -171,13 +209,13 @@ describe('StudioService', () => {
       };
       const affectedRows = 1;
 
-      (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(affectedRows);
+      (mockStudioRepository.updateStudioTable as jest.Mock).mockResolvedValue(affectedRows);
 
-      const result = await service.updateStudioTableStatus(request);
+      const result = await service.updateStudioTable(request);
 
-      expect(mockStudioRepository.updateStudioTableStatus).toHaveBeenCalledWith(
+      expect(mockStudioRepository.updateStudioTable).toHaveBeenCalledWith(
+        request.tableId,
         expect.objectContaining({
-          tableId: request.tableId,
           tableStatus: request.tableStatus,
         }),
       );
@@ -196,9 +234,71 @@ describe('StudioService', () => {
         tableStatus: StudioTableStatusEnum.FAILURE,
       };
 
-      (mockStudioRepository.updateStudioTableStatus as jest.Mock).mockResolvedValue(undefined);
+      (mockStudioRepository.updateStudioTable as jest.Mock).mockResolvedValue(undefined);
 
-      await expect(service.updateStudioTableStatus(request)).rejects.toThrow(StudioNotFoundError);
+      await expect(service.updateStudioTable(request)).rejects.toThrow(StudioNotFoundError);
+    });
+  });
+
+  describe('setStudioTableStatus', () => {
+    it('should update studio status and refresh the cache', async () => {
+      const mockResult: StudioTableResult = {
+        tableId: 'table-1',
+        tableStatus: StudioTableStatusEnum.FAILURE,
+        gameId: 'gameId',
+      };
+
+      (mockStudioRepository.updateStudioTable as jest.Mock).mockResolvedValue(mockResult);
+
+      const result = await service.setStudioTableStatus('tableId', StudioTableStatusEnum.FAILURE);
+
+      expect(mockStudioRepository.updateStudioTable).toHaveBeenCalledWith(
+        'tableId',
+        expect.objectContaining({
+          tableStatus: StudioTableStatusEnum.FAILURE,
+        }),
+      );
+
+      expect(result).toEqual(true);
+    });
+
+    it('should return false if no rows are updated', async () => {
+      (mockStudioRepository.updateStudioTable as jest.Mock).mockResolvedValue(undefined);
+
+      const result = await service.setStudioTableStatus('tableId', StudioTableStatusEnum.FAILURE);
+
+      expect(mockStudioRepository.updateStudioTable).toHaveBeenCalledWith(
+        'tableId',
+        expect.objectContaining({
+          tableStatus: StudioTableStatusEnum.FAILURE,
+        }),
+      );
+
+      expect(result).toEqual(false);
+    });
+  });
+
+  describe('getStudioTableBelongTo', () => {
+    it('should return data from cache', async () => {
+      const mockResult: StudioTableResult = {
+        tableId: 'table-1',
+        tableStatus: StudioTableStatusEnum.FAILURE,
+        gameId: 'gameId',
+      };
+
+      const spyGetCache = jest.spyOn(service, 'getCache');
+      spyGetCache.mockResolvedValue(mockResult);
+
+      const result = await service.getStudioTableBelongTo('table-1');
+      expect(result).toEqual('gameId');
+    });
+
+    it('should return undefined if cache does not hit', async () => {
+      const spyGetCache = jest.spyOn(service, 'getCache');
+      spyGetCache.mockResolvedValue(undefined);
+
+      const result = await service.getStudioTableBelongTo('table-1');
+      expect(result).toBeUndefined();
     });
   });
 });

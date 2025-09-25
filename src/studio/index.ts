@@ -1,13 +1,16 @@
 import { ModuleProfile } from '@ikigaians/mod';
 import { InjectionTokensEnum } from 'src/mod/injection-tokens.enum';
 import { StudioCdnController } from './controller/v1/studio-cdn/studio-cdn.controller';
+import { StudioDeviceDataController } from './controller/v1/studio-device/studio-device.controller';
 import { StudioStatusController } from './controller/v1/studio-status/studio-status.controller';
 import { StudioController } from './controller/v1/studio/studio.controller';
 import { StudioStatusObserver } from './observers/studio-status/studio-status.observer';
 import { StudioCdnRepository } from './repositories/studio-cdn/studio-cdn.repository';
+import { StudioDeviceDataRepository } from './repositories/studio-device/studio-device-data.repository';
 import { StudioStatusRepository } from './repositories/studio-status/studio-status.repository';
 import { StudioRepository } from './repositories/studio/studio.repository';
 import { StudioCdnService } from './services/studio-cdn/studio-cdn.service';
+import { StudioDeviceDataService } from './services/studio-device/studio-device-data.service';
 import { StudioStatusService } from './services/studio-status/studio-status.service';
 import { StudioService } from './services/studio/studio.service';
 export const StudioModule: ModuleProfile[] = [
@@ -23,4 +26,8 @@ export const StudioModule: ModuleProfile[] = [
   [InjectionTokensEnum.STUDIO_STATUS_SERVICE, StudioStatusService],
   [InjectionTokensEnum.STUDIO_STATUS_CONTROLLER, StudioStatusController],
   [InjectionTokensEnum.STUDIO_STATUS_OBSERVER, StudioStatusObserver],
+
+  [InjectionTokensEnum.STUDIO_DEVICE_DATA_REPOSITORY, StudioDeviceDataRepository],
+  [InjectionTokensEnum.STUDIO_DEVICE_DATA_SERVICE, StudioDeviceDataService],
+  [InjectionTokensEnum.STUDIO_DEVICE_DATA_CONTROLLER, StudioDeviceDataController],
 ] as const;

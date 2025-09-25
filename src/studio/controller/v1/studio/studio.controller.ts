@@ -111,7 +111,7 @@ export class StudioController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<UpdateStudioTableStatusResponseType> => {
-        return await this.studioService.updateStudioTableStatus(req.body);
+        return await this.studioService.updateStudioTable(req.body);
       },
     );
   }

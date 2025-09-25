@@ -29,4 +29,13 @@ export class Studio {
     comment: 'The status of game table: inactive, active, and failure Default value is inactive.',
   })
   tableStatus!: string;
+
+  @Column({
+    name: 'GAME_ID',
+    type: 'varchar',
+    length: 255,
+    default: 'N/A',
+    comment: 'Game Code ID',
+  })
+  gameId!: string;
 }

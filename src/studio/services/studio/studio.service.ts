@@ -1,12 +1,14 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { CacheService } from 'src/cache/cache.service';
+import { UNKNOWN_GAME_CODE } from 'src/studio/const/studio.const';
 import {
   GetStudioTableRequestType,
   InsertStudioTableRequestType,
   UpdateStudioTableStatusRequestType,
 } from 'src/studio/controller/v1/studio/studio.type';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import {
   StudioTableResult,
   UpdateStudioTableStatusEntity,
@@ -44,7 +46,8 @@ export class StudioService implements ModuleLifecycle {
   async insertStudioTable(type: InsertStudioTableRequestType): Promise<InsertStudioServiceOutput> {
     const studio: Studio = new Studio();
     studio.tableId = type.tableId;
-    studio.tableStatus = type.tableStatus;
+    studio.tableStatus = type.tableStatus || StudioTableStatusEnum.FAILURE;
+    studio.gameId = type.gameId || UNKNOWN_GAME_CODE;
 
     const output = await this.studioRepository.insertStudioTable(studio);
     await this.refreshCache(output.tableId, output);
@@ -52,15 +55,15 @@ export class StudioService implements ModuleLifecycle {
     return output;
   }
 
-  async updateStudioTableStatus(
+  async updateStudioTable(
     type: UpdateStudioTableStatusRequestType,
   ): Promise<UpdateStudioServiceStatusOutput> {
     const entity: UpdateStudioTableStatusEntity = {
-      tableId: type.tableId,
       tableStatus: type.tableStatus,
+      gameId: type.gameId,
     };
 
-    const result = await this.studioRepository.updateStudioTableStatus(entity);
+    const result = await this.studioRepository.updateStudioTable(type.tableId, entity);
     if (result === undefined)
       throw new StudioNotFoundError(`tableId ${type.tableId} can't be found`);
 
@@ -69,9 +72,23 @@ export class StudioService implements ModuleLifecycle {
     const output = {
       tableId: type.tableId,
       tableStatus: type.tableStatus,
+      gameId: type.gameId,
     };
 
     return output;
+  }
+
+  async setStudioTableStatus(tableId: string, status: StudioTableStatusEnum) {
+    const result = await this.studioRepository.updateStudioTable(tableId, { tableStatus: status });
+    if (result === undefined) return false;
+
+    await this.refreshCache(result.tableId, result);
+    return true;
+  }
+
+  async getStudioTableBelongTo(tableId: string) {
+    const cache = await this.getCache(tableId);
+    return cache?.gameId;
   }
 
   private getCacheKey(gameCode: string) {

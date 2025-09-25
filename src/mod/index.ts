@@ -6,9 +6,11 @@ import { DbModule } from 'src/db';
 import { HealthcheckModule } from 'src/healthcheck';
 import { LogModule } from 'src/log';
 import { LosModule } from 'src/los';
+import { QaSimulatorModule } from 'src/qa';
 import { RouterModule } from 'src/router';
 import { SlackModule } from 'src/slack';
 import { StudioModule } from 'src/studio';
+import { TableApiModule } from 'src/tableapi';
 import { WsModule } from 'src/ws';
 import { InjectionTokensEnum } from './injection-tokens.enum';
 
@@ -23,5 +25,7 @@ export const StudioMod: ModuleProfile[] = [
   ...WsModule,
   ...SlackModule,
   ...LosModule,
+  ...TableApiModule,
   ...StudioModule,
+  ...QaSimulatorModule,
 ];

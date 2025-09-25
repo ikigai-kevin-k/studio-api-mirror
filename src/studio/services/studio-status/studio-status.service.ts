@@ -7,7 +7,7 @@ import {
   UpdateTableStatusRequestType,
   UpdateTableStatusResponseType,
 } from 'src/studio/controller/v1/studio-status/studio-status.type';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import {
@@ -67,7 +67,7 @@ export class StudioStatusService implements ModuleLifecycle {
   ): Promise<StudioStatusServiceOutput> {
     this.logger.info(JSON.stringify(input));
     const result = await this.studioStatusRepository.updateTableStatus(tableId, input);
-    if (result === undefined) throw new Error(`gameCode ${tableId} hasn't changed`);
+    if (result === undefined) throw new StudioNotFoundError(`gameCode ${tableId} hasn't changed`);
 
     await this.refreshCache(result.tableId, result);
 

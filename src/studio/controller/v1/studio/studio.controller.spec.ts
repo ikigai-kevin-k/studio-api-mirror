@@ -2,6 +2,7 @@
 import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
 import { PreHandlersService, RouterService } from 'src/router';
+import { UNKNOWN_GAME_CODE } from 'src/studio/const/studio.const';
 import { StudioController } from 'src/studio/controller/v1/studio/studio.controller';
 import {
   GetStudioTableRequestType,
@@ -25,7 +26,7 @@ const mockFastify = {
 const mockStudioService = {
   getStudioTable: jest.fn(),
   insertStudioTable: jest.fn(),
-  updateStudioTableStatus: jest.fn(),
+  updateStudioTable: jest.fn(),
 } as unknown as StudioService;
 
 const mockPreHandlersService = {
@@ -76,7 +77,7 @@ describe('StudioController', () => {
       await controller.onInit();
       const mockRequestQuery: GetStudioTableRequestType = { tableId: ['uniTest'] };
       const mockServiceResponse: GetStudioTableResponseType = {
-        list: [{ tableId: 'uniTest-1', tableStatus: 'active' }],
+        list: [{ tableId: 'uniTest-1', tableStatus: 'active', gameId: 'game1' }],
       };
 
       (mockStudioService.getStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);
@@ -91,11 +92,11 @@ describe('StudioController', () => {
       await controller.onInit();
       const mockRequestBody: InsertStudioTableRequestType = {
         tableId: 'uniTest',
-        tableStatus: StudioTableStatusEnum.INACTIVE,
       };
       const mockServiceResponse: InsertStudioTableResponseType = {
         tableId: 'uniTest',
         tableStatus: 'inactive',
+        gameId: UNKNOWN_GAME_CODE,
       };
 
       (mockStudioService.insertStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);
@@ -117,13 +118,11 @@ describe('StudioController', () => {
         tableStatus: 'inactive',
       };
 
-      (mockStudioService.updateStudioTableStatus as jest.Mock).mockResolvedValue(
-        mockServiceResponse,
-      );
+      (mockStudioService.updateStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);
       const updateStudioTableHandler = (mockFastify.patch as jest.Mock).mock.calls[0][2];
       const result = await updateStudioTableHandler({ body: mockRequestBody });
 
-      expect(mockStudioService.updateStudioTableStatus).toHaveBeenCalledWith(mockRequestBody);
+      expect(mockStudioService.updateStudioTable).toHaveBeenCalledWith(mockRequestBody);
       expect(result).toEqual(mockServiceResponse);
     });
   });
