@@ -1,6 +1,5 @@
 export type TableApiSignalServiceInput = {
   msgId: string;
-  content: string;
   metadata: object;
 };
 

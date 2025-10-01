@@ -6,7 +6,6 @@ export const ErrorSignalParams = Type.Object({ gameCode: Type.String() });
 
 export const ErrorSignalBody = Type.Object({
   msgId: StringEnum(SystemMessageIdSchema),
-  content: Type.String(),
   metadata: Type.Object({
     locale: Type.Optional(Type.String()),
     timestamp: Type.Optional(Type.Number()),
@@ -91,43 +90,3 @@ export const TableApiErrorSignalResponse = Type.Object({
 });
 
 export type TableApiErrorSignalResponseType = Static<typeof TableApiErrorSignalResponse>;
-
-export const KafkaErrorSignalResponse = Type.Object({
-  msgId: StringEnum(SystemMessageIdSchema),
-  content: Type.String(),
-  metadata: Type.Object({
-    locale: Type.Optional(Type.String()),
-    timestamp: Type.Optional(Type.Number()),
-    gamecode: Type.String(),
-    tablename: Type.String(),
-    title: Type.String(),
-    description: Type.String(),
-    code: Type.String(),
-    suggestion: Type.String(),
-  }),
-});
-
-export type KafkaErrorSignalResponseType = Static<typeof KafkaErrorSignalResponse>;
-
-export const ActivateBackupParams = Type.Object({ deviceId: Type.String() });
-export type ActivateBackupParamsType = Static<typeof ActivateBackupParams>;
-
-export const ActivateBackupResponse = Type.Object({
-  gameCode: Type.String(),
-  currentTable: Type.String(),
-  cdn: Type.Object({
-    primary: Type.Object({
-      lo: Type.String(),
-      me: Type.String(),
-      hi: Type.String(),
-      hd: Type.String(),
-    }),
-    secondary: Type.Object({
-      lo: Type.String(),
-      me: Type.String(),
-      hi: Type.String(),
-      hd: Type.String(),
-    }),
-  }),
-});
-export type ActivateBackupResponseType = Static<typeof ActivateBackupResponse>;

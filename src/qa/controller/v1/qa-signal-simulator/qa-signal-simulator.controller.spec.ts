@@ -104,7 +104,6 @@ describe('QaSignalSimulatorController', () => {
         Params: { gameCode: 'test-001' },
         Body: {
           msgId: '',
-          content: '',
           metadata: {
             gameCode: '',
             tablename: '',

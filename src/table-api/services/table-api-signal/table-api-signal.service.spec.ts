@@ -47,7 +47,7 @@ describe('TableApiSignalService', () => {
   describe('sendSignal', () => {
     it('should call fetch with the correct parameters and return json on success', async () => {
       const mockTableId = 'table-1';
-      const mockData: TableApiSignalServiceInput = { msgId: '1', content: '', metadata: {} };
+      const mockData: TableApiSignalServiceInput = { msgId: '1', metadata: {} };
       const mockResponse = {
         ok: true,
         status: 200,
@@ -70,7 +70,7 @@ describe('TableApiSignalService', () => {
 
     it('should throw an error if the fetch response is not ok', async () => {
       const mockTableId = 'table-1';
-      const mockData: TableApiSignalServiceInput = { msgId: '1', content: '', metadata: {} };
+      const mockData: TableApiSignalServiceInput = { msgId: '1', metadata: {} };
       const mockResponse = {
         ok: false,
         status: 400,
@@ -85,7 +85,7 @@ describe('TableApiSignalService', () => {
 
   describe('forwardSignal', () => {
     const mockTableId = 'table-1';
-    const mockData: TableApiSignalServiceInput = { msgId: '1', content: '', metadata: {} };
+    const mockData: TableApiSignalServiceInput = { msgId: '1', metadata: {} };
 
     it('should return the response if send is successful', async () => {
       mockSend.mockResolvedValue('Successful Response');
