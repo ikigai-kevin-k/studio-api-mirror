@@ -1,4 +1,3 @@
-// table-api-signal.service.spec.ts
 /* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CacheService } from 'src/cache/cache.service';
@@ -89,7 +88,7 @@ describe('TableApiTableService', () => {
     const mockGameCode = 'gameId';
 
     it('should return the response if send is successful', async () => {
-      const mockResp = { data: { table: { name: 'sci bo' } } };
+      const mockResp = { data: { table: { name: 'sic bo' } } };
       mockSend.mockResolvedValue(mockResp);
 
       const result = await (service as any).queryTableName(mockGameCode);
@@ -99,20 +98,20 @@ describe('TableApiTableService', () => {
         mockAppConfigService.tableApiConfig.maxRetry,
         mockLoggerService,
       );
-      expect(result).toEqual('sci bo');
+      expect(result).toEqual('sic bo');
     });
   });
 
   describe('getCache', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData: string[] = ['sci bo'];
+      const mockCacheData: string[] = ['sic bo'];
 
       (mockCacheService.hmGet as jest.Mock).mockResolvedValue(mockCacheData);
 
       const result = await (service as any).getCache('gameId');
 
       expect(mockCacheService.hmGet).toHaveBeenCalledTimes(1);
-      expect(result).toEqual('sci bo');
+      expect(result).toEqual('sic bo');
     });
 
     it('should query data if cache does not hit', async () => {
@@ -120,22 +119,22 @@ describe('TableApiTableService', () => {
       (mockCacheService.hmGet as jest.Mock).mockResolvedValue(mockCacheData);
 
       const spyQueryTableName = jest.spyOn(service as any, 'queryTableName');
-      spyQueryTableName.mockResolvedValue('sci bo');
+      spyQueryTableName.mockResolvedValue('sic bo');
 
       const result = await (service as any).getCache('gameId');
 
       expect(mockCacheService.hSet).toHaveBeenCalledTimes(1);
-      expect(result).toEqual('sci bo');
+      expect(result).toEqual('sic bo');
     });
   });
 
   describe('getTableName', () => {
     it('should return data from cache', async () => {
       const spyGetCache = jest.spyOn(service as any, 'getCache');
-      spyGetCache.mockResolvedValue('sci bo');
+      spyGetCache.mockResolvedValue('sic bo');
 
       const result = await service.getTableName('gameId');
-      expect(result).toEqual('sci bo');
+      expect(result).toEqual('sic bo');
     });
   });
 });

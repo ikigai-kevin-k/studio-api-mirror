@@ -1,4 +1,3 @@
-// table-api-signal.service.spec.ts
 /* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppConfigService } from 'src/config';

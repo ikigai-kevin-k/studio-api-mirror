@@ -1,4 +1,3 @@
-// studio.repository.spec.ts
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-unused-vars */

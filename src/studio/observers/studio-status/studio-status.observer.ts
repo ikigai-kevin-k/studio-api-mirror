@@ -25,7 +25,7 @@ export class StudioStatusObserver implements ModuleLifecycle {
 
       const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
       if (!tableId)
-        throw new StudioNotFoundError(`[studio_device] ${deviceId} doesn't belong to ant table !!`);
+        throw new StudioNotFoundError(`[studio_device] ${deviceId} doesn't belong to any table !!`);
 
       const result = await this.studioStatusService.updateTableStatusByWebSocket(
         tableId,
