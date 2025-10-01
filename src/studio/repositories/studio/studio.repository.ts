@@ -67,7 +67,7 @@ export class StudioRepository implements ModuleLifecycle {
   }
 
   async updateStudioTable(entity: UpdateStudioTableStatusEntity): Promise<DbStudio> {
-    const { tableId, ...params } = entity;
+    const { tableId } = entity;
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
