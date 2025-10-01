@@ -73,8 +73,7 @@ describe('TableApiSignalService', () => {
       const mockResponse = {
         ok: false,
         status: 400,
-        error: { code: 10_001, message: '' },
-        json: () => Promise.resolve(mockResponse),
+        json: () => Promise.resolve({ error: { code: 10_001, message: '' } }),
       };
       mockedFetch.mockResolvedValue(mockResponse);
 

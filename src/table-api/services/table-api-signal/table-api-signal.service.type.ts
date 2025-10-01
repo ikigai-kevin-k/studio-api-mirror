@@ -39,7 +39,7 @@ export type TableApiSignalServiceOutput = {
         };
       };
       autopilot: {
-        enable: true;
+        enable: boolean;
         resultSequence: [
           {
             roulette: string;

@@ -74,7 +74,6 @@ export class StudioRepository implements ModuleLifecycle {
       .update(Studio)
       .set(entity)
       .where('tableId = :tableId', { tableId })
-      .setParameters(params)
       .returning('*')
       .execute();
 
