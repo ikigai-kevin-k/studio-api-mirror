@@ -1,8 +1,8 @@
 // studio.controller.spec.ts
 import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
-import { UNKNOWN_GAME_CODE } from 'src/studio/const/studio.const';
 import { StudioController } from 'src/studio/controller/v1/studio/studio.controller';
 import {
   GetStudioTableRequestType,
@@ -13,7 +13,6 @@ import {
   UpdateStudioTableStatusResponseType,
 } from 'src/studio/controller/v1/studio/studio.type';
 import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 
 const mockFastify = {
@@ -96,7 +95,7 @@ describe('StudioController', () => {
       const mockServiceResponse: InsertStudioTableResponseType = {
         tableId: 'uniTest',
         tableStatus: 'inactive',
-        gameId: UNKNOWN_GAME_CODE,
+        gameId: '',
       };
 
       (mockStudioService.insertStudioTable as jest.Mock).mockResolvedValue(mockServiceResponse);

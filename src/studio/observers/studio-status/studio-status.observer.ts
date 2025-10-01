@@ -1,10 +1,10 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { StudioApiError } from 'src/global/errors/error';
 import { StudioNotFoundError, StudioWsAuthError } from 'src/studio/errors/studio.error';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
 import { UpdateStudioStatusServiceInput } from 'src/studio/services/studio-status/studio-status.service.type';
-import { StudioApiError } from 'src/utils/error-utils';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
 import { WebSocket } from 'ws';
@@ -25,7 +25,7 @@ export class StudioStatusObserver implements ModuleLifecycle {
 
       const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
       if (!tableId)
-        throw new StudioNotFoundError(`device ${deviceId} doesn't belong to ant table !!`);
+        throw new StudioNotFoundError(`[studio_device] ${deviceId} doesn't belong to ant table !!`);
 
       const result = await this.studioStatusService.updateTableStatusByWebSocket(
         tableId,

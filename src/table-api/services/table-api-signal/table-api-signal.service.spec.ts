@@ -2,12 +2,10 @@
 /* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { AppConfigService } from 'src/config';
+import { send } from 'src/global/utils/send-utils';
 import { LoggerService } from 'src/log';
-import { ErrorSignalRequestType } from 'src/qa/controller/v1/qa-signal-simulator/qa-signal-simulator.controller.type';
-import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
 import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
 import { TableApiSignalServiceInput } from 'src/table-api/services/table-api-signal/table-api-signal.service.type';
-import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
 
 jest.mock('undici');
@@ -17,7 +15,7 @@ jest.mock('@ikigaians/web', () => ({
   getLiveTableSessionHeaders: jest.fn(() => ({ Cookie: 'mock-cookie' })),
 }));
 
-jest.mock('src/utils/send-utils', () => ({
+jest.mock('src/global/utils/send-utils', () => ({
   send: jest.fn(),
 }));
 
@@ -100,48 +98,6 @@ describe('TableApiSignalService', () => {
         mockLoggerService,
       );
       expect(result).toBe('Successful Response');
-    });
-  });
-
-  describe('forwardSignalByApi', () => {
-    const mockRequest: ErrorSignalRequestType = {
-      Params: { gameCode: 'table-1' },
-      Body: {
-        msgId: '1',
-        content: '',
-        metadata: {
-          gamecode: '',
-          tablename: '',
-          title: '',
-          description: '',
-          code: '',
-          suggestion: '',
-        },
-      },
-    };
-
-    it('should return the response if send is successful', async () => {
-      const mockResult = { data: { table: 'Successful Response' } };
-      mockSend.mockResolvedValue(mockResult);
-
-      const result = await service.forwardSignalByApi(mockRequest);
-
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.any(Function),
-        mockAppConfigService.tableApiConfig.maxRetry,
-        mockLoggerService,
-      );
-      expect(result).toStrictEqual({
-        table: mockResult.data.table,
-      });
-    });
-
-    it('should return the response if send is failure', async () => {
-      mockSend.mockRejectedValue(new Error('error response'));
-
-      await expect(service.forwardSignalByApi(mockRequest)).rejects.toThrow(
-        TableApiConnectFailureError,
-      );
     });
   });
 });

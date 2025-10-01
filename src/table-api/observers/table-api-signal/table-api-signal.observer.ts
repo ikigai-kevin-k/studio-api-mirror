@@ -1,11 +1,11 @@
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { StudioApiError } from 'src/global/errors/error';
 import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
 import { StudioNotFoundError, StudioWsAuthError } from 'src/studio/errors/studio.error';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
-import { StudioApiError } from 'src/utils/error-utils';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
 import { WebSocket } from 'ws';
@@ -30,12 +30,10 @@ export class TableApiSignalObserver implements ModuleLifecycle {
       if (!deviceId) throw new StudioWsAuthError('Unknown deviceId Exception Signal !!');
 
       const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
-      if (!tableId)
-        throw new StudioNotFoundError(`Device ${deviceId} doesn't belong to any table !!`);
 
       const gameCode = await this.studioService.getStudioTableBelongTo(tableId);
       if (!gameCode)
-        throw new StudioNotFoundError(`Table ${tableId} doesn't belong to any game !!`);
+        throw new StudioNotFoundError(`[studio] ${tableId} doesn't belong to any game !!`);
 
       const input = data as TableApiSignalObserverInput;
       await this.tableApiSignalService.forwardSignal(gameCode, input.signal);

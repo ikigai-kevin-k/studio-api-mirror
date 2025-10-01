@@ -1,13 +1,20 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('studio-device', {
+@Entity('studio_device', {
   comment: 'The device of game table.',
 })
-@Index('idx_device_id', ['deviceId'], { unique: true })
+@Index('idx_studio_device_id', ['deviceId'], { unique: true })
 export class StudioDevice {
   @PrimaryGeneratedColumn({
     name: 'ID',
-    primaryKeyConstraintName: 'pk_device_id',
+    primaryKeyConstraintName: 'pk_studio_device_id',
     comment: 'Auto increase number',
   })
   id!: number;
@@ -27,4 +34,18 @@ export class StudioDevice {
     comment: 'Table Id',
   })
   tableId!: string;
+
+  @CreateDateColumn({
+    name: 'CREATED_AT',
+    type: 'timestamp',
+    comment: 'When the player session was created',
+  })
+  createdAt!: Date;
+
+  @UpdateDateColumn({
+    name: 'UPDATED_AT',
+    type: 'timestamp',
+    comment: 'When the player session was updated',
+  })
+  updatedAt!: Date;
 }

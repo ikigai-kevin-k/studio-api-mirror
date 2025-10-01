@@ -1,9 +1,7 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/no-unreadable-array-destructuring */
-/* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
-import { RoutesEnum } from 'src/qa/enums/qa.router.enum';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
@@ -11,10 +9,6 @@ import { StudioService } from 'src/studio/services/studio/studio.service';
 import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
 import { QaSignalSimulatorController } from './qa-signal-simulator.controller';
 import { ErrorSignalRequestType } from './qa-signal-simulator.controller.type';
-
-const mockActivateBackupHandler = {
-  run: jest.fn(),
-};
 
 const mockStudioCdnService = {
   getTableCdn: jest.fn(),
@@ -24,20 +18,12 @@ const mockStudioDeviceDataService = {
   getDeviceBelongTo: jest.fn(),
 };
 
-const mockStudioGameService = {
-  getStudioGame: jest.fn(),
-};
-
 const mockStudioService = {
   getStudioTableBelongTo: jest.fn(),
 };
 
 const mockTableApiSignalService = {
-  forwardSignalByApi: jest.fn(),
-};
-
-const mockKafkaLosSignalService = {
-  publish: jest.fn(),
+  forwardSignal: jest.fn(),
 };
 
 const mockPreHandlersService = {
@@ -64,10 +50,6 @@ mockRouterService.app.register.mockImplementation(async (callback) => {
 
 describe('QaSignalSimulatorController', () => {
   let controller: QaSignalSimulatorController;
-  let tableApiSignalService: TableApiSignalService;
-  let preHandlersService: PreHandlersService;
-  let routerService: RouterService;
-  let logger: LoggerService;
 
   beforeAll(() => {
     controller = new QaSignalSimulatorController(
@@ -124,7 +106,7 @@ describe('QaSignalSimulatorController', () => {
           msgId: '',
           content: '',
           metadata: {
-            gamecode: '',
+            gameCode: '',
             tablename: '',
             title: '',
             description: '',
@@ -135,68 +117,70 @@ describe('QaSignalSimulatorController', () => {
       };
 
       const result = {
-        table: {
-          gameCode: '',
-          gameType: '',
-          visibility: '',
-          betPeriod: 0,
-          name: '',
-          pause: {
-            reason: '',
-            createdBy: '',
-            createdAt: new Date(),
-            createTime: 0,
-          },
-          maintenance: {
-            status: '',
-            createTime: 0,
-            endTime: 0,
-            startTime: 0,
-            createdBy: '',
-          },
-          streams: {
-            primary: {
-              lo: '',
-              me: '',
-              hi: '',
-              hd: '',
-            },
-            secondary: {
-              lo: '',
-              me: '',
-              hi: '',
-              hd: '',
-            },
-          },
-          autopilot: {
-            enable: false,
-            resultSequence: [],
-            lastResultIndex: 0,
-          },
-          sdpConfig: {},
-          tableRound: {
-            roundId: '',
+        data: {
+          table: {
             gameCode: '',
             gameType: '',
-            betStopTime: new Date(),
-            status: '',
-            result: {},
-            createdAt: new Date(),
+            visibility: '',
+            betPeriod: 0,
+            name: '',
+            pause: {
+              reason: '',
+              createdBy: '',
+              createdAt: new Date(),
+              createTime: 0,
+            },
+            maintenance: {
+              status: '',
+              createTime: 0,
+              endTime: 0,
+              startTime: 0,
+              createdBy: '',
+            },
+            streams: {
+              primary: {
+                lo: '',
+                me: '',
+                hi: '',
+                hd: '',
+              },
+              secondary: {
+                lo: '',
+                me: '',
+                hi: '',
+                hd: '',
+              },
+            },
+            autopilot: {
+              enable: false,
+              resultSequence: [],
+              lastResultIndex: 0,
+            },
+            sdpConfig: {},
+            tableRound: {
+              roundId: '',
+              gameCode: '',
+              gameType: '',
+              betStopTime: new Date(),
+              status: '',
+              result: {},
+              createdAt: new Date(),
+            },
+            metadata: {},
+            autoBetStop: false,
           },
-          metadata: {},
-          autoBetStop: false,
         },
       };
 
-      mockTableApiSignalService.forwardSignalByApi.mockResolvedValue(result);
+      mockTableApiSignalService.forwardSignal.mockResolvedValue(result);
 
       await controller.onInit();
       const [, , handler] = mockRouterService.app.post.mock.calls[0];
 
       const response = await handler({ params: request.Params, body: request.Body } as any);
 
-      expect(mockTableApiSignalService.forwardSignalByApi).toHaveBeenCalledWith(request);
-      expect(response).toEqual(result);
+      expect(mockTableApiSignalService.forwardSignal).toHaveBeenCalledTimes(1);
+      expect(response).toEqual({ table: result.data.table });
     });
   });
 });

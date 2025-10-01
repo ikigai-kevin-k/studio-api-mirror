@@ -4,8 +4,8 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { BadRequestResponse, UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import {
   GetDeviceRequest,
@@ -53,7 +53,7 @@ export class StudioDeviceDataController implements ModuleLifecycle {
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
             [StatusCodes.BAD_REQUEST]: BadRequestResponse,
           },
-          tags: ['device'],
+          tags: ['studio'],
           security: [{ serviceApiAuth: [] }],
         },
         preHandler: [serviceAuth],
@@ -79,7 +79,7 @@ export class StudioDeviceDataController implements ModuleLifecycle {
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
             [StatusCodes.BAD_REQUEST]: BadRequestResponse,
           },
-          tags: ['device'],
+          tags: ['studio'],
           security: [{ serviceApiAuth: [] }],
         },
         preHandler: [serviceAuth],
@@ -105,7 +105,7 @@ export class StudioDeviceDataController implements ModuleLifecycle {
             [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
             [StatusCodes.BAD_REQUEST]: BadRequestResponse,
           },
-          tags: ['device'],
+          tags: ['studio'],
           security: [{ serviceApiAuth: [] }],
         },
         preHandler: [serviceAuth],

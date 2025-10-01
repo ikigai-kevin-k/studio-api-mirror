@@ -1,4 +1,4 @@
-export type StudioDeviceDataResult = {
+export type DbStudioDevice = {
   deviceId: string;
   tableId: string;
 };

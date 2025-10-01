@@ -1,14 +1,21 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { StudioDeviceStatusEnum, StudioServiceStatusEnum } from '../enums/studio.enums';
 
-@Entity('studio-status', {
+@Entity('studio_status', {
   comment: 'The machine status of studio game table.',
 })
-@Index('idx_status_table_id', ['tableId'], { unique: true })
+@Index('idx_studio_status_table_id', ['tableId'], { unique: true })
 export class StudioStatus {
   @PrimaryGeneratedColumn({
     name: 'ID',
-    primaryKeyConstraintName: 'pk_machine_table_id',
+    primaryKeyConstraintName: 'pk_studio_status_id',
     comment: 'Auto increase number',
   })
   id!: number;
@@ -28,15 +35,6 @@ export class StudioStatus {
     comment: 'Execution time (in seconds since startup)',
   })
   uptime!: number;
-
-  @UpdateDateColumn({
-    name: 'TIMESTAMP',
-    type: 'timestamp',
-    precision: 3,
-    default: () => 'CURRENT_TIMESTAMP',
-    comment: 'The timestamp of the last update',
-  })
-  timestamp!: Date;
 
   @Column({
     name: 'MAINTENANCE',
@@ -117,4 +115,18 @@ export class StudioStatus {
     comment: 'NFC scanner device status',
   })
   nfcScanner!: string;
+
+  @CreateDateColumn({
+    name: 'CREATED_AT',
+    type: 'timestamp',
+    comment: 'When the player session was created',
+  })
+  createdAt!: Date;
+
+  @UpdateDateColumn({
+    name: 'UPDATED_AT',
+    type: 'timestamp',
+    comment: 'When the player session was updated',
+  })
+  updatedAt!: Date;
 }

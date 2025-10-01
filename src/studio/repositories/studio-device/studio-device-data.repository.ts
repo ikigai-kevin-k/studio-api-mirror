@@ -1,16 +1,25 @@
 import { ModuleLifecycle } from '@ikigaians/mod';
+import { CacheService } from 'src/cache/cache.service';
 import { DbService } from 'src/db/db.service';
 import { StudioDevice } from 'src/studio/entities/studio-device.entity';
-import {
-  StudioDeviceDataResult,
-  UpdateStudioDeviceDataEntity,
-} from './studio-device-data.repository.type';
-import { StudioDeviceSchema } from './studio-device.repository.type';
+import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
+import { DbStudioDevice, UpdateStudioDeviceDataEntity } from './studio-device-data.repository.type';
+
+type StudioDeviceSchema = {
+  DEVICE_ID: string;
+  TABLE_ID: string;
+};
 
 export class StudioDeviceDataRepository implements ModuleLifecycle {
-  constructor(private readonly dbService: DbService) {}
+  constructor(
+    private readonly cacheService: CacheService,
+    private readonly dbService: DbService,
+  ) {}
 
-  async getDeviceByID(deviceID: string): Promise<StudioDeviceDataResult | undefined> {
+  async getDeviceByID(deviceID: string): Promise<DbStudioDevice> {
+    const cache = await this.getCache(deviceID);
+    if (cache) return cache;
+
     const builder = this.dbService
       .getConnection()
       .getRepository(StudioDevice)
@@ -18,29 +27,39 @@ export class StudioDeviceDataRepository implements ModuleLifecycle {
       .where('studio.DEVICE_ID = :deviceID', { deviceID: deviceID })
       .select(['studio."DEVICE_ID" as "deviceId"', 'studio."TABLE_ID" as "tableId"']);
 
-    return await builder.getRawOne<StudioDeviceDataResult>();
+    const output = await builder.getRawOne<DbStudioDevice>();
+    if (!output) {
+      throw new StudioNotFoundError(`[studio_device] ${deviceID} not found`);
+    }
+
+    await this.refreshCache(output);
+
+    return output;
   }
 
-  async insertDevice(studio: StudioDevice): Promise<StudioDeviceDataResult> {
-    const result = await this.dbService
+  async insertDevice(deviceId: string): Promise<DbStudioDevice> {
+    const studio = new StudioDevice();
+    studio.deviceId = deviceId;
+    studio.tableId = '';
+
+    await this.dbService
       .getConnection()
       .createQueryBuilder()
       .insert()
       .into(StudioDevice)
       .values(studio)
-      .returning('*')
       .execute();
 
-    const data = result.raw[0] as StudioDeviceSchema;
-    return {
-      deviceId: data.DEVICE_ID,
-      tableId: data.TABLE_ID,
+    const output = {
+      deviceId: deviceId,
+      tableId: '',
     };
+
+    await this.refreshCache(output);
+    return output;
   }
 
-  async updateDevice(
-    entity: UpdateStudioDeviceDataEntity,
-  ): Promise<StudioDeviceDataResult | undefined> {
+  async updateDevice(entity: UpdateStudioDeviceDataEntity): Promise<DbStudioDevice> {
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
@@ -54,13 +73,39 @@ export class StudioDeviceDataRepository implements ModuleLifecycle {
       .returning('*')
       .execute();
 
-    if (updateResult.affected === 0) return undefined;
+    if (updateResult.affected === 0) {
+      throw new StudioUpdateError(`[studio_device] ${entity.tableId} hasn't been modified`);
+    }
 
     const data = updateResult.raw[0] as StudioDeviceSchema;
-    return {
+    const output = {
       deviceId: data.DEVICE_ID,
       tableId: data.TABLE_ID,
     };
+
+    await this.refreshCache(output);
+
+    return output;
+  }
+
+  private getCacheKey() {
+    return `studio-device`;
+  }
+
+  private async getCache(deviceId: string): Promise<DbStudioDevice | undefined> {
+    const tag = this.getCacheKey();
+    const cache = await this.cacheService.hmGet(tag, [deviceId]);
+    const result = cache[0];
+    if (!result) return undefined;
+    return {
+      deviceId: deviceId,
+      tableId: result,
+    };
+  }
+
+  private async refreshCache(data: DbStudioDevice) {
+    const cacheKey = this.getCacheKey();
+    await this.cacheService.hSet(cacheKey, new Map([[data.deviceId, data.tableId]]));
   }
 
   async onInit(): Promise<void> {}

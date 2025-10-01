@@ -1,13 +1,10 @@
-import { IkiError } from '@ikigaians/common';
-import { TableApiErrorsEnum } from '../enums/table-api-errors.enum';
+import { ErrorCodeEnum } from 'src/global/enums/error-code.enum';
+import { StudioApiError } from 'src/global/errors/error';
 
-export class TableApiConnectFailureError extends IkiError {
-  readonly code: TableApiErrorsEnum;
-
+export class TableApiConnectFailureError extends StudioApiError {
   constructor(message: string) {
-    super(message);
+    super(ErrorCodeEnum.FORWARD_FAILURE, message);
     this.name = 'TableApiConnectFailureError';
-    this.code = TableApiErrorsEnum.TABLE_API_CONNECT_FAILURE;
     Error.captureStackTrace(this, TableApiConnectFailureError);
   }
 }

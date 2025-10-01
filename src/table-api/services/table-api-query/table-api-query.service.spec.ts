@@ -3,10 +3,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { CacheService } from 'src/cache/cache.service';
 import { AppConfigService } from 'src/config';
+import { send } from 'src/global/utils/send-utils';
 import { LoggerService } from 'src/log';
-import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
-import { TableApiTableService } from './table-api-table.service';
+import { TableApiQueryService } from './table-api-query.service';
 
 jest.mock('undici');
 const mockedFetch = fetch as jest.Mock;
@@ -15,7 +15,7 @@ jest.mock('@ikigaians/web', () => ({
   getLiveTableSessionHeaders: jest.fn(() => ({ Cookie: 'mock-cookie' })),
 }));
 
-jest.mock('src/utils/send-utils', () => ({
+jest.mock('src/global/utils/send-utils', () => ({
   send: jest.fn(),
 }));
 
@@ -34,11 +34,11 @@ const mockLoggerService = {
 } as unknown as LoggerService;
 
 describe('TableApiTableService', () => {
-  let service: TableApiTableService;
+  let service: TableApiQueryService;
   let mockSend: jest.Mock;
 
   beforeEach(() => {
-    service = new TableApiTableService(mockCacheService, mockAppConfigService, mockLoggerService);
+    service = new TableApiQueryService(mockCacheService, mockAppConfigService, mockLoggerService);
     jest.clearAllMocks();
     mockSend = send as jest.Mock;
   });

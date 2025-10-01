@@ -1,6 +1,7 @@
 // studio-cdn.controller.spec.ts
 import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnController } from 'src/studio/controller/v1/studio-cdn/studio-cdn.controller';
 import {
@@ -11,7 +12,6 @@ import {
   UpdateStudioTableCdnRequestType,
   UpdateStudioTableCdnResponseType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 
 const mockFastify = {

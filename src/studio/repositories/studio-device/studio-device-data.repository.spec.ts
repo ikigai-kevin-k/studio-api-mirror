@@ -1,13 +1,13 @@
 // studio.repository.spec.ts
-/* eslint-disable unicorn/no-null */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable unicorn/no-useless-undefined */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { CacheService } from 'src/cache/cache.service';
 import { DbService } from 'src/db/db.service';
 import { StudioDevice } from 'src/studio/entities/studio-device.entity';
-import {
-  StudioDeviceDataResult,
-  UpdateStudioDeviceDataEntity,
-} from './studio-device-data.repository.type';
-import { StudioDeviceSchema } from './studio-device.repository.type';
+import { DbStudioDevice, UpdateStudioDeviceDataEntity } from './studio-device-data.repository.type';
 
+import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
 import { UpdateResult } from 'typeorm';
 import { StudioDeviceDataRepository } from './studio-device-data.repository';
 
@@ -43,11 +43,16 @@ const mockDbService = {
   getConnection: jest.fn(() => mockConnection),
 } as unknown as DbService;
 
+const mockCacheService = {
+  hmGet: jest.fn(),
+  hSet: jest.fn(),
+} as unknown as CacheService;
+
 describe('StudioDeviceDataRepository', () => {
   let repository: StudioDeviceDataRepository;
 
   beforeEach(() => {
-    repository = new StudioDeviceDataRepository(mockDbService);
+    repository = new StudioDeviceDataRepository(mockCacheService, mockDbService);
     jest.clearAllMocks();
   });
 
@@ -58,102 +63,94 @@ describe('StudioDeviceDataRepository', () => {
   });
 
   describe('getDeviceByID', () => {
-    it('should return a studio object when found', async () => {
-      const mockStudio: StudioDeviceDataResult = {
+    it('should return a studio object from cache', async () => {
+      const mockStudio: DbStudioDevice = {
         deviceId: 'deviceId',
-        tableId: 'uniTest',
+        tableId: 'tableId',
       };
 
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockStudio);
+      jest.spyOn(repository as any, 'getCache').mockResolvedValueOnce(mockStudio);
 
       const result = await repository.getDeviceByID('deviceId');
+      expect(result).toBe(mockStudio);
+    });
 
-      expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
+    it('should return a studio object from db if cache does not hit', async () => {
+      const mockStudio: DbStudioDevice = {
+        deviceId: 'deviceId',
+        tableId: 'tableId',
+      };
 
-      expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioDevice);
-      expect(mockRepository.createQueryBuilder).toHaveBeenCalledWith('studio');
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.DEVICE_ID = :deviceID', {
-        deviceID: 'deviceId',
-      });
-      expect(mockQueryBuilder.getRawOne).toHaveBeenCalledTimes(1);
+      jest.spyOn(repository as any, 'getCache').mockResolvedValueOnce(undefined);
+      const spyRefreshCache = jest.spyOn(repository as any, 'refreshCache');
 
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(mockStudio);
+
+      const result = await repository.getDeviceByID('deviceId');
+      expect(spyRefreshCache).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockStudio);
     });
 
-    it('should return null when no studio is found', async () => {
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(null);
+    it('should throw error when both of cache and db does not hit', async () => {
+      jest.spyOn(repository as any, 'getCache').mockResolvedValueOnce(undefined);
 
-      const result = await repository.getDeviceByID('non-existent-table');
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(undefined);
 
-      expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
-      expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioDevice);
-      expect(mockRepository.createQueryBuilder).toHaveBeenCalledTimes(1);
-      expect(mockQueryBuilder.getRawOne).toHaveBeenCalledTimes(1);
-
-      expect(result).toBeNull();
+      await expect(repository.getDeviceByID('non-existent-table')).rejects.toThrow(
+        StudioNotFoundError,
+      );
     });
   });
 
-  describe('insertStudio', () => {
-    it('should insert or update a studio and return the result', async () => {
-      const mockStudio: StudioDevice = {
-        id: 1,
-        deviceId: 'deviceId',
-        tableId: 'uniTest',
-      };
-      const mockRawResult: StudioDeviceSchema = {
-        TABLE_ID: 'uniTest',
-        DEVICE_ID: 'deviceId',
-      };
-      const mockExecuteResult = { raw: [mockRawResult] };
-      const mockResult: StudioDeviceDataResult = {
-        tableId: 'uniTest',
+  describe('insertDevice', () => {
+    it('should insert a studio object and return the result', async () => {
+      const mockResult: DbStudioDevice = {
+        tableId: '',
         deviceId: 'deviceId',
       };
 
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockExecuteResult);
-
-      const result = await repository.insertDevice(mockStudio);
+      const spyRefreshCache = jest.spyOn(repository as any, 'refreshCache');
+      const result = await repository.insertDevice('deviceId');
 
       expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioDevice);
-      expect(mockQueryBuilder.values).toHaveBeenCalledWith(mockStudio);
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+      expect(spyRefreshCache).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockResult);
     });
   });
 
   describe('updateDevice', () => {
-    it('should update the table status and return affected rows count', async () => {
+    it('should update the table status and return result', async () => {
       const updateEntity: UpdateStudioDeviceDataEntity = {
         deviceId: 'deviceId',
-        tableId: 'uniTest',
+        tableId: 'tableId',
       };
       const mockUpdateResult: UpdateResult = {
         generatedMaps: [],
-        raw: [{ TABLE_ID: 'uniTest', DEVICE_ID: 'deviceId' }],
+        raw: [{ TABLE_ID: 'tableId', DEVICE_ID: 'deviceId' }],
         affected: 1,
       };
-      const mockRawResult: StudioDeviceDataResult = {
-        tableId: 'uniTest',
+      const mockRawResult: DbStudioDevice = {
+        tableId: 'tableId',
         deviceId: 'deviceId',
       };
 
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
+      const spyRefreshCache = jest.spyOn(repository as any, 'refreshCache');
+
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockUpdateResult);
 
       const result = await repository.updateDevice(updateEntity);
 
       expect(mockDbService.getConnection).toHaveBeenCalledTimes(1);
       expect(mockQueryBuilder.update).toHaveBeenCalledWith(StudioDevice);
-      expect(mockQueryBuilder.set).toHaveBeenCalledWith({
-        tableId: updateEntity.tableId,
-      });
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
+
+      expect(spyRefreshCache).toHaveBeenCalledTimes(1);
+
       expect(result).toEqual(mockRawResult);
     });
 
-    it('should return undefined if no rows are affected', async () => {
+    it('should throw error if no rows are affected', async () => {
       const updateEntity: UpdateStudioDeviceDataEntity = {
         deviceId: 'deviceId',
         tableId: 'uniTest',
@@ -164,11 +161,45 @@ describe('StudioDeviceDataRepository', () => {
         affected: 0,
       };
 
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockUpdateResult);
 
-      const result = await repository.updateDevice(updateEntity);
+      await expect(repository.updateDevice(updateEntity)).rejects.toThrow(StudioUpdateError);
+    });
+  });
 
+  describe('getCacheKey', () => {
+    it('should return cache key', async () => {
+      expect((repository as any).getCacheKey()).toBe('studio-device');
+    });
+  });
+
+  describe('getCache', () => {
+    it('should return data from cache if it exists', async () => {
+      const mockCacheData: DbStudioDevice = {
+        tableId: 'table1',
+        deviceId: 'device1',
+      };
+
+      (mockCacheService.hmGet as jest.Mock).mockResolvedValueOnce(['table1']);
+      const result = await (repository as any).getCache('device1');
+      expect(result).toEqual(mockCacheData);
+    });
+
+    it('should return undefined if db does not exist', async () => {
+      (mockCacheService.hmGet as jest.Mock).mockResolvedValueOnce([]);
+
+      const result = await (repository as any).getCache('device1');
       expect(result).toBeUndefined();
+    });
+  });
+
+  describe('refreshCache', () => {
+    it('should call setHash', async () => {
+      await (repository as any).refreshCache({
+        tableId: 'tableId',
+        deviceId: 'deviceId',
+      });
+      expect(mockCacheService.hSet as jest.Mock).toHaveBeenCalledTimes(1);
     });
   });
 });

@@ -98,17 +98,6 @@ describe('TableApiSignalObserver', () => {
       const query = new URLSearchParams('id=ws-table');
       const mockData = { signal: { error: 'Test Signal' } };
 
-      (mockStudioDeviceDataService.getDeviceBelongTo as jest.Mock).mockReturnValue(undefined);
-      await (observer as any).onServiceSignal(query, {}, mockData);
-
-      expect(mockTableApiSignalServer.forwardSignal).not.toHaveBeenCalled();
-      expect(mockLoggerService.error).toHaveBeenCalled();
-    });
-
-    it('should log error if device does not belong to any table', async () => {
-      const query = new URLSearchParams('id=ws-table');
-      const mockData = { signal: { error: 'Test Signal' } };
-
       (mockStudioDeviceDataService.getDeviceBelongTo as jest.Mock).mockReturnValue('tableId');
       (mockStudioService.getStudioTableBelongTo as jest.Mock).mockReturnValue(undefined);
       await (observer as any).onServiceSignal(query, {}, mockData);

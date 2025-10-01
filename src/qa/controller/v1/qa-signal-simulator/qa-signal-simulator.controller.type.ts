@@ -10,7 +10,7 @@ export const ErrorSignalBody = Type.Object({
   metadata: Type.Object({
     locale: Type.Optional(Type.String()),
     timestamp: Type.Optional(Type.Number()),
-    gamecode: Type.String(),
+    gameCode: Type.String(),
     tablename: Type.String(),
     title: Type.String(),
     description: Type.String(),

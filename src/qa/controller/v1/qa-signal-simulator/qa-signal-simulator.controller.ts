@@ -4,7 +4,7 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { BadRequestResponse, UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
-import { RoutesEnum } from 'src/qa/enums/qa.router.enum';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
@@ -61,7 +61,13 @@ export class QaSignalSimulatorController implements ModuleLifecycle {
           Params: req.params,
           Body: req.body,
         };
-        return await this.tableApiSignalService.forwardSignalByApi(input);
+        const output = await this.tableApiSignalService.forwardSignal(
+          input.Params.gameCode,
+          input.Body,
+        );
+        return {
+          table: output.data.table,
+        };
       },
     );
   }

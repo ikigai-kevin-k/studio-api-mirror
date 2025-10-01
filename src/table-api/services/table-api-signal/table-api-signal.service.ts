@@ -1,14 +1,10 @@
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { getLiveTableSessionHeaders } from '@ikigaians/web';
 import { AppConfigService } from 'src/config';
+import { send } from 'src/global/utils/send-utils';
 import { LoggerService } from 'src/log';
-import {
-  ErrorSignalRequestType,
-  TableApiErrorSignalResponseType,
-} from 'src/qa/controller/v1/qa-signal-simulator/qa-signal-simulator.controller.type';
 import { TableApiConnectFailureError } from 'src/table-api/errors/table-api.error';
 import { TableApiSchema } from 'src/table-api/schema/table-api.schema';
-import { send } from 'src/utils/send-utils';
 import { fetch } from 'undici';
 import { TableApiSignalServiceInput } from './table-api-signal.service.type';
 
@@ -52,31 +48,6 @@ export class TableApiSignalService implements ModuleLifecycle {
       this.logger,
     );
     return resp;
-  }
-
-  async forwardSignalByApi(
-    request: ErrorSignalRequestType,
-  ): Promise<TableApiErrorSignalResponseType> {
-    const gameCode = request.Params.gameCode;
-    const input: TableApiSignalServiceInput = {
-      msgId: request.Body.msgId,
-      content: request.Body.content,
-      metadata: request.Body.metadata,
-    };
-
-    try {
-      const resp = await send<TableApiSchema>(
-        () => this.sendSignal(gameCode, input),
-        this.appConfigService.tableApiConfig.maxRetry,
-        this.logger,
-      );
-      return {
-        table: resp.data.table,
-      };
-    } catch (error) {
-      const reason = (error as Error).message;
-      throw new TableApiConnectFailureError(reason);
-    }
   }
 
   async onInit() {}

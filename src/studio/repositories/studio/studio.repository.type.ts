@@ -1,18 +1,13 @@
-import { StudioTableStatusEnum } from '../../enums/studio.enums';
-
-export type StudioTableResult = {
-  tableId: string;
-  tableStatus: string;
-  gameId: string;
-};
-
-export type StudioTableSchema = {
-  TABLE_ID: string;
-  TABLE_STATUS: StudioTableStatusEnum;
-  GAME_ID: string;
-};
+import { StudioTableStatusEnum } from 'src/studio/enums/studio.enums';
 
 export type UpdateStudioTableStatusEntity = {
+  tableId: string;
   tableStatus?: string;
+  gameId?: string;
+};
+
+export type DbStudio = {
+  tableId: string;
+  tableStatus: StudioTableStatusEnum;
   gameId?: string;
 };

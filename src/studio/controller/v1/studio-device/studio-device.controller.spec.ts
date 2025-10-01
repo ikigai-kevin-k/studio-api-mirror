@@ -1,10 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable unicorn/no-unreadable-array-destructuring */
-/* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioDeviceDataController } from './studio-device.controller';
 
@@ -38,10 +36,6 @@ mockRouterService.app.register.mockImplementation(async (callback) => {
 
 describe('StudioDeviceDataController', () => {
   let controller: StudioDeviceDataController;
-  let studioDeviceDataService: StudioDeviceDataService;
-  let preHandlersService: PreHandlersService;
-  let routerService: RouterService;
-  let logger: LoggerService;
 
   beforeAll(() => {
     controller = new StudioDeviceDataController(
