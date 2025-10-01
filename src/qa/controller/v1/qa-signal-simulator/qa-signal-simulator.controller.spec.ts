@@ -99,7 +99,7 @@ describe('QaSignalSimulatorController', () => {
       expect(handler).toBeInstanceOf(Function);
     });
 
-    it('should call tableApiSignalService.forwardSignalByApi and return the correct response', async () => {
+    it('should call tableApiSignalService.forwardSignal and return the correct response', async () => {
       const request: ErrorSignalRequestType = {
         Params: { gameCode: 'test-001' },
         Body: {

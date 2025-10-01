@@ -34,7 +34,7 @@ export type TableApiSchema = {
         };
       };
       autopilot: {
-        enable: true;
+        enable: boolean;
         resultSequence: [
           {
             roulette: string;
