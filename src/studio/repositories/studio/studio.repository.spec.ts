@@ -195,8 +195,7 @@ describe('StudioRepository', () => {
 
   describe('refreshCache', () => {
     it('should call setHash', async () => {
-      await (repository as any).refreshCache({
-        tableId: 'tableId',
+      await (repository as any).refreshCache('tableId', {
         tableStatus: StudioTableStatusEnum.INACTIVE,
         gameId: 'game1',
       });
