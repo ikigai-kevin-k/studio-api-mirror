@@ -2,6 +2,7 @@ export enum StudioTableStatusEnum {
   INACTIVE = 'inactive',
   ACTIVE = 'active',
   FAILURE = 'blocked',
+  INITIAL = 'initial',
 }
 
 export enum StudioDeviceEnum {

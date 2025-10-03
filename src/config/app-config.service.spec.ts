@@ -28,6 +28,8 @@ describe('AppConfigService', () => {
     process.env.DB_SLAVE_PASSWORD = 'slavepass';
     process.env.WS_PORT = '';
     process.env.WS_TOKEN = '';
+    process.env.TABLE_API_SERVICE_URL = '';
+    process.env.TABLE_API_MAX_RETRY = '3';
     process.env.LOS_SERVICE_URL = '';
     process.env.AM_SERVICE_URL = '';
     process.env.AM_STUDIO_USER = '';
@@ -92,6 +94,11 @@ describe('AppConfigService', () => {
     expect(appConfigService.amConfig.url).toBeDefined();
     expect(appConfigService.amConfig.user).toBeDefined();
     expect(appConfigService.amConfig.pw).toBeDefined();
+  });
+
+  it('should provide tableApiConfig', () => {
+    expect(appConfigService.tableApiConfig.url).toBeDefined();
+    expect(appConfigService.tableApiConfig.maxRetry).toBeDefined();
   });
 
   it('should provide slackConfig', () => {

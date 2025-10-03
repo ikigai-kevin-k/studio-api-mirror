@@ -10,7 +10,7 @@ import {
   InsertStudioTableCdnRequestType,
   UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import { TableCdnResult } from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';

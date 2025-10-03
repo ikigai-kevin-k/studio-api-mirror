@@ -1,6 +1,7 @@
 // studio.controller.spec.ts
 import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioStatusController } from 'src/studio/controller/v1/studio-status/studio-status.controller';
 import {
@@ -12,7 +13,6 @@ import {
   UpdateTableStatusResponseType,
 } from 'src/studio/controller/v1/studio-status/studio-status.type';
 import { StudioDeviceStatusEnum, StudioServiceStatusEnum } from 'src/studio/enums/studio.enums';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
 
 const mockFastify = {

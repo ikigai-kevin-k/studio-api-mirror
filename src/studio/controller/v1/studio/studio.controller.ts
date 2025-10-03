@@ -4,8 +4,8 @@ import { ModuleLifecycle } from '@ikigaians/mod';
 import { BadRequestResponse, UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
+import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
-import { RoutesEnum } from 'src/studio/enums/studio.router.enum';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 import {
   GetStudioTableRequest,
@@ -111,7 +111,7 @@ export class StudioController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<UpdateStudioTableStatusResponseType> => {
-        return await this.studioService.updateStudioTableStatus(req.body);
+        return await this.studioService.updateStudioTable(req.body);
       },
     );
   }

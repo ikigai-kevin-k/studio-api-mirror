@@ -1,4 +1,11 @@
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 import { StudioTableStatusEnum } from '../enums/studio.enums';
 
 @Entity('studio', {
@@ -29,4 +36,29 @@ export class Studio {
     comment: 'The status of game table: inactive, active, and failure Default value is inactive.',
   })
   tableStatus!: string;
+
+  @Column({
+    name: 'GAME_ID',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: 'Game Code ID',
+  })
+  gameId!: string;
+
+  @CreateDateColumn({
+    name: 'CREATED_AT',
+    type: 'timestamp',
+    precision: 3,
+    comment: 'When the row was created',
+  })
+  createdAt!: Date;
+
+  @UpdateDateColumn({
+    name: 'UPDATED_AT',
+    type: 'timestamp',
+    precision: 3,
+    comment: 'When the row was updated',
+  })
+  updatedAt!: Date;
 }

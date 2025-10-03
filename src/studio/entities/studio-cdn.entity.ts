@@ -1,14 +1,20 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { Column, Entity, Index, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
-@Entity('studio-cdn', {
+@Entity('studio_cdn', {
   comment: 'The cdn path of game table.',
 })
-@Index('idx_cdn_table_id', ['tableId'], { unique: true })
+@Index('idx_studio_cdn_table_id', ['tableId'], { unique: true })
 export class StudioCdn {
   @PrimaryGeneratedColumn({
     name: 'ID',
-    primaryKeyConstraintName: 'pk_cdn_table_id',
+    primaryKeyConstraintName: 'pk_studio_cdn_id',
     comment: 'Auto increase number',
   })
   id!: number;
@@ -26,5 +32,21 @@ export class StudioCdn {
     type: 'jsonb',
     comment: 'CDN Destination',
   })
-  cdnDst!: Record<string, any>;
+  cdnDst!: Record<string, object>;
+
+  @CreateDateColumn({
+    name: 'CREATED_AT',
+    type: 'timestamp',
+    precision: 3,
+    comment: 'When the row was created',
+  })
+  createdAt!: Date;
+
+  @UpdateDateColumn({
+    name: 'UPDATED_AT',
+    type: 'timestamp',
+    precision: 3,
+    comment: 'When the row was updated',
+  })
+  updatedAt!: Date;
 }

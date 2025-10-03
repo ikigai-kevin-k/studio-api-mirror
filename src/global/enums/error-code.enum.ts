@@ -1,0 +1,6 @@
+export enum ErrorCodeEnum {
+  INVALID_AUTH_ERROR = 22_001,
+  DATA_NOT_EXIST = 22_002,
+  DATA_NOT_MODIFIED = 22_003,
+  FORWARD_FAILURE = 22_004,
+}

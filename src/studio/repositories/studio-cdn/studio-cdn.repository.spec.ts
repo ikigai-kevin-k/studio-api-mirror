@@ -80,10 +80,13 @@ describe('StudioCdnRepository', () => {
 
   describe('insertTableCdn', () => {
     it('should insert a StudioCdn and return the result', async () => {
+      const currentData = new Date();
       const mockCdn: StudioCdn = {
         id: 1,
         tableId: 'cdn-table-1',
         cdnDst: { primary: {} },
+        createdAt: currentData,
+        updatedAt: currentData,
       };
       const mockRawResult: TableCdnSchema = {
         TABLE_ID: 'cdn-table-1',

@@ -7,7 +7,7 @@ import {
   UpdateStudioTableCdnRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
 import {
   TableCdnResult,

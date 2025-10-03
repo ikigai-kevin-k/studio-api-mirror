@@ -4,7 +4,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
 import { CacheService } from 'src/cache/cache.service';
-import { StudioNotFoundError } from 'src/studio/errors/studio-not-found.error';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioStatusRepository } from 'src/studio/repositories/studio-status/studio-status.repository';
 import { TableStatusResult } from 'src/studio/repositories/studio-status/studio-status.repository.type';
 import { StudioStatusService } from 'src/studio/services/studio-status/studio-status.service';
