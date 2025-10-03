@@ -51,7 +51,7 @@ describe('LosSignalService', () => {
     };
 
     it('should publish to Kafka', async () => {
-      await service['publish'](mockData);
+      await service.publish(mockData);
 
       expect(mockKafkaHub.publish).toHaveBeenCalledTimes(1);
       expect(mockKafkaHub.publish).toHaveBeenCalledWith(TopicLosSignalError, mockData);
