@@ -4,7 +4,10 @@
 import { CacheService } from 'src/cache/cache.service';
 import { DbService } from 'src/db/db.service';
 import { StudioDevice } from 'src/studio/entities/studio-device.entity';
-import { DbStudioDevice, UpdateStudioDeviceDataEntity } from './studio-device-data.repository.type';
+import {
+  DbStudioDeviceResult,
+  UpdateStudioDeviceDataEntity,
+} from './studio-device-data.repository.type';
 
 import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
 import { UpdateResult } from 'typeorm';
@@ -63,7 +66,7 @@ describe('StudioDeviceDataRepository', () => {
 
   describe('getDeviceByID', () => {
     it('should return a studio object from cache', async () => {
-      const mockStudio: DbStudioDevice = {
+      const mockStudio: DbStudioDeviceResult = {
         deviceId: 'deviceId',
         tableId: 'tableId',
       };
@@ -75,7 +78,7 @@ describe('StudioDeviceDataRepository', () => {
     });
 
     it('should return a studio object from db if cache does not hit', async () => {
-      const mockStudio: DbStudioDevice = {
+      const mockStudio: DbStudioDeviceResult = {
         deviceId: 'deviceId',
         tableId: 'tableId',
       };
@@ -103,7 +106,7 @@ describe('StudioDeviceDataRepository', () => {
 
   describe('insertDevice', () => {
     it('should insert a studio object and return the result', async () => {
-      const mockResult: DbStudioDevice = {
+      const mockResult: DbStudioDeviceResult = {
         tableId: '',
         deviceId: 'deviceId',
       };
@@ -130,7 +133,7 @@ describe('StudioDeviceDataRepository', () => {
         raw: [{ TABLE_ID: 'tableId', DEVICE_ID: 'deviceId' }],
         affected: 1,
       };
-      const mockRawResult: DbStudioDevice = {
+      const mockRawResult: DbStudioDeviceResult = {
         tableId: 'tableId',
         deviceId: 'deviceId',
       };
@@ -174,7 +177,7 @@ describe('StudioDeviceDataRepository', () => {
 
   describe('getCache', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData: DbStudioDevice = {
+      const mockCacheData: DbStudioDeviceResult = {
         tableId: 'table1',
         deviceId: 'device1',
       };

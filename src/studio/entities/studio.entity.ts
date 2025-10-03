@@ -49,14 +49,16 @@ export class Studio {
   @CreateDateColumn({
     name: 'CREATED_AT',
     type: 'timestamp',
-    comment: 'When the player session was created',
+    precision: 3,
+    comment: 'When the row was created',
   })
   createdAt!: Date;
 
   @UpdateDateColumn({
     name: 'UPDATED_AT',
     type: 'timestamp',
-    comment: 'When the player session was updated',
+    precision: 3,
+    comment: 'When the row was updated',
   })
   updatedAt!: Date;
 }

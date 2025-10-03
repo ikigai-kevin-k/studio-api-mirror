@@ -6,7 +6,7 @@ export type UpdateStudioTableStatusEntity = {
   gameId?: string;
 };
 
-export type DbStudio = {
+export type DbStudioResult = {
   tableId: string;
   tableStatus: StudioTableStatusEnum;
   gameId?: string;

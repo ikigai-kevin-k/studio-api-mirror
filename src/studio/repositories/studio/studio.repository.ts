@@ -5,7 +5,7 @@ import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio
 import { schema } from 'src/studio/services/studio/studio.service.type';
 import { Studio } from '../../entities/studio.entity';
 import { StudioTableStatusEnum } from '../../enums/studio.enums';
-import { DbStudio, UpdateStudioTableStatusEntity } from './studio.repository.type';
+import { DbStudioResult, UpdateStudioTableStatusEntity } from './studio.repository.type';
 
 type StudioTableSchema = {
   TABLE_ID: string;
@@ -19,7 +19,7 @@ export class StudioRepository implements ModuleLifecycle {
     private readonly dbService: DbService,
   ) {}
 
-  async getStudioTableByTableID(tableID: string): Promise<DbStudio> {
+  async getStudioTableByTableID(tableID: string): Promise<DbStudioResult> {
     const cache = await this.getCache(tableID);
     if (cache) return cache;
 
@@ -34,7 +34,7 @@ export class StudioRepository implements ModuleLifecycle {
         'studio."GAME_ID" as "gameId"',
       ]);
 
-    const output = await builder.getRawOne<DbStudio>();
+    const output = await builder.getRawOne<DbStudioResult>();
     if (!output) {
       throw new StudioNotFoundError(`[studio] ${tableID} not found`);
     }
@@ -44,7 +44,7 @@ export class StudioRepository implements ModuleLifecycle {
     return output;
   }
 
-  async insertStudioTable(tableId: string): Promise<DbStudio> {
+  async insertStudioTable(tableId: string): Promise<DbStudioResult> {
     const studio: Studio = new Studio();
     studio.tableId = tableId;
     studio.tableStatus = StudioTableStatusEnum.INITIAL;
@@ -66,7 +66,7 @@ export class StudioRepository implements ModuleLifecycle {
     return output;
   }
 
-  async updateStudioTable(entity: UpdateStudioTableStatusEntity): Promise<DbStudio> {
+  async updateStudioTable(entity: UpdateStudioTableStatusEntity): Promise<DbStudioResult> {
     const { tableId } = entity;
     const updateResult = await this.dbService
       .getConnection()
@@ -97,12 +97,12 @@ export class StudioRepository implements ModuleLifecycle {
     return `studio-${tableCode}`;
   }
 
-  private async getCache(key: string): Promise<DbStudio | undefined> {
+  private async getCache(key: string): Promise<DbStudioResult | undefined> {
     const tag = this.getCacheKey(key);
-    return await this.cacheService.getHashAs<DbStudio>(tag, schema);
+    return await this.cacheService.getHashAs<DbStudioResult>(tag, schema);
   }
 
-  private async refreshCache(tableCode: string, data: DbStudio) {
+  private async refreshCache(tableCode: string, data: DbStudioResult) {
     const cacheKey = this.getCacheKey(tableCode);
     await this.cacheService.setHash(cacheKey, data);
   }

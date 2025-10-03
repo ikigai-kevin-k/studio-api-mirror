@@ -8,7 +8,7 @@ import { UpdateResult } from 'typeorm';
 import { Studio } from '../../entities/studio.entity';
 import { StudioTableStatusEnum } from '../../enums/studio.enums';
 import { StudioRepository } from './studio.repository';
-import { DbStudio, UpdateStudioTableStatusEntity } from './studio.repository.type';
+import { DbStudioResult, UpdateStudioTableStatusEntity } from './studio.repository.type';
 
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
@@ -67,7 +67,7 @@ describe('StudioRepository', () => {
 
   describe('getStudioTableByTableID', () => {
     it('should return a DbStudio object when hit cache', async () => {
-      const mockStudio: DbStudio = {
+      const mockStudio: DbStudioResult = {
         tableId: 'tableId',
         tableStatus: StudioTableStatusEnum.INACTIVE,
         gameId: 'gameId',
@@ -80,7 +80,7 @@ describe('StudioRepository', () => {
     });
 
     it('should return a DbStudio object when does not hit cache but query from db', async () => {
-      const mockStudio: DbStudio = {
+      const mockStudio: DbStudioResult = {
         tableId: 'tableId',
         tableStatus: StudioTableStatusEnum.INACTIVE,
         gameId: 'gameId',
@@ -134,7 +134,7 @@ describe('StudioRepository', () => {
         ],
         affected: 1,
       };
-      const mockRawResult: DbStudio = {
+      const mockRawResult: DbStudioResult = {
         tableId: 'tableId',
         tableStatus: StudioTableStatusEnum.INACTIVE,
         gameId: 'game1',
@@ -174,7 +174,7 @@ describe('StudioRepository', () => {
 
   describe('getCache', () => {
     it('should return data from cache if it exists', async () => {
-      const mockCacheData: DbStudio = {
+      const mockCacheData: DbStudioResult = {
         tableId: 'table1',
         tableStatus: StudioTableStatusEnum.INITIAL,
         gameId: 'game1',
