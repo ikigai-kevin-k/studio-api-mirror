@@ -8,4 +8,5 @@ export enum RoutesEnum {
 
   // qa
   V1_QA_SIMULATE_TABLE_API_ERROR_SIGNAL = '/v1/service/qa/table-api/:gameCode/signal',
+  V1_QA_SIMULATE_KAFKA_ERROR_SIGNAL = '/v1/service/qa/kafka/:gameCode/signal',
 }

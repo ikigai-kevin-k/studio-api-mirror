@@ -5,6 +5,7 @@ import { BadRequestResponse, UnauthorizedResponse } from '@ikigaians/web';
 import { FastifyInstance } from 'fastify';
 import { StatusCodes } from 'http-status-codes';
 import { RoutesEnum } from 'src/global/enums/route.enum';
+import { KafkaLosSignalService } from 'src/kafka/services/kafka-los-signal/kafka-los-signal.service';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
@@ -14,6 +15,8 @@ import {
   ErrorSignalBody,
   ErrorSignalParams,
   ErrorSignalRequestType,
+  KafkaErrorSignalResponse,
+  KafkaErrorSignalResponseType,
   TableApiErrorSignalResponse,
   TableApiErrorSignalResponseType,
 } from './qa-signal-simulator.controller.type';
@@ -24,6 +27,7 @@ export class QaSignalSimulatorController implements ModuleLifecycle {
     private readonly studioDeviceDataService: StudioDeviceDataService,
     private readonly studioCdnService: StudioCdnService,
     private readonly tableApiSignalService: TableApiSignalService,
+    private readonly kafkaLosSignalService: KafkaLosSignalService,
     private readonly preHandlersService: PreHandlersService,
     private readonly routerService: RouterService,
     private readonly logger: LoggerService,
@@ -32,6 +36,7 @@ export class QaSignalSimulatorController implements ModuleLifecycle {
   async onInit(): Promise<void> {
     this.routerService.app.register(async (context) => {
       this.postTableApiErrorSignal(context);
+      this.postKafkaErrorSignal(context);
     });
   }
 
@@ -68,6 +73,34 @@ export class QaSignalSimulatorController implements ModuleLifecycle {
         return {
           table: output.data.table,
         };
+      },
+    );
+  }
+
+  postKafkaErrorSignal(app: FastifyInstance) {
+    const serviceAuth = this.preHandlersService.serviceApisAuthenticator.bind(
+      this.preHandlersService,
+    );
+
+    return app.post<ErrorSignalRequestType>(
+      RoutesEnum.V1_QA_SIMULATE_KAFKA_ERROR_SIGNAL,
+      {
+        schema: {
+          params: ErrorSignalParams,
+          body: ErrorSignalBody,
+          response: {
+            [StatusCodes.OK]: RespSchema.Ok(KafkaErrorSignalResponse),
+            [StatusCodes.UNAUTHORIZED]: UnauthorizedResponse,
+            [StatusCodes.BAD_REQUEST]: BadRequestResponse,
+          },
+          tags: ['qa simulator'],
+          security: [{ serviceApiAuth: [] }],
+        },
+        preHandler: [serviceAuth],
+      },
+      async (req): Promise<KafkaErrorSignalResponseType> => {
+        await this.kafkaLosSignalService.publish(req.body);
+        return req.body;
       },
     );
   }

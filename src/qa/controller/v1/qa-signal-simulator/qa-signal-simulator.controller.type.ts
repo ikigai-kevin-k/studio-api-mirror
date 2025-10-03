@@ -90,3 +90,19 @@ export const TableApiErrorSignalResponse = Type.Object({
 });
 
 export type TableApiErrorSignalResponseType = Static<typeof TableApiErrorSignalResponse>;
+
+export const KafkaErrorSignalResponse = Type.Object({
+  msgId: StringEnum(SystemMessageIdSchema),
+  metadata: Type.Object({
+    locale: Type.Optional(Type.String()),
+    timestamp: Type.Optional(Type.Number()),
+    gameCode: Type.String(),
+    tablename: Type.String(),
+    title: Type.String(),
+    description: Type.String(),
+    code: Type.String(),
+    suggestion: Type.String(),
+  }),
+});
+
+export type KafkaErrorSignalResponseType = Static<typeof KafkaErrorSignalResponse>;

@@ -26,14 +26,17 @@ describe('AppConfigService', () => {
     process.env.DB_SLAVE_PORT = '1234';
     process.env.DB_SLAVE_USER = 'slaveuser';
     process.env.DB_SLAVE_PASSWORD = 'slavepass';
+    process.env.QUEUE_HOST_NAMES = '';
+    process.env.QUEUE_PROTOCOL = '';
+    process.env.APP_CLOUD_REGION = '';
+    process.env.APP_CLOUD_DR_REGION = '';
+    process.env.QUEUE_USER = '';
+    process.env.QUEUE_PASSWORD = '';
     process.env.WS_PORT = '';
     process.env.WS_TOKEN = '';
     process.env.TABLE_API_SERVICE_URL = '';
     process.env.TABLE_API_MAX_RETRY = '3';
     process.env.LOS_SERVICE_URL = '';
-    process.env.AM_SERVICE_URL = '';
-    process.env.AM_STUDIO_USER = '';
-    process.env.AM_STUDIO_PASSWORD = '';
     process.env.SLACK_STUDIO_TOKEN = '';
     process.env.SLACK_STUDIO_CHANNEL_ID = '';
     appConfigService = new AppConfigService();
@@ -81,19 +84,25 @@ describe('AppConfigService', () => {
     expect(appConfigService.cacheConfig.isCluster).toBe(false);
   });
 
+  it('should provide queueConfig', () => {
+    expect(appConfigService.queueConfig.hostnames).toBeDefined();
+    expect(appConfigService.queueConfig.protocol).toBeDefined();
+    expect(appConfigService.queueConfig.region).toBeDefined();
+    expect(appConfigService.queueConfig.drRegion).toBeDefined();
+    expect(appConfigService.queueConfig.clientId).toBeDefined();
+  });
+
+  it('should provide globalQueue', () => {
+    expect(appConfigService.globalQueueConfig.hostnames).toBeDefined();
+    expect(appConfigService.globalQueueConfig.protocol).toBeDefined();
+    expect(appConfigService.globalQueueConfig.region).toBeDefined();
+    expect(appConfigService.globalQueueConfig.drRegion).toBeDefined();
+    expect(appConfigService.globalQueueConfig.clientId).toBeDefined();
+  });
+
   it('should provide wsConfig', () => {
     expect(appConfigService.wsConfig.port).toBeDefined();
     expect(appConfigService.wsConfig.token).toBeDefined();
-  });
-
-  it('should provide losConfig', () => {
-    expect(appConfigService.losConfig.url).toBeDefined();
-  });
-
-  it('should provide amConfig', () => {
-    expect(appConfigService.amConfig.url).toBeDefined();
-    expect(appConfigService.amConfig.user).toBeDefined();
-    expect(appConfigService.amConfig.pw).toBeDefined();
   });
 
   it('should provide tableApiConfig', () => {

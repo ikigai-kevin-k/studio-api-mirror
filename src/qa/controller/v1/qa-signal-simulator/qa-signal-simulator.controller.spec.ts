@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
 import { RoutesEnum } from 'src/global/enums/route.enum';
+import { KafkaLosSignalService } from 'src/kafka/services/kafka-los-signal/kafka-los-signal.service';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
@@ -24,6 +25,10 @@ const mockStudioService = {
 
 const mockTableApiSignalService = {
   forwardSignal: jest.fn(),
+};
+
+const mockKafkaLosSignalService = {
+  publish: jest.fn(),
 };
 
 const mockPreHandlersService = {
@@ -57,6 +62,7 @@ describe('QaSignalSimulatorController', () => {
       mockStudioDeviceDataService as unknown as StudioDeviceDataService,
       mockStudioCdnService as unknown as StudioCdnService,
       mockTableApiSignalService as unknown as TableApiSignalService,
+      mockKafkaLosSignalService as unknown as KafkaLosSignalService,
       mockPreHandlersService as unknown as PreHandlersService,
       mockRouterService as unknown as RouterService,
       mockLoggerService as unknown as LoggerService,
@@ -69,6 +75,7 @@ describe('QaSignalSimulatorController', () => {
       mockStudioDeviceDataService as unknown as StudioDeviceDataService,
       mockStudioCdnService as unknown as StudioCdnService,
       mockTableApiSignalService as unknown as TableApiSignalService,
+      mockKafkaLosSignalService as unknown as KafkaLosSignalService,
       mockPreHandlersService as unknown as PreHandlersService,
       mockRouterService as unknown as RouterService,
       mockLoggerService as unknown as LoggerService,
@@ -84,7 +91,7 @@ describe('QaSignalSimulatorController', () => {
     it('should register all routes on initialization', async () => {
       await controller.onInit();
       expect(mockRouterService.app.register).toHaveBeenCalledTimes(1);
-      expect(mockRouterService.app.post).toHaveBeenCalledTimes(1);
+      expect(mockRouterService.app.post).toHaveBeenCalledTimes(2);
     });
   });
 
@@ -180,6 +187,57 @@ describe('QaSignalSimulatorController', () => {
 
       expect(mockTableApiSignalService.forwardSignal).toHaveBeenCalledTimes(1);
       expect(response).toEqual({ table: result.data.table });
+    });
+  });
+
+  describe('postKafkaErrorSignal', () => {
+    it('should register a POST route with the correct schema and handler', async () => {
+      await controller.onInit();
+      const [route, options, handler] = mockRouterService.app.post.mock.calls[1];
+
+      expect(route).toBe(RoutesEnum.V1_QA_SIMULATE_KAFKA_ERROR_SIGNAL);
+      expect(options.schema).toBeDefined();
+      expect(options.preHandler).toBeDefined();
+      expect(handler).toBeInstanceOf(Function);
+    });
+
+    it('should call kafkaLosSignalService.publish and return the correct response', async () => {
+      const request: ErrorSignalRequestType = {
+        Params: { gameCode: 'test-001' },
+        Body: {
+          msgId: '',
+          metadata: {
+            gameCode: '',
+            tablename: '',
+            title: '',
+            description: '',
+            code: '',
+            suggestion: '',
+          },
+        },
+      };
+
+      const result = {
+        msgId: '',
+        metadata: {
+          gameCode: '',
+          tablename: '',
+          title: '',
+          description: '',
+          code: '',
+          suggestion: '',
+        },
+      };
+
+      mockKafkaLosSignalService.publish.mockResolvedValue(result);
+
+      await controller.onInit();
+      const [, , handler] = mockRouterService.app.post.mock.calls[1];
+
+      const response = await handler({ params: request.Params, body: request.Body } as any);
+
+      expect(mockKafkaLosSignalService.publish).toHaveBeenCalledWith(request.Body);
+      expect(response).toEqual(result);
     });
   });
 });

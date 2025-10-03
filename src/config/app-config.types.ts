@@ -26,3 +26,13 @@ export type DbConfig = {
 export type MasterDbConfig = DbConfig & {
   ssl: boolean;
 };
+
+export type GlobalQueueConfig = {
+  hostnames: string[];
+  protocol: 'AWS' | 'AWSPassword' | 'local';
+  region: string;
+  drRegion: string;
+  clientId: string;
+  username: string | undefined;
+  password: string | undefined;
+};
