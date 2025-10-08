@@ -1,0 +1,11 @@
+-- Down Migration
+
+
+
+ALTER TABLE "studio" DROP COLUMN "UPDATED_AT";
+
+
+
+ALTER TABLE "studio" DROP COLUMN "CREATED_AT";
+ALTER TABLE "studio" DROP COLUMN "GAME_ID";
+
