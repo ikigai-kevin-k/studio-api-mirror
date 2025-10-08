@@ -8,7 +8,7 @@ DROP TABLE "studio-cdn";
 
 COMMENT ON TABLE "studio" IS NULL;
 
-DROP INDEX "public"."idx_table_id";
+DROP INDEX IF EXISTS "public"."idx_table_id";
 
 DROP TABLE "studio";
 
