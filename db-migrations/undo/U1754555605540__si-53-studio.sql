@@ -2,7 +2,7 @@
 
 COMMENT ON TABLE "studio_cdn" IS NULL;
 
-DROP INDEX "public"."idx_cdn_table_id";
+DROP INDEX IF EXISTS "public"."idx_cdn_table_id";
 
 DROP TABLE "studio_cdn";
 
