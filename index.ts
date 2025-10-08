@@ -1,9 +1,4 @@
-import tracer from 'dd-trace';
-tracer.init({
-  service: process.env.APP_NAME,
-  env: process.env.APP_ENV,
-  version: process.env.VERSION || 'unknown',
-});
+import '@ikigaians/instrumentation';
 
 import 'src/otel/instrumentation';
 // instrumentation must be imported first
