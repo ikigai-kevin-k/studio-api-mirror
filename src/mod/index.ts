@@ -6,7 +6,6 @@ import { DbModule } from 'src/db';
 import { HealthcheckModule } from 'src/healthcheck';
 import { KafkaModule } from 'src/kafka';
 import { LogModule } from 'src/log';
-import { QaSimulatorModule } from 'src/qa';
 import { QueueModule } from 'src/queue';
 import { RouterModule } from 'src/router';
 import { SlackModule } from 'src/slack';
@@ -29,5 +28,4 @@ export const StudioMod: ModuleProfile[] = [
   ...KafkaModule,
   ...TableApiModule,
   ...StudioModule,
-  ...QaSimulatorModule,
 ];

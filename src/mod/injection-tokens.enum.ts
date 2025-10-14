@@ -34,7 +34,5 @@ export const InjectionTokensEnum = {
   TABLE_API_SIGNAL_SERVICE: 'tableApiSignalService',
   TABLE_API_SIGNAL_OBSERVER: 'tableApiSignalObserver',
 
-  QA_SIGNAL_SIMULATOR_CONTROLLER: 'qaSignalSimulatorController',
-
   SLACK_SERVICE: 'slackService',
 } as const;
