@@ -4,14 +4,6 @@ import { KafkaQueueServiceConfig } from '@ikigaians/queue';
 import { AppConfigService } from 'src/config/app-config.service';
 import { GlobalQueueService } from './global-queue.service';
 
-class MockGlobalQueueService {
-  queueCfg: KafkaQueueServiceConfig | undefined;
-  connect(cfg: KafkaQueueServiceConfig) {
-    this.queueCfg = cfg;
-  }
-  disconnect() {}
-}
-
 jest.mock('@ikigaians/queue', () => ({
   KafkaService: class {
     queueCfg: KafkaQueueServiceConfig | undefined;
