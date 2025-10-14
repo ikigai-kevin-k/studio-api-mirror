@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { LoggerService } from '@ikigaians/logger';
 import { KafkaHub } from '@ikigaians/queue-pub-sub';
-import { TopicLosSignalError } from 'src/kafka/topics/los-signal-error.topic';
+import { LosSignalErrorTopic } from 'src/kafka/topics/los-signal-error.topic';
 import { KafkaLosSignalService } from './kafka-los-signal.service';
 
 const mockKafkaHub = {
@@ -54,7 +54,7 @@ describe('LosSignalService', () => {
       await service.publish(mockData);
 
       expect(mockKafkaHub.publish).toHaveBeenCalledTimes(1);
-      expect(mockKafkaHub.publish).toHaveBeenCalledWith(TopicLosSignalError, mockData);
+      expect(mockKafkaHub.publish).toHaveBeenCalledWith(LosSignalErrorTopic, mockData);
     });
   });
 });

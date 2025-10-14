@@ -23,8 +23,6 @@ export const InjectionTokensEnum = {
   STUDIO_DEVICE_DATA_CONTROLLER: 'studioDeviceDataController',
 
   GLOBAL_QUEUE_SERVICE: 'globalQueueService',
-
-  KAFKA_HUB: 'kafkaHub',
   GLOBAL_KAFKA_HUB: 'globalKafkaHub',
   KAFKA_LOS_SIGNAL_OBSERVER: 'kafkaLosSignalObserver',
   KAFKA_LOS_SIGNAL_SERVICE: 'kafkaLosSignalService',

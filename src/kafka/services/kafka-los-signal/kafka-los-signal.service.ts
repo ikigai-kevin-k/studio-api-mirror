@@ -1,7 +1,7 @@
 import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { GlobalKafkaHub } from '@ikigaians/queue-pub-sub';
-import { TopicLosSignalError } from 'src/kafka/topics/los-signal-error.topic';
+import { LosSignalErrorTopic } from 'src/kafka/topics/los-signal-error.topic';
 import { KafkaLosSignalServiceInput } from './kafka-los-signal.service.type';
 
 export class KafkaLosSignalService implements ModuleLifecycle {
@@ -11,7 +11,7 @@ export class KafkaLosSignalService implements ModuleLifecycle {
   ) {}
 
   async publish(data: KafkaLosSignalServiceInput) {
-    return await this.globalKafkaHub.publish(TopicLosSignalError, data);
+    return await this.globalKafkaHub.publish(LosSignalErrorTopic, data);
   }
 
   async onInit(): Promise<void> {}

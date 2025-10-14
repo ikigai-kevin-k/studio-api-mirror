@@ -27,8 +27,6 @@ export class KafkaLosSignalObserver implements ModuleLifecycle {
 
   private async onServiceSignal(query: URLSearchParams, ws: WebSocket, data?: object) {
     try {
-      // Scenario 5 : Received An Error Signal From The Device (Forward to  Los)
-      // https://ikigaians.atlassian.net/wiki/spaces/ST/pages/862388253/Studio+API+Workflow#Scenario-5-%3A-Received-An-Error-Signal-From-The-Device-(Forward-to--Los)
       const deviceId = query.get('id');
       if (!deviceId) throw new KafkaWsAuthFailureError(`Ws connect without device id !!`);
 

@@ -1,4 +1,5 @@
 import { ConsumeStrategy, Topic, TopicNameStrategy } from '@ikigaians/queue-pub-sub';
+import { KafkaTopicEnum } from '../enums/kafka.enum';
 
 export type LosSignalErrorPayload = {
   msgId: string;
@@ -12,8 +13,8 @@ export type LosSignalErrorPayload = {
   };
 };
 
-export const TopicLosSignalError: Topic<LosSignalErrorPayload> = {
-  name: process.env.KAFKA_TOPIC_LOS_SIGNAL_ERROR || 'studio.signals.errors',
+export const LosSignalErrorTopic: Topic<LosSignalErrorPayload> = {
+  name: KafkaTopicEnum.LOS_ERROR_SIGNAL,
   suggestedConsumeStrategy: ConsumeStrategy.BROADCAST,
   suggestedTopicNameStrategy: TopicNameStrategy.DIRECT,
 };
