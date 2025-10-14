@@ -1,8 +1,15 @@
 import { CacheConnectParams } from '@ikigaians/cache';
 import { AppEnvsEnum } from '@ikigaians/common';
 import { LogLevelsEnum } from '@ikigaians/logger';
+import { KafkaQueueServiceConfig } from '@ikigaians/queue';
 import dotenv from 'dotenv';
-import { AppConfig, AuthConfig, DbConfig, MasterDbConfig } from './app-config.types';
+import {
+  AppConfig,
+  AuthConfig,
+  DbConfig,
+  GlobalQueueConfig,
+  MasterDbConfig,
+} from './app-config.types';
 
 export class AppConfigService {
   constructor() {
@@ -55,13 +62,25 @@ export class AppConfigService {
         false,
     };
 
-    this.jobLocker = {
-      host: process.env.JOB_LOCKER_HOST || 'localhost',
-      port: Number(process.env.JOB_LOCKER_PORT),
-      password: String(process.env.JOB_LOCKER_PASSWORD),
-      username: String(process.env.JOB_LOCKER_USERNAME),
-      tls:
-        Number(process.env.JOB_LOCKER_TLS) === 1 || process.env.JOB_LOCKER_TLS === 'true' || false,
+    this.queue = {
+      hostnames: (process.env.QUEUE_HOST_NAMES || '').split(','),
+      protocol: process.env.QUEUE_PROTOCOL as 'AWS' | 'AWSPassword' | 'local',
+      region: process.env.APP_CLOUD_REGION || '',
+      drRegion: process.env.APP_CLOUD_DR_REGION || '',
+      clientId: process.env.APP_NAME || '',
+      username: process.env.QUEUE_PROTOCOL === 'AWSPassword' ? process.env.QUEUE_USER : undefined,
+      password:
+        process.env.QUEUE_PROTOCOL === 'AWSPassword' ? process.env.QUEUE_PASSWORD : undefined,
+    };
+
+    this.globalQueue = {
+      hostnames: (process.env.GLOBAL_QUEUE_HOST_NAMES || '').split(','),
+      protocol: process.env.GLOBAL_QUEUE_PROTOCOL as 'AWS' | 'AWSPassword' | 'local',
+      region: process.env.APP_CLOUD_CORE_REGION || 'local',
+      drRegion: process.env.APP_CLOUD_DR_CORE_REGION || '',
+      clientId: process.env.APP_NAME || '',
+      username: process.env.GLOBAL_QUEUE_USER,
+      password: process.env.GLOBAL_QUEUE_PASSWORD,
     };
 
     this.ws = {
@@ -72,18 +91,6 @@ export class AppConfigService {
     this.tableApi = {
       url: String(process.env.TABLE_API_SERVICE_URL),
       maxRetry: Number(process.env.TABLE_API_MAX_RETRY),
-    };
-
-    this.los = {
-      url: String(process.env.LOS_SERVICE_URL),
-      retry: Number(process.env.LOS_MAX_RETRY),
-      token: String(process.env.LOS_SERVICE_TEMP_TOKEN),
-    };
-
-    this.am = {
-      url: String(process.env.AM_SERVICE_URL),
-      user: String(process.env.AM_STUDIO_USER),
-      pw: String(process.env.AM_STUDIO_PASSWORD),
     };
 
     this.slack = {
@@ -116,22 +123,16 @@ export class AppConfigService {
     return this.cache;
   }
 
-  /** jobLocker config */
-  private jobLocker!: {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    tls: boolean;
-  };
-  get jobLockerConfig(): {
-    host: string;
-    port: number;
-    username: string;
-    password: string;
-    tls: boolean;
-  } {
-    return this.jobLocker;
+  /** queue config */
+  private queue!: KafkaQueueServiceConfig;
+  get queueConfig(): KafkaQueueServiceConfig {
+    return this.queue;
+  }
+
+  /** global queue config */
+  private globalQueue!: GlobalQueueConfig;
+  get globalQueueConfig(): GlobalQueueConfig {
+    return this.globalQueue;
   }
 
   /** ws config */
@@ -140,22 +141,10 @@ export class AppConfigService {
     return this.ws;
   }
 
-  /** los url config */
-  private los!: { url: string; retry: number; token: string };
-  get losConfig(): { url: string; retry: number; token: string } {
-    return this.los;
-  }
-
   /** table api url config */
   private tableApi!: { url: string; maxRetry: number };
   get tableApiConfig(): { url: string; maxRetry: number } {
     return this.tableApi;
-  }
-
-  /** access manager config */
-  private am!: { url: string; user: string; pw: string };
-  get amConfig(): { url: string; user: string; pw: string } {
-    return this.am;
   }
 
   /** slack config */

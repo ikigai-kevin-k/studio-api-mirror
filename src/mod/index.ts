@@ -4,9 +4,9 @@ import { CacheModule } from 'src/cache';
 import { AppConfigService } from 'src/config';
 import { DbModule } from 'src/db';
 import { HealthcheckModule } from 'src/healthcheck';
+import { KafkaModule } from 'src/kafka';
 import { LogModule } from 'src/log';
-import { LosModule } from 'src/los';
-import { QaSimulatorModule } from 'src/qa';
+import { QueueModule } from 'src/queue';
 import { RouterModule } from 'src/router';
 import { SlackModule } from 'src/slack';
 import { StudioModule } from 'src/studio';
@@ -22,10 +22,10 @@ export const StudioMod: ModuleProfile[] = [
   ...RouterModule,
   ...HealthcheckModule,
   ...LogModule,
+  ...QueueModule,
   ...WsModule,
   ...SlackModule,
-  ...LosModule,
+  ...KafkaModule,
   ...TableApiModule,
   ...StudioModule,
-  ...QaSimulatorModule,
 ];

@@ -43,6 +43,7 @@
     "@ikigaians/logger": "^1.2.0",
     "@ikigaians/mod": "^1.1.0",
     "@ikigaians/type": "^1.2.0",
+    "@ikigaians/queue-pub-sub": "^2.7.1",
     "@ikigaians/web": "^3.5.0",
     "@sinclair/typebox": "^0.27.8",
     "@slack/web-api": "^7.10.0",
