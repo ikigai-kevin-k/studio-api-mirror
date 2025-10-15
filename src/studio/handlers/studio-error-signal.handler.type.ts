@@ -1,3 +1,3 @@
 import { ErrorSignalInput } from 'src/global/types/error-signal.type';
 
-export type KafkaLosSignalServiceInput = ErrorSignalInput;
+export type StudioErrorSignalHandlerInput = ErrorSignalInput;

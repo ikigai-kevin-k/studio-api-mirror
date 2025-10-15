@@ -6,16 +6,17 @@ export async function send<T>(
   logger?: LoggerService,
 ): Promise<T> {
   let attempt = 0;
-  let reason = '';
   while (attempt < maxRetry) {
     try {
       return await process();
     } catch (error) {
       ++attempt;
-      reason = (error as Error).message;
-      logger?.error(reason);
+      logger?.error((error as Error).message);
+      if (maxRetry <= attempt) {
+        throw error;
+      }
     }
   }
 
-  throw new Error(reason);
+  throw new Error('Unexpected execution flow: process should have returned or thrown.');
 }

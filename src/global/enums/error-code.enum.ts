@@ -3,4 +3,5 @@ export enum ErrorCodeEnum {
   DATA_NOT_EXIST = 22_002,
   DATA_NOT_MODIFIED = 22_003,
   FORWARD_FAILURE = 22_004,
+  INVALID_STATE = 22_005,
 }
