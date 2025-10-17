@@ -150,7 +150,7 @@ describe('StudioErrorSignalLogRepository', () => {
       });
     });
 
-    it('should throw an studio if none modified', async () => {
+    it('should throw an error if none modified', async () => {
       const mockInsertResult = {
         raw: [],
         affected: 0,
