@@ -55,7 +55,7 @@ describe('StudioErrorSignalLogService', () => {
         mockResult,
       );
 
-      const result = await service.getLog({ signalId: 1 });
+      const result = await service.getLog(1);
       expect(result).toBe(mockResult);
     });
   });
@@ -101,39 +101,8 @@ describe('StudioErrorSignalLogService', () => {
         mockResult,
       );
 
-      const result = await service.updateLog({ deviceId: 'idp' });
+      const result = await service.updateLog('idp');
       expect(result).toBe(mockResult);
-    });
-  });
-
-  describe('getUnResolvedLog', () => {
-    it('should return an unsolved log of device', async () => {
-      const currentTime = new Date();
-
-      const mockResult: ErrorSignalLogServiceOutput = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: { msgId: '', metadata: {} },
-        resolved: false,
-        updatedAt: currentTime,
-        createdAt: currentTime,
-      };
-
-      (
-        mockStudioErrorSignalLogRepository.getUnResolvedErrorSignalLogByDeviceId as jest.Mock
-      ).mockResolvedValueOnce(mockResult);
-
-      const result = await service.getUnResolvedLog({ deviceId: 'idp' });
-      expect(result).toBe(mockResult);
-    });
-  });
-
-  describe('isUnResolvedLogExist', () => {
-    it('should return whether the device has been resolved', async () => {
-      (mockStudioErrorSignalLogRepository.IsUnResolved as jest.Mock).mockResolvedValueOnce(true);
-
-      const result = await service.isUnResolvedLogExist('idp');
-      expect(result).toEqual(true);
     });
   });
 });

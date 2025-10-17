@@ -4,7 +4,7 @@ import { SlackService } from 'src/slack/slack.service';
 
 import { StudioApiError } from 'src/global/errors/error';
 import { StudioWsAuthError } from 'src/studio/errors/studio.error';
-import { StudioErrorSignalHandler } from 'src/studio/handlers/studio-error-signal.handler';
+import { StudioErrorSignalService } from 'src/studio/services/studio-error-signal/studio-error-signal.service';
 import { WsService } from 'src/ws/ws.service';
 import { Unsubscribe } from 'src/ws/ws.service.type';
 import { WebSocket } from 'ws';
@@ -13,7 +13,7 @@ import { StudioErrorSignalObserverInput } from './studio-error-signal.observer.t
 export class StudioErrorSignalObserver implements ModuleLifecycle {
   private unSubscribes: Unsubscribe[] = [];
   constructor(
-    private readonly studioErrorSignalHandler: StudioErrorSignalHandler,
+    private readonly studioErrorSignalService: StudioErrorSignalService,
     private readonly slackService: SlackService,
     private readonly wsService: WsService,
     private readonly logger: LoggerService,
@@ -27,7 +27,7 @@ export class StudioErrorSignalObserver implements ModuleLifecycle {
       const input = data as StudioErrorSignalObserverInput;
       if (!input) throw new StudioWsAuthError(`Ws connect without error signal !!`);
 
-      const result = await this.studioErrorSignalHandler.forwardErrorSignal(deviceId, input.signal);
+      const result = await this.studioErrorSignalService.forwardErrorSignal(deviceId, input.signal);
       ws.send(JSON.stringify({ data: result }));
     } catch (error) {
       const { code, message } = error as StudioApiError;

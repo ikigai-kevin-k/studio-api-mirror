@@ -49,7 +49,7 @@ export class StudioErrorSignalLogController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<GetStudioErrorSignalResponseType> => {
-        const result = await this.studioErrorSignalLogService.getLog(req.query);
+        const result = await this.studioErrorSignalLogService.getLog(req.query.signalId);
         return {
           ...result,
           createdAt: result.createdAt.toISOString(),

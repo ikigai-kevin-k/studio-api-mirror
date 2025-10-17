@@ -5,7 +5,6 @@ import { StudioDeviceDataController } from './controller/v1/studio-device/studio
 import { StudioErrorSignalLogController } from './controller/v1/studio-log/studio-error-signal-log.controller';
 import { StudioStatusController } from './controller/v1/studio-status/studio-status.controller';
 import { StudioController } from './controller/v1/studio/studio.controller';
-import { StudioErrorSignalHandler } from './handlers/studio-error-signal.handler';
 import { StudioErrorSignalObserver } from './observers/studio-error-signal/studio-error-signal.observer';
 import { StudioStatusObserver } from './observers/studio-status/studio-status.observer';
 import { StudioCdnRepository } from './repositories/studio-cdn/studio-cdn.repository';
@@ -15,6 +14,7 @@ import { StudioStatusRepository } from './repositories/studio-status/studio-stat
 import { StudioRepository } from './repositories/studio/studio.repository';
 import { StudioCdnService } from './services/studio-cdn/studio-cdn.service';
 import { StudioDeviceDataService } from './services/studio-device/studio-device-data.service';
+import { StudioErrorSignalService } from './services/studio-error-signal/studio-error-signal.service';
 import { StudioErrorSignalLogService } from './services/studio-log/studio-error-signal-log.service';
 import { StudioStatusService } from './services/studio-status/studio-status.service';
 import { StudioService } from './services/studio/studio.service';
@@ -40,6 +40,6 @@ export const StudioModule: ModuleProfile[] = [
   [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_LOG_SERVICE, StudioErrorSignalLogService],
   [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_LOG_CONTROLLER, StudioErrorSignalLogController],
 
-  [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_HANDLER, StudioErrorSignalHandler],
+  [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_SERVICE, StudioErrorSignalService],
   [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_OBSERVER, StudioErrorSignalObserver],
 ] as const;

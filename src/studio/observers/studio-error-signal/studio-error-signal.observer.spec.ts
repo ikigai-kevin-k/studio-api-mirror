@@ -5,14 +5,14 @@
 import { LoggerService } from '@ikigaians/logger';
 import { SlackService } from 'src/slack/slack.service';
 
-import { StudioErrorSignalHandler } from 'src/studio/handlers/studio-error-signal.handler';
+import { StudioErrorSignalService } from 'src/studio/services/studio-error-signal/studio-error-signal.service';
 import { WsService } from 'src/ws/ws.service';
 import { StudioErrorSignalObserver } from './studio-error-signal.observer';
 import { StudioErrorSignalObserverInput } from './studio-error-signal.observer.type';
 
-const mockStudioErrorSignalHandler = {
+const mockStudioErrorSignalService = {
   forwardErrorSignal: jest.fn(),
-} as unknown as StudioErrorSignalHandler;
+} as unknown as StudioErrorSignalService;
 
 const mockSlackService = {
   broadcast: jest.fn(),
@@ -32,7 +32,7 @@ describe('StudioErrorSignalObserver', () => {
 
   beforeEach(() => {
     observer = new StudioErrorSignalObserver(
-      mockStudioErrorSignalHandler,
+      mockStudioErrorSignalService,
       mockSlackService,
       mockWsService,
       mockLoggerService,
@@ -66,7 +66,7 @@ describe('StudioErrorSignalObserver', () => {
 
       await (observer as any).onServiceSignal(query, ws, input);
 
-      expect(mockStudioErrorSignalHandler.forwardErrorSignal).toHaveBeenCalledWith(
+      expect(mockStudioErrorSignalService.forwardErrorSignal).toHaveBeenCalledWith(
         'idp',
         input.signal,
       );

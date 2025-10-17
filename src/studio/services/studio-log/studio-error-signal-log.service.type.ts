@@ -1,4 +1,5 @@
 import { ErrorSignalInput } from 'src/global/types/error-signal.type';
+import { DeviceInput, SignalInput } from 'src/global/types/input.type';
 
 export type ErrorSignalLogServiceOutput = {
   id: number;
@@ -9,19 +10,11 @@ export type ErrorSignalLogServiceOutput = {
   updatedAt: Date;
 };
 
-export type GetErrorSignalLogServiceInput = {
-  signalId: number;
-};
+export type GetErrorSignalLogServiceInput = SignalInput;
 
 export type InsertErrorSignalLogServiceInput = {
   deviceId: string;
   errorSignal: ErrorSignalInput;
 };
 
-export type UpdateErrorSignalLogServiceInput = {
-  deviceId: string;
-};
-
-export type GetUnResolvedErrorSignalLogServiceInput = {
-  deviceId: string;
-};
+export type UpdateErrorSignalLogServiceInput = DeviceInput;

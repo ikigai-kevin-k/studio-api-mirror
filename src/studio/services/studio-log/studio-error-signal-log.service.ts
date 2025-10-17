@@ -5,7 +5,6 @@ import { StudioErrorSignalLogRepository } from 'src/studio/repositories/studio-l
 import {
   ErrorSignalLogServiceOutput,
   GetErrorSignalLogServiceInput,
-  GetUnResolvedErrorSignalLogServiceInput,
   InsertErrorSignalLogServiceInput,
   UpdateErrorSignalLogServiceInput,
 } from './studio-error-signal-log.service.type';
@@ -17,30 +16,15 @@ export class StudioErrorSignalLogService implements ModuleLifecycle {
   ) {}
 
   async getLog(input: GetErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.getErrorSignalLogById(input.signalId);
+    return await this.studioErrorSignalLogRepository.getErrorSignalLogById(input);
   }
 
   async insertLog(input: InsertErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.insertErrorSignalLog(
-      input.deviceId,
-      input.errorSignal,
-    );
+    return await this.studioErrorSignalLogRepository.insertErrorSignalLog(input);
   }
 
   async updateLog(type: UpdateErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
     return await this.studioErrorSignalLogRepository.updateErrorSignalLog(type);
-  }
-
-  async getUnResolvedLog(
-    input: GetUnResolvedErrorSignalLogServiceInput,
-  ): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.getUnResolvedErrorSignalLogByDeviceId(
-      input.deviceId,
-    );
-  }
-
-  async isUnResolvedLogExist(deviceId: string): Promise<boolean> {
-    return await this.studioErrorSignalLogRepository.IsUnResolved(deviceId);
   }
 
   async onInit(): Promise<void> {}

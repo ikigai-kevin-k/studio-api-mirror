@@ -11,6 +11,7 @@ export type DbStudioErrorSignalLog = {
   updatedAt: Date;
 };
 
-export type UpdateStudioErrorSignalLogEntity = {
+export type StudioErrorSignalLogEntity = {
   deviceId: string;
+  errorSignal: StudioErrorSignal;
 };

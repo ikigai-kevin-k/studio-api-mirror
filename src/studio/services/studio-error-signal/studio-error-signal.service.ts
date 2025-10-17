@@ -4,13 +4,13 @@ import { KafkaLosSignalService } from 'src/kafka/services/kafka-los-signal/kafka
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioErrorSignalLogService } from 'src/studio/services/studio-log/studio-error-signal-log.service';
 import { TableApiQueryService } from 'src/table-api/services/table-api-query/table-api-query.service';
 import { TableApiSignalService } from 'src/table-api/services/table-api-signal/table-api-signal.service';
-import { StudioInvalidStateError, StudioNotFoundError } from '../errors/studio.error';
-import { StudioErrorSignalHandlerInput } from './studio-error-signal.handler.type';
+import { StudioErrorSignalServiceInput } from './studio-error-signal.service.type';
 
-export class StudioErrorSignalHandler implements ModuleLifecycle {
+export class StudioErrorSignalService implements ModuleLifecycle {
   constructor(
     private readonly tableApiQueryService: TableApiQueryService,
     private readonly studioDeviceDataService: StudioDeviceDataService,
@@ -21,33 +21,9 @@ export class StudioErrorSignalHandler implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  private async insertSignalLog(deviceId: string, data: StudioErrorSignalHandlerInput) {
-    const hasUnResolved = await this.studioErrorSignalLogService.isUnResolvedLogExist(deviceId);
-    if (hasUnResolved) {
-      throw new StudioInvalidStateError(
-        `[studio_error_signal_log] ${deviceId} has unresolved error signal log`,
-      );
-    }
+  async onInit(): Promise<void> {}
 
-    return await this.studioErrorSignalLogService.insertLog({
-      deviceId: deviceId,
-      errorSignal: data,
-    });
-  }
-
-  private async queryDeviceBelong(deviceId: string) {
-    const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
-
-    const gameId = await this.studioService.getStudioTableBelongTo(tableId);
-    if (!gameId) {
-      throw new StudioNotFoundError(`[studio] ${tableId} doesn't belong to any GameCode`);
-    }
-
-    const tableName = await this.tableApiQueryService.getTableName(gameId);
-    return { gameId, tableName };
-  }
-
-  async forwardErrorSignal(deviceId: string, signal: StudioErrorSignalHandlerInput) {
+  async forwardErrorSignal(deviceId: string, signal: StudioErrorSignalServiceInput) {
     const { gameId, tableName } = await this.queryDeviceBelong(deviceId);
     const output = {
       ...signal,
@@ -68,11 +44,28 @@ export class StudioErrorSignalHandler implements ModuleLifecycle {
   }
 
   async forwardResolveSignal(deviceId: string) {
-    const result = await this.studioErrorSignalLogService.updateLog({ deviceId: deviceId });
+    const result = await this.studioErrorSignalLogService.updateLog(deviceId);
     // TODO: forward to LOS
 
     return result;
   }
 
-  async onInit(): Promise<void> {}
+  private async insertSignalLog(deviceId: string, data: StudioErrorSignalServiceInput) {
+    return await this.studioErrorSignalLogService.insertLog({
+      deviceId: deviceId,
+      errorSignal: data,
+    });
+  }
+
+  private async queryDeviceBelong(deviceId: string) {
+    const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
+
+    const gameId = await this.studioService.getStudioTableBelongTo(tableId);
+    if (!gameId) {
+      throw new StudioNotFoundError(`[studio] ${tableId} doesn't belong to any GameCode`);
+    }
+
+    const tableName = await this.tableApiQueryService.getTableName(gameId);
+    return { gameId, tableName };
+  }
 }

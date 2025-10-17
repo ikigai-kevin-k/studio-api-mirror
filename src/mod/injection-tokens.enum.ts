@@ -26,7 +26,7 @@ export const InjectionTokensEnum = {
   STUDIO_ERROR_SIGNAL_LOG_SERVICE: 'studioErrorSignalLogService',
   STUDIO_ERROR_SIGNAL_LOG_CONTROLLER: 'studioErrorSignalLogController',
 
-  STUDIO_ERROR_SIGNAL_HANDLER: 'studioErrorSignalHandler',
+  STUDIO_ERROR_SIGNAL_SERVICE: 'studioErrorSignalService',
   STUDIO_ERROR_SIGNAL_OBSERVER: 'studioErrorSignalObserver',
 
   GLOBAL_QUEUE_SERVICE: 'globalQueueService',

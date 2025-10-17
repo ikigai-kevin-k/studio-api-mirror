@@ -12,7 +12,6 @@ import {
   comment: 'The error signal logs.',
 })
 @Index('idx_studio_error_signal_log_device_id', ['deviceId'])
-@Index('idx_studio_error_signal_log_resolved', ['resolved'])
 export class StudioErrorSignalLog {
   @PrimaryGeneratedColumn({
     name: 'ID',
