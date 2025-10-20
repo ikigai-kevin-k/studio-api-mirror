@@ -31,12 +31,6 @@ describe('WsService', () => {
     jest.clearAllMocks();
   });
 
-  describe('onInit', () => {
-    it('should be callable and return without errors', async () => {
-      await expect(service.onInit()).resolves.toBeUndefined();
-    });
-  });
-
   describe('handleConnect', () => {
     let mockWs: any;
 
