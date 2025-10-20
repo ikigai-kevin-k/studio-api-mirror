@@ -24,3 +24,11 @@ export class StudioWsAuthError extends StudioApiError {
     Error.captureStackTrace(this, StudioWsAuthError);
   }
 }
+
+export class StudioInvalidStateError extends StudioApiError {
+  constructor(message: string) {
+    super(ErrorCodeEnum.INVALID_STATE, message);
+    this.name = 'StudioInvalidStateError';
+    Error.captureStackTrace(this, StudioInvalidStateError);
+  }
+}

@@ -21,7 +21,9 @@ export const GetStudioTableResponse = Type.Object({
 
 export type GetStudioTableResponseType = Static<typeof GetStudioTableResponse>;
 
-export const InsertStudioTableRequest = StudioTableSchema;
+export const InsertStudioTableRequest = Type.Object({
+  tableId: Type.String(),
+});
 
 export type InsertStudioTableRequestType = Static<typeof InsertStudioTableRequest>;
 

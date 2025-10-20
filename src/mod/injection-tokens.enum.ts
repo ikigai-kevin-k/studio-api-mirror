@@ -22,9 +22,15 @@ export const InjectionTokensEnum = {
   STUDIO_DEVICE_DATA_SERVICE: 'studioDeviceDataService',
   STUDIO_DEVICE_DATA_CONTROLLER: 'studioDeviceDataController',
 
+  STUDIO_ERROR_SIGNAL_LOG_REPOSITORY: 'studioErrorSignalLogRepository',
+  STUDIO_ERROR_SIGNAL_LOG_SERVICE: 'studioErrorSignalLogService',
+  STUDIO_ERROR_SIGNAL_LOG_CONTROLLER: 'studioErrorSignalLogController',
+
+  STUDIO_ERROR_SIGNAL_SERVICE: 'studioErrorSignalService',
+  STUDIO_ERROR_SIGNAL_OBSERVER: 'studioErrorSignalObserver',
+
   GLOBAL_QUEUE_SERVICE: 'globalQueueService',
   GLOBAL_KAFKA_HUB: 'globalKafkaHub',
-  KAFKA_LOS_SIGNAL_OBSERVER: 'kafkaLosSignalObserver',
   KAFKA_LOS_SIGNAL_SERVICE: 'kafkaLosSignalService',
 
   WS_SERVICE: 'wsService',
@@ -32,7 +38,6 @@ export const InjectionTokensEnum = {
   TABLE_API_QUERY_SERVICE: 'tableApiQueryService',
   TABLE_API_CDN_SERVICE: 'tableApiCdnService',
   TABLE_API_SIGNAL_SERVICE: 'tableApiSignalService',
-  TABLE_API_SIGNAL_OBSERVER: 'tableApiSignalObserver',
 
   SLACK_SERVICE: 'slackService',
 } as const;

@@ -46,3 +46,6 @@ dist
 
 # docker
 .docker
+
+# db
+src/db/migrations/*
