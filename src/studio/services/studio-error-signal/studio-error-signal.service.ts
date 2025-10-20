@@ -32,6 +32,8 @@ export class StudioErrorSignalService implements ModuleLifecycle {
     output.metadata.gameCode = gameId;
     output.metadata.tableName = tableName;
 
+    // TODO: check for duplicate signals
+
     const log = await this.insertSignalLog(deviceId, output);
     output.metadata.signalId = log.id;
 
