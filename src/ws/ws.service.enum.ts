@@ -21,6 +21,7 @@ export enum WsCloseCodeEnum {
 }
 
 export enum WsResponseType {
+  Error = 'error',
   Ack = 'ack',
   Kick = 'kick',
   Device = 'deviceStatus',

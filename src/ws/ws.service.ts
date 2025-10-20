@@ -88,7 +88,7 @@ export class WsService implements ModuleLifecycle {
         ws.close(code, JSON.stringify({ type: WsResponseType.Kick, error: output }));
       },
       error: (output: WsErrorOutput) => {
-        ws.send(JSON.stringify({ type: 'error', error: output }));
+        ws.send(JSON.stringify({ type: WsResponseType.Error, error: output }));
       },
     };
     for (const cb of cbs) cb(query, inst, data);
@@ -103,10 +103,10 @@ export class WsService implements ModuleLifecycle {
         WsCloseCodeEnum.GoingAway,
         JSON.stringify({
           type: WsResponseType.Kick,
-          error: { code: ErrorCodeEnum.INVALID_STATE, message: 'duplication login' },
+          error: { code: ErrorCodeEnum.INVALID_STATE, message: 'duplicate login' },
         }),
       );
-      this.logger.info(`[ws] studio api kick ${id} out, because of duplication`);
+      this.logger.info(`[ws] studio api kick ${id} out, because of duplicate login`);
     }
 
     this.listeners.delete(id);
@@ -114,8 +114,7 @@ export class WsService implements ModuleLifecycle {
 
   broadcast(type: WsResponseType, message: WsOutput) {
     const msg = JSON.stringify({ type: type, data: message });
-    for (const listener of this.listeners) {
-      const client = listener[1];
+    for (const [, client] of this.listeners) {
       if (client.readyState === client.OPEN) {
         client.send(msg);
       }
