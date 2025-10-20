@@ -8,6 +8,7 @@ export type ErrorSignalInput = {
     description?: string;
     code?: string;
     suggestion?: string;
+    timestamp?: number;
   };
 };
 

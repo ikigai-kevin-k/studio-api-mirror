@@ -108,6 +108,7 @@ describe('StudioErrorSignalHandler', () => {
 
   describe('forwardErrorSignal', () => {
     it('should return a log from db', async () => {
+      const currentTime = new Date();
       const input: StudioErrorSignalServiceInput = {
         msgId: '',
         metadata: {},
@@ -119,7 +120,7 @@ describe('StudioErrorSignalHandler', () => {
       });
 
       const spyInsertSignalLog = jest.spyOn(service as any, 'insertSignalLog');
-      spyInsertSignalLog.mockResolvedValueOnce({ id: 1 });
+      spyInsertSignalLog.mockResolvedValueOnce({ id: 1, createdAt: currentTime });
 
       const result = await service.forwardErrorSignal('idp', input);
 
@@ -128,7 +129,12 @@ describe('StudioErrorSignalHandler', () => {
 
       expect(result).toEqual({
         msgId: '',
-        metadata: { gameCode: 'gameCode', tableName: 'auto roulette', signalId: 1 },
+        metadata: {
+          gameCode: 'gameCode',
+          tableName: 'auto roulette',
+          signalId: 1,
+          timestamp: currentTime.getTime(),
+        },
       });
     });
   });

@@ -36,6 +36,7 @@ export class StudioErrorSignalService implements ModuleLifecycle {
 
     const log = await this.insertSignalLog(deviceId, output);
     output.metadata.signalId = log.id;
+    output.metadata.timestamp = log.createdAt.getTime();
 
     await Promise.all([
       this.kafkaLosSignalService.publish(output),
