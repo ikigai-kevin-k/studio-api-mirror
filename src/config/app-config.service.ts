@@ -84,7 +84,7 @@ export class AppConfigService {
     };
 
     this.ws = {
-      port: Number(process.env.WS_PORT),
+      interval: Number(process.env.WS_ACK_INTERVAL_MS),
       token: String(process.env.WS_TOKEN),
     };
 
@@ -136,8 +136,8 @@ export class AppConfigService {
   }
 
   /** ws config */
-  private ws!: { port: number; token: string };
-  get wsConfig(): { port: number; token: string } {
+  private ws!: { interval: number; token: string };
+  get wsConfig(): { interval: number; token: string } {
     return this.ws;
   }
 

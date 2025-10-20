@@ -34,6 +34,7 @@ export const InjectionTokensEnum = {
   KAFKA_LOS_SIGNAL_SERVICE: 'kafkaLosSignalService',
 
   WS_SERVICE: 'wsService',
+  WS_CONTROLLER: 'wsController',
 
   TABLE_API_QUERY_SERVICE: 'tableApiQueryService',
   TABLE_API_CDN_SERVICE: 'tableApiCdnService',

@@ -36,14 +36,15 @@
     "@fastify/swagger": "^9",
     "@fastify/swagger-ui": "^5",
     "@fastify/type-provider-typebox": "^3.6.0",
+    "@fastify/websocket": "^11.2.0",
     "@ikigaians/auth": "^1.0.3",
     "@ikigaians/cache": "^1.5.0",
     "@ikigaians/common": "^1.6.0",
     "@ikigaians/instrumentation": "^1.1.0",
     "@ikigaians/logger": "^1.2.0",
     "@ikigaians/mod": "^1.1.0",
-    "@ikigaians/type": "^1.2.0",
     "@ikigaians/queue-pub-sub": "^2.7.1",
+    "@ikigaians/type": "^1.2.0",
     "@ikigaians/web": "^3.5.0",
     "@sinclair/typebox": "^0.27.8",
     "@slack/web-api": "^7.10.0",
@@ -54,8 +55,7 @@
     "http-status-codes": "^2.3.0",
     "pg": "^8.16.3",
     "typeorm": "^0.3.25",
-    "undici": "^7.15.0",
-    "ws": "^8.18.3"
+    "undici": "^7.15.0"
   },
   "devDependencies": {
     "@types/jest": "^29.5.11",

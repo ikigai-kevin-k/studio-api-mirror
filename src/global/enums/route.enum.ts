@@ -6,4 +6,7 @@ export enum RoutesEnum {
   V1_STUDIO_DEVICE = '/v1/service/device',
   V1_STUDIO_GAME = '/v1/service/game',
   V1_STUDIO_ERROR_SIGNAL_LOG = '/v1/service/signal',
+
+  // ws
+  V1_WS_CONNECT = '/v1/ws',
 }

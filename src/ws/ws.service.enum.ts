@@ -19,3 +19,10 @@ export enum WsCloseCodeEnum {
   Forbidden = 3003,
   Timeout = 3008,
 }
+
+export enum WsResponseType {
+  Ack = 'ack',
+  Kick = 'kick',
+  Device = 'deviceStatus',
+  Signal = 'errorSignal',
+}

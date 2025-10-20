@@ -1,8 +1,7 @@
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { LoggerService } from 'src/log';
 import { WsService } from 'src/ws/ws.service';
-import { Unsubscribe } from 'src/ws/ws.service.type';
-import { WebSocket } from 'ws';
+import { Unsubscribe, WsInstance } from 'src/ws/ws.service.type';
 import { SlackSignalData } from './slack.observer.type';
 import { SlackService } from './slack.service';
 
@@ -15,7 +14,7 @@ export class SlackObserver implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  private async onServiceSignal(query: URLSearchParams, ws: WebSocket, data?: object) {
+  private async onServiceSignal(query: URLSearchParams, ws: WsInstance, data?: object) {
     if (data)
       await this.slackService.broadcast(
         JSON.stringify((data as SlackSignalData).signal, undefined, 2),
