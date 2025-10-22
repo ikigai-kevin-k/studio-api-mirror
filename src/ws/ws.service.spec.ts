@@ -5,6 +5,7 @@ import { WebSocket } from '@fastify/websocket';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
+import { WsConnection } from './ws.connect';
 import { WsService } from './ws.service';
 import { WsResponseType } from './ws.service.enum';
 
@@ -51,7 +52,11 @@ describe('WsService', () => {
 
       expect(mockWs.on).toHaveBeenCalledWith('message', expect.any(Function));
       expect(mockWs.on).toHaveBeenCalledWith('close', expect.any(Function));
-      expect(notifySpy).toHaveBeenCalledWith('connection', expect.any(URLSearchParams), mockWs);
+      expect(notifySpy).toHaveBeenCalledWith(
+        'connection',
+        expect.any(URLSearchParams),
+        new WsConnection('test-id', mockWs, mockLoggerService),
+      );
     });
 
     it('should close the connection with an unauthorized error for invalid token', async () => {
@@ -96,10 +101,11 @@ describe('WsService', () => {
       service.subscribe('message', mockCallback2);
 
       const mockWs = {} as WebSocket;
+      const mockConnect = new WsConnection('test', mockWs, mockLoggerService);
       const mockQuery = new URLSearchParams('token=test');
       const mockData = { message: 'test-message' };
 
-      service['notify']('message', mockQuery, mockWs, mockData);
+      service['notify']('message', mockQuery, mockConnect, mockData);
 
       expect(mockCallback1).toHaveBeenCalled();
       expect(mockCallback2).toHaveBeenCalled();
@@ -109,7 +115,7 @@ describe('WsService', () => {
   describe('leave', () => {
     it('should kick a connect if it still works', () => {
       const listeners = (service as any).listeners;
-      const mockClient1 = { readyState: 1, OPEN: 1, close: jest.fn() } as any;
+      const mockClient1 = { isOpen: true, close: jest.fn() } as any;
       listeners.set('mockClient1', mockClient1);
 
       (service as any).leave('mockClient1');
@@ -119,7 +125,7 @@ describe('WsService', () => {
 
     it('should only remove a connect if it does not works', () => {
       const listeners = (service as any).listeners;
-      const mockClient1 = { readyState: 4, OPEN: 1, close: jest.fn() } as any;
+      const mockClient1 = { isOpen: false, close: jest.fn() } as any;
       listeners.set('mockClient1', mockClient1);
 
       (service as any).leave('mockClient1');
@@ -129,7 +135,7 @@ describe('WsService', () => {
 
     it('do nothing if id does not exit', () => {
       const listeners = (service as any).listeners;
-      const mockClient1 = { readyState: 1, OPEN: 1, close: jest.fn() } as any;
+      const mockClient1 = { isOpen: false, close: jest.fn() } as any;
       listeners.set('mockClient1', mockClient1);
 
       (service as any).leave('mockClient2');
@@ -141,8 +147,8 @@ describe('WsService', () => {
   describe('broadcast', () => {
     it('should send message to all open clients', async () => {
       const listeners = (service as any).listeners;
-      const mockClient1 = { readyState: 1, OPEN: 1, send: jest.fn() } as any;
-      const mockClient2 = { readyState: 0, OPEN: 1, send: jest.fn() } as any;
+      const mockClient1 = { isOpen: true, send: jest.fn() } as any;
+      const mockClient2 = { isOpen: false, send: jest.fn() } as any;
       listeners.set('mockClient1', mockClient1);
       listeners.set('mockClient2', mockClient2);
 
@@ -150,9 +156,7 @@ describe('WsService', () => {
 
       service.broadcast(WsResponseType.Ack, mockInput);
 
-      expect(mockClient1.send).toHaveBeenCalledWith(
-        JSON.stringify({ type: WsResponseType.Ack, data: mockInput }),
-      );
+      expect(mockClient1.send).toHaveBeenCalledWith(WsResponseType.Ack, mockInput);
       expect(mockClient2.send).not.toHaveBeenCalled();
     });
   });
@@ -168,8 +172,8 @@ describe('WsService', () => {
   describe('onDispose', () => {
     it('should close all clients and the server', async () => {
       const listeners = (service as any).listeners;
-      const mockClient1 = { readyState: 1, OPEN: 1, close: jest.fn() } as any;
-      const mockClient2 = { readyState: 0, OPEN: 1, close: jest.fn() } as any;
+      const mockClient1 = { isOpen: true, close: jest.fn() } as any;
+      const mockClient2 = { isOpen: false, close: jest.fn() } as any;
 
       listeners.set('mockClient1', mockClient1);
       listeners.set('mockClient2', mockClient2);

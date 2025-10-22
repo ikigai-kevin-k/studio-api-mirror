@@ -5,14 +5,15 @@ import { ErrorCodeEnum } from 'src/global/enums/error-code.enum';
 import { StudioApiError } from 'src/global/errors/error';
 import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
-import { WsAuthError, WsInvalidError } from './ws.error';
+import { WsConnection } from './ws.connect';
+import { WsAuthError } from './ws.error';
 import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
-import { ObserverCallback, WsErrorOutput, WsInput, WsOutput } from './ws.service.type';
+import { ObserverCallback, WsOutput } from './ws.service.type';
 
 export class WsService implements ModuleLifecycle {
   private observers = new Map<string, ObserverCallback[]>();
 
-  private listeners = new Map<string, WebSocket>();
+  private listeners = new Map<string, WsConnection>();
 
   private ackTimer: NodeJS.Timeout | undefined = undefined;
 
@@ -33,23 +34,19 @@ export class WsService implements ModuleLifecycle {
       }
 
       this.leave(id);
-      this.listeners.set(id, ws);
+      const connection = new WsConnection(id, ws, this.logger);
+      this.listeners.set(id, connection);
 
-      ws.on('message', (message) => {
-        const rawData = JSON.parse(message.toString()) as WsInput;
-        if (!rawData.event) {
-          throw new WsInvalidError(`${id} send an invalid data => ${message.toString()}`);
-        }
-
-        this.notify(rawData.event, query, ws, rawData.data);
+      connection.onMessage((message) => {
+        this.notify(message.event, query, connection, message.data);
       });
 
-      ws.on('close', () => {
-        this.notify('close', query, ws);
+      connection.onClose(() => {
+        this.notify('close', query, connection);
         this.leave(id);
       });
 
-      this.notify('connection', query, ws);
+      this.notify('connection', query, connection);
     } catch (error) {
       const { code, message } = error as StudioApiError;
       const msg = `ws connect status fail, code: ${code}, reason: ${message}`;
@@ -76,36 +73,22 @@ export class WsService implements ModuleLifecycle {
     };
   }
 
-  private notify(event: string, query: URLSearchParams, ws: WebSocket, data?: object) {
+  private notify(event: string, query: URLSearchParams, connection: WsConnection, data?: object) {
     const cbs = this.observers.get(event);
     if (!cbs) return;
 
-    const inst = {
-      send: (type: WsResponseType, output: WsOutput) => {
-        ws.send(JSON.stringify({ type: type, data: output }));
-      },
-      close: (code: WsCloseCodeEnum, output: WsErrorOutput) => {
-        ws.close(code, JSON.stringify({ type: WsResponseType.Kick, error: output }));
-      },
-      error: (output: WsErrorOutput) => {
-        ws.send(JSON.stringify({ type: WsResponseType.Error, error: output }));
-      },
-    };
-    for (const cb of cbs) cb(query, inst, data);
+    for (const cb of cbs) cb(query, connection, data);
   }
 
   private leave(id: string) {
-    const client = this.listeners.get(id);
-    if (!client) return;
+    const connection = this.listeners.get(id);
+    if (!connection) return;
 
-    if (client.readyState === client.OPEN) {
-      client.close(
-        WsCloseCodeEnum.GoingAway,
-        JSON.stringify({
-          type: WsResponseType.Kick,
-          error: { code: ErrorCodeEnum.INVALID_STATE, message: 'duplicate login' },
-        }),
-      );
+    if (connection.isOpen) {
+      connection.close(WsCloseCodeEnum.GoingAway, {
+        code: ErrorCodeEnum.INVALID_STATE,
+        message: 'duplicate login',
+      });
       this.logger.info(`[ws] studio api kick ${id} out, because of duplicate login`);
     }
 
@@ -113,10 +96,9 @@ export class WsService implements ModuleLifecycle {
   }
 
   broadcast(type: WsResponseType, message: WsOutput) {
-    const msg = JSON.stringify({ type: type, data: message });
-    for (const [, client] of this.listeners) {
-      if (client.readyState === client.OPEN) {
-        client.send(msg);
+    for (const [, connection] of this.listeners) {
+      if (connection.isOpen) {
+        connection.send(type, message);
       }
     }
   }
@@ -133,10 +115,12 @@ export class WsService implements ModuleLifecycle {
     clearInterval(this.ackTimer);
     this.ackTimer = undefined;
 
-    for (const listener of this.listeners) {
-      const client = listener[1];
-      if (client.readyState === client.OPEN) {
-        client.close(WsCloseCodeEnum.GoingAway, 'StudioAPI shutting down');
+    for (const [, connection] of this.listeners) {
+      if (connection.isOpen) {
+        connection.close(WsCloseCodeEnum.ServiceRestart, {
+          code: ErrorCodeEnum.INVALID_STATE,
+          message: 'StudioAPI shutting down',
+        });
       }
     }
 

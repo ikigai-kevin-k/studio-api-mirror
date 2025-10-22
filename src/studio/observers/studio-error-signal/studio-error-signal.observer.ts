@@ -28,6 +28,9 @@ export class StudioErrorSignalObserver implements ModuleLifecycle {
       if (!input) throw new StudioWsAuthError(`Ws connect without error signal !!`);
 
       const result = await this.studioErrorSignalService.forwardErrorSignal(deviceId, input.signal);
+
+      await this.slackService.broadcast(JSON.stringify(input.signal, undefined, 2));
+
       ws.send(WsResponseType.Signal, result);
     } catch (error) {
       const { code, message } = error as StudioApiError;
