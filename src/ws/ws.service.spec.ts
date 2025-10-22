@@ -133,7 +133,7 @@ describe('WsService', () => {
       expect(listeners.get('mockClient1')).toBeUndefined();
     });
 
-    it('do nothing if id does not exit', () => {
+    it('do nothing if id does not exist', () => {
       const listeners = (service as any).listeners;
       const mockClient1 = { isOpen: false, close: jest.fn() } as any;
       listeners.set('mockClient1', mockClient1);

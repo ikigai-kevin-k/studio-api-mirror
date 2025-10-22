@@ -1,7 +1,7 @@
+import { WebSocket } from '@fastify/websocket';
 import { LoggerService } from '@ikigaians/logger';
 import { ErrorCodeEnum } from 'src/global/enums/error-code.enum';
 import { StudioApiError } from 'src/global/errors/error';
-import { WebSocket } from 'ws';
 import { WsInvalidError } from './ws.error';
 import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
 import { WsErrorOutput, WsInput, WsOutput } from './ws.service.type';
