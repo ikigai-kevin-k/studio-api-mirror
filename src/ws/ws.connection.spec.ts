@@ -3,7 +3,7 @@
 // ws.service.spec.ts
 import { WebSocket } from '@fastify/websocket';
 import { LoggerService } from '@ikigaians/logger';
-import { WsConnection } from './ws.connect';
+import { WsConnection } from './ws.connection';
 import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
 
 const mockConnectWebSocket = {

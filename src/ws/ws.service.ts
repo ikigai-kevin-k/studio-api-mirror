@@ -5,7 +5,7 @@ import { ErrorCodeEnum } from 'src/global/enums/error-code.enum';
 import { StudioApiError } from 'src/global/errors/error';
 import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
-import { WsConnection } from './ws.connect';
+import { WsConnection } from './ws.connection';
 import { WsAuthError } from './ws.error';
 import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
 import { ObserverCallback, WsOutput } from './ws.service.type';

@@ -5,7 +5,7 @@ import { WebSocket } from '@fastify/websocket';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
 import { SlackService } from 'src/slack/slack.service';
-import { WsConnection } from './ws.connect';
+import { WsConnection } from './ws.connection';
 import { WsService } from './ws.service';
 import { WsResponseType } from './ws.service.enum';
 

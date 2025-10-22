@@ -1,5 +1,5 @@
 import { ErrorSignalInput } from 'src/global/types/error-signal.type';
-import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
+import { WsConnection } from './ws.connection';
 
 type WsAck = {
   timestamp: string;
@@ -20,10 +20,6 @@ export type WsOutput = WsAck | WsDeviceStatus | WsSignal;
 
 export type WsErrorOutput = { code: number; message: string };
 
-export type WsInstance = {
-  send: (type: WsResponseType, output: WsOutput) => void;
-  close: (code: WsCloseCodeEnum, output: WsErrorOutput) => void;
-  error: (output: WsErrorOutput) => void;
-};
+export type WsInstance = WsConnection;
 
 export type ObserverCallback = (query: URLSearchParams, ws: WsInstance, data?: object) => void;
