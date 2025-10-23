@@ -38,7 +38,7 @@ describe('AppConfigService', () => {
     process.env.GLOBAL_QUEUE_HOST_NAMES = '';
     process.env.APP_CLOUD_DR_CORE_REGION = '';
     process.env.APP_CLOUD_CORE_REGION = '';
-    process.env.WS_PORT = '';
+    process.env.WS_ACK_INTERVAL_MS = '';
     process.env.WS_TOKEN = '';
     process.env.TABLE_API_SERVICE_URL = '';
     process.env.TABLE_API_MAX_RETRY = '3';
@@ -107,7 +107,7 @@ describe('AppConfigService', () => {
   });
 
   it('should provide wsConfig', () => {
-    expect(appConfigService.wsConfig.port).toBeDefined();
+    expect(appConfigService.wsConfig.interval).toBeDefined();
     expect(appConfigService.wsConfig.token).toBeDefined();
   });
 

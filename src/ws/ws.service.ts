@@ -1,47 +1,62 @@
+import { WebSocket } from '@fastify/websocket';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { AppConfigService } from 'src/config';
+import { ErrorCodeEnum } from 'src/global/enums/error-code.enum';
+import { StudioApiError } from 'src/global/errors/error';
 import { LoggerService } from 'src/log';
-import { WebSocket, WebSocketServer } from 'ws';
-import { WsCloseCodeEnum } from './ws.service.enum';
-import { ObserverCallback, WsFormat } from './ws.service.type';
+import { SlackService } from 'src/slack/slack.service';
+import { WsConnection } from './ws.connection';
+import { WsAuthError } from './ws.error';
+import { WsCloseCodeEnum, WsResponseType } from './ws.service.enum';
+import { ObserverCallback, WsOutput } from './ws.service.type';
 
 export class WsService implements ModuleLifecycle {
-  private wss?: WebSocketServer;
-
   private observers = new Map<string, ObserverCallback[]>();
 
+  private listeners = new Map<string, WsConnection>();
+
+  private ackTimer: NodeJS.Timeout | undefined = undefined;
+
   constructor(
+    private readonly slackService: SlackService,
     private readonly logger: LoggerService,
     private readonly appConfigService: AppConfigService,
   ) {}
 
-  private handleConnect() {
-    this.logger.info(`create WsService`);
-    this.wss?.on('connection', (ws, req) => {
-      const query = new URL(req.url!, `http://${req.headers.host}`).searchParams;
+  handleConnect(ws: WebSocket, query: URLSearchParams) {
+    try {
+      const id = query.get('id');
+      if (!id) throw new WsAuthError('id does not exist');
+
       const token = query.get('token') || '';
-
-      try {
-        if (token !== this.appConfigService.wsConfig.token) throw `Invalid credentials`;
-
-        ws.on('message', (message) => {
-          const rawData = JSON.parse(message.toString()) as WsFormat;
-          // Provide a provisional handling for the legacy format
-          // this should be removed after the source updates the packet format.
-          this.notify(rawData.event ?? 'unknown', query, ws, rawData.data ?? rawData);
-        });
-
-        ws.on('close', () => {
-          this.notify('close', query, ws);
-        });
-
-        this.notify('connection', query, ws);
-      } catch (error) {
-        const reason = error as string;
-        this.logger.warn(reason);
-        ws.close(WsCloseCodeEnum.Unauthorized, reason);
+      if (token !== this.appConfigService.wsConfig.token) {
+        throw new WsAuthError(`${id} has an invalid token`);
       }
-    });
+
+      this.leave(id);
+      const connection = new WsConnection(id, ws, this.logger);
+      this.listeners.set(id, connection);
+
+      connection.onMessage((message) => {
+        this.notify(message.event, query, connection, message.data);
+      });
+
+      connection.onClose(() => {
+        this.notify('close', query, connection);
+        this.leave(id);
+      });
+
+      this.notify('connection', query, connection);
+    } catch (error) {
+      const { code, message } = error as StudioApiError;
+      const msg = `ws connect status fail, code: ${code}, reason: ${message}`;
+      this.logger.warn(msg);
+      this.slackService.broadcast(msg);
+      ws.close(
+        WsCloseCodeEnum.Unauthorized,
+        JSON.stringify({ type: WsResponseType.Kick, error: { code: code, message: message } }),
+      );
+    }
   }
 
   subscribe(event: string, callback: ObserverCallback) {
@@ -58,40 +73,57 @@ export class WsService implements ModuleLifecycle {
     };
   }
 
-  private notify(event: string, query: URLSearchParams, ws: WebSocket, data?: object) {
+  private notify(event: string, query: URLSearchParams, connection: WsConnection, data?: object) {
     const cbs = this.observers.get(event);
     if (!cbs) return;
-    for (const cb of cbs) cb(query, ws, data);
+
+    for (const cb of cbs) cb(query, connection, data);
   }
 
-  broadcast(message: string) {
-    for (const client of this.wss?.clients ?? []) {
-      if (client.readyState === client.OPEN) client.send(message);
+  private leave(id: string) {
+    const connection = this.listeners.get(id);
+    if (!connection) return;
+
+    if (connection.isOpen) {
+      connection.close(WsCloseCodeEnum.GoingAway, {
+        code: ErrorCodeEnum.INVALID_STATE,
+        message: 'duplicate login',
+      });
+      this.logger.info(`[ws] studio api kick ${id} out, because of duplicate login`);
     }
+
+    this.listeners.delete(id);
+  }
+
+  broadcast(type: WsResponseType, message: WsOutput) {
+    for (const [, connection] of this.listeners) {
+      if (connection.isOpen) {
+        connection.send(type, message);
+      }
+    }
+  }
+
+  private ack() {
+    this.broadcast(WsResponseType.Ack, { timestamp: new Date().toISOString() });
   }
 
   async onInit() {
-    return await new Promise<void>((resolve, rejects) => {
-      this.wss = new WebSocketServer({ port: this.appConfigService.wsConfig.port });
-      this.wss.once('listening', () => {
-        this.handleConnect();
-        resolve();
-      });
-      this.wss?.once('error', rejects);
-    });
+    this.ackTimer = setInterval(this.ack.bind(this), this.appConfigService.wsConfig.interval);
   }
 
   async onDispose(): Promise<void> {
-    for (const client of this.wss?.clients ?? []) {
-      if (client.readyState === client.OPEN)
-        client.close(WsCloseCodeEnum.GoingAway, 'StudioAPI shutting down');
+    clearInterval(this.ackTimer);
+    this.ackTimer = undefined;
+
+    for (const [, connection] of this.listeners) {
+      if (connection.isOpen) {
+        connection.close(WsCloseCodeEnum.ServiceRestart, {
+          code: ErrorCodeEnum.INVALID_STATE,
+          message: 'StudioAPI shutting down',
+        });
+      }
     }
 
-    return await new Promise((resolve, rejects) => {
-      this.wss?.close((err) => {
-        if (err) rejects(err);
-        resolve();
-      });
-    });
+    this.listeners.clear();
   }
 }

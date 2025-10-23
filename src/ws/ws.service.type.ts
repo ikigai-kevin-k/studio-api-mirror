@@ -1,7 +1,25 @@
-import { WebSocket } from 'ws';
+import { ErrorSignalInput } from 'src/global/types/error-signal.type';
+import { WsConnection } from './ws.connection';
 
-export type ObserverCallback = (query: URLSearchParams, ws: WebSocket, data?: object) => void;
+type WsAck = {
+  timestamp: string;
+};
+
+type WsDeviceStatus = {
+  deviceId: string;
+  status: string;
+};
+
+type WsSignal = ErrorSignalInput;
 
 export type Unsubscribe = () => void;
 
-export type WsFormat = { event: string; data: object };
+export type WsInput = { event: string; data: object };
+
+export type WsOutput = WsAck | WsDeviceStatus | WsSignal;
+
+export type WsErrorOutput = { code: number; message: string };
+
+export type WsInstance = WsConnection;
+
+export type ObserverCallback = (query: URLSearchParams, ws: WsInstance, data?: object) => void;

@@ -1,28 +1,17 @@
 /* eslint-disable unicorn/prefer-node-protocol */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // ws.service.spec.ts
-import { IncomingMessage } from 'http';
+import { WebSocket } from '@fastify/websocket';
 import { AppConfigService } from 'src/config';
 import { LoggerService } from 'src/log';
-import { WsService } from 'src/ws/ws.service';
-import { WsCloseCodeEnum } from 'src/ws/ws.service.enum';
-import { WebSocket, WebSocketServer } from 'ws';
+import { SlackService } from 'src/slack/slack.service';
+import { WsConnection } from './ws.connection';
+import { WsService } from './ws.service';
+import { WsResponseType } from './ws.service.enum';
 
-jest.mock('ws', () => {
-  const mockWebSocket = {
-    on: jest.fn(),
-    close: jest.fn(),
-    send: jest.fn(),
-    readyState: 1, // WebSocket.OPEN
-  };
-  const mockWebSocketServer = {
-    on: jest.fn(),
-    once: jest.fn(),
-    close: jest.fn((callback) => callback()),
-    clients: new Set([mockWebSocket]),
-  };
-  return { WebSocketServer: jest.fn(() => mockWebSocketServer), WebSocket: mockWebSocket };
-});
+const mockSlackService = {
+  broadcast: jest.fn(),
+} as unknown as SlackService;
 
 const mockLoggerService = {
   info: jest.fn(),
@@ -32,92 +21,58 @@ const mockLoggerService = {
 const mockAppConfigService = {
   wsConfig: {
     token: 'test-token',
-    port: 8080,
   },
 } as unknown as AppConfigService;
 
 describe('WsService', () => {
   let service: WsService;
-  let mockWss: any;
 
   beforeEach(() => {
-    service = new WsService(mockLoggerService, mockAppConfigService);
-    mockWss = new WebSocketServer({ port: 8080 });
+    service = new WsService(mockSlackService, mockLoggerService, mockAppConfigService);
     jest.clearAllMocks();
-  });
-
-  describe('onInit', () => {
-    it('should create a WebSocketServer and handle listening event', async () => {
-      const promise = service.onInit();
-      mockWss.once.mock.calls[0][1]();
-
-      await expect(promise).resolves.toBeUndefined();
-      expect(WebSocketServer).toHaveBeenCalledWith({ port: mockAppConfigService.wsConfig.port });
-      expect(mockWss.once).toHaveBeenCalledWith('listening', expect.any(Function));
-    });
-
-    it('should create a WebSocketServer and handle error event', async () => {
-      const promise = service.onInit();
-      const mockError = new Error('Test error');
-
-      mockWss.once.mock.calls[1][1](mockError);
-
-      await expect(promise).rejects.toThrow('Test error');
-      expect(WebSocketServer).toHaveBeenCalledWith({ port: mockAppConfigService.wsConfig.port });
-      expect(mockWss.once).toHaveBeenCalledWith('error', expect.any(Function));
-    });
   });
 
   describe('handleConnect', () => {
     let mockWs: any;
-    let mockReq: IncomingMessage;
 
     beforeEach(() => {
       mockWs = {
         on: jest.fn(),
         close: jest.fn(),
       } as unknown as WebSocket;
-      mockReq = {
-        url: 'ws://localhost:8080/?token=test-token',
-        headers: { host: 'localhost:8080' },
-      } as unknown as IncomingMessage;
     });
 
     it('should handle a valid connection and set up event listeners', async () => {
-      const onInitPromise = service.onInit();
-      mockWss.once.mock.calls[0][1]();
-
-      await onInitPromise;
-
-      const connectionHandler = mockWss.on.mock.calls[0][1];
-
+      const mockQuery = new URL('ws://localhost:8080/?id=test-id&token=test-token').searchParams;
       const notifySpy = jest.spyOn(service as any, 'notify');
+      expect(mockQuery.get('id')).toEqual('test-id');
+      expect(mockQuery.get('token')).toEqual('test-token');
 
-      connectionHandler(mockWs, mockReq);
+      service.handleConnect(mockWs, mockQuery);
 
-      expect(mockLoggerService.info).toHaveBeenCalledWith('create WsService');
       expect(mockWs.on).toHaveBeenCalledWith('message', expect.any(Function));
       expect(mockWs.on).toHaveBeenCalledWith('close', expect.any(Function));
-      expect(notifySpy).toHaveBeenCalledWith('connection', expect.any(URLSearchParams), mockWs);
+      expect(notifySpy).toHaveBeenCalledWith(
+        'connection',
+        expect.any(URLSearchParams),
+        new WsConnection('test-id', mockWs, mockLoggerService),
+      );
     });
 
     it('should close the connection with an unauthorized error for invalid token', async () => {
-      mockReq.url = 'ws://localhost:8080/?token=invalid';
+      const mockQuery = new URL('ws://localhost:8080/?id=test-id&token=fake-token').searchParams;
 
-      const onInitPromise = service.onInit();
-      mockWss.once.mock.calls[0][1]();
+      service.handleConnect(mockWs, mockQuery);
 
-      await onInitPromise;
+      expect(mockWs.close).toHaveBeenCalled();
+    });
 
-      const connectionHandler = mockWss.on.mock.calls[0][1];
+    it('should close the connection with an unauthorized error for empty id', async () => {
+      const mockQuery = new URL('ws://localhost:8080/?token=test-token').searchParams;
 
-      connectionHandler(mockWs, mockReq);
+      service.handleConnect(mockWs, mockQuery);
 
-      expect(mockLoggerService.warn).toHaveBeenCalledWith('Invalid credentials');
-      expect(mockWs.close).toHaveBeenCalledWith(
-        WsCloseCodeEnum.Unauthorized,
-        'Invalid credentials',
-      );
+      expect(mockWs.close).toHaveBeenCalled();
     });
   });
 
@@ -146,60 +101,86 @@ describe('WsService', () => {
       service.subscribe('message', mockCallback2);
 
       const mockWs = {} as WebSocket;
+      const mockConnect = new WsConnection('test', mockWs, mockLoggerService);
       const mockQuery = new URLSearchParams('token=test');
       const mockData = { message: 'test-message' };
 
-      service['notify']('message', mockQuery, mockWs, mockData);
+      service['notify']('message', mockQuery, mockConnect, mockData);
 
-      expect(mockCallback1).toHaveBeenCalledWith(mockQuery, mockWs, mockData);
-      expect(mockCallback2).toHaveBeenCalledWith(mockQuery, mockWs, mockData);
+      expect(mockCallback1).toHaveBeenCalled();
+      expect(mockCallback2).toHaveBeenCalled();
+    });
+  });
+
+  describe('leave', () => {
+    it('should kick a connect if it still works', () => {
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: true, close: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+
+      (service as any).leave('mockClient1');
+      expect(mockClient1.close).toHaveBeenCalled();
+      expect(listeners.get('mockClient1')).toBeUndefined();
+    });
+
+    it('should only remove a connect if it does not works', () => {
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: false, close: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+
+      (service as any).leave('mockClient1');
+      expect(mockClient1.close).not.toHaveBeenCalled();
+      expect(listeners.get('mockClient1')).toBeUndefined();
+    });
+
+    it('do nothing if id does not exist', () => {
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: false, close: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+
+      (service as any).leave('mockClient2');
+      expect(mockClient1.close).not.toHaveBeenCalled();
+      expect(listeners.get('mockClient1')).toBe(mockClient1);
     });
   });
 
   describe('broadcast', () => {
     it('should send message to all open clients', async () => {
-      const mockClient1 = { readyState: 1, OPEN: 1, send: jest.fn() } as any;
-      const mockClient2 = { readyState: 0, OPEN: 1, send: jest.fn() } as any;
-      const mockClients = new Set([mockClient1, mockClient2]);
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: true, send: jest.fn() } as any;
+      const mockClient2 = { isOpen: false, send: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+      listeners.set('mockClient2', mockClient2);
 
-      const onInitPromise = service.onInit();
-      mockWss.once.mock.calls[0][1]();
+      const mockInput = { timestamp: '' };
 
-      await onInitPromise;
+      service.broadcast(WsResponseType.Ack, mockInput);
 
-      mockWss.clients = mockClients;
-
-      service.broadcast('test-broadcast');
-
-      expect(mockClient1.send).toHaveBeenCalledWith('test-broadcast');
+      expect(mockClient1.send).toHaveBeenCalledWith(WsResponseType.Ack, mockInput);
       expect(mockClient2.send).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('ack', () => {
+    it('should send message to all open clients', async () => {
+      const spyBroadcast = jest.spyOn(service as any, 'broadcast');
+      (service as any).ack();
+      expect(spyBroadcast).toHaveBeenCalled();
     });
   });
 
   describe('onDispose', () => {
     it('should close all clients and the server', async () => {
-      const mockClient1 = { readyState: 1, OPEN: 1, close: jest.fn() } as any;
-      const mockClient2 = { readyState: 0, OPEN: 1, close: jest.fn() } as any;
-      const mockClients = new Set([mockClient1, mockClient2]);
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: true, close: jest.fn() } as any;
+      const mockClient2 = { isOpen: false, close: jest.fn() } as any;
 
-      const onInitPromise = service.onInit();
-      mockWss.once.mock.calls[0][1]();
+      listeners.set('mockClient1', mockClient1);
+      listeners.set('mockClient2', mockClient2);
 
-      await onInitPromise;
-
-      Object.defineProperty(mockWss, 'clients', { value: mockClients });
-
-      await expect(service.onDispose()).resolves.toBeUndefined();
-
-      expect(mockClient1.close).toHaveBeenCalledWith(
-        WsCloseCodeEnum.GoingAway,
-        'StudioAPI shutting down',
-      );
-      expect(mockClient2.close).not.toHaveBeenCalledWith(
-        WsCloseCodeEnum.GoingAway,
-        'StudioAPI shutting down',
-      );
-      expect(mockWss.close).toHaveBeenCalledTimes(1);
+      await service.onDispose();
+      expect(mockClient1.close).toHaveBeenCalled();
+      expect(mockClient2.close).not.toHaveBeenCalled();
     });
   });
 });

@@ -6,8 +6,8 @@ import { StudioApiError } from 'src/global/errors/error';
 import { StudioWsAuthError } from 'src/studio/errors/studio.error';
 import { StudioErrorSignalService } from 'src/studio/services/studio-error-signal/studio-error-signal.service';
 import { WsService } from 'src/ws/ws.service';
-import { Unsubscribe } from 'src/ws/ws.service.type';
-import { WebSocket } from 'ws';
+import { WsResponseType } from 'src/ws/ws.service.enum';
+import { Unsubscribe, WsInstance } from 'src/ws/ws.service.type';
 import { StudioErrorSignalObserverInput } from './studio-error-signal.observer.type';
 
 export class StudioErrorSignalObserver implements ModuleLifecycle {
@@ -19,7 +19,7 @@ export class StudioErrorSignalObserver implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  private async onServiceSignal(query: URLSearchParams, ws: WebSocket, data?: object) {
+  private async onServiceSignal(query: URLSearchParams, ws: WsInstance, data?: object) {
     try {
       const deviceId = query.get('id');
       if (!deviceId) throw new StudioWsAuthError(`Ws connect without device id !!`);
@@ -28,20 +28,16 @@ export class StudioErrorSignalObserver implements ModuleLifecycle {
       if (!input) throw new StudioWsAuthError(`Ws connect without error signal !!`);
 
       const result = await this.studioErrorSignalService.forwardErrorSignal(deviceId, input.signal);
-      ws.send(JSON.stringify({ data: result }));
+
+      await this.slackService.broadcast(JSON.stringify(input.signal, undefined, 2));
+
+      ws.send(WsResponseType.Signal, result);
     } catch (error) {
       const { code, message } = error as StudioApiError;
       const msg = `forward error signal to Los and tableApi fail, code: ${code}, reason: ${message}`;
       this.logger.error(msg);
       this.slackService.broadcast(msg);
-      ws.send(
-        JSON.stringify({
-          error: {
-            message: message,
-            code: code,
-          },
-        }),
-      );
+      ws.error({ message: message, code: code });
     }
   }
 

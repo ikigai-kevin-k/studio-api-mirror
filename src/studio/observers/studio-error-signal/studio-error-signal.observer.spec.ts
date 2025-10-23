@@ -74,7 +74,7 @@ describe('StudioErrorSignalObserver', () => {
 
     it('should broadcast error if auth fail', async () => {
       const query = new URLSearchParams('');
-      const ws = { send: jest.fn() } as any;
+      const ws = { send: jest.fn(), close: jest.fn(), error: jest.fn() } as any;
       const input: StudioErrorSignalObserverInput = {
         signal: { msgId: '', metadata: {} },
         cmd: {},
@@ -87,7 +87,7 @@ describe('StudioErrorSignalObserver', () => {
 
     it('should broadcast error if auth fail', async () => {
       const query = new URLSearchParams('id=idp');
-      const ws = { send: jest.fn() } as any;
+      const ws = { send: jest.fn(), close: jest.fn(), error: jest.fn() } as any;
 
       await (observer as any).onServiceSignal(query, ws, undefined);
 
