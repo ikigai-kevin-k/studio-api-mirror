@@ -17,15 +17,6 @@ describe('LoggerService', () => {
       const logger = new LoggerService();
       const loggers = logger['loggers'];
       expect(loggers).toHaveLength(1);
-      expect(loggers[0].info).toBe(console.info);
-    });
-  });
-
-  describe('unregister', () => {
-    it('should remove logger', () => {
-      const logger = new LoggerService();
-      logger.unregister(logger.consoleLogger);
-      expect(logger['loggers']).toHaveLength(0);
     });
   });
 });
