@@ -1,4 +1,4 @@
-import { LoggerService as IkgLogger, ILogger } from '@ikigaians/logger';
+import { LoggerService as IkgLogger, ILogger, PrettyLogger, StdoutLogger } from '@ikigaians/logger';
 import { getClassName } from '@ikigaians/mod';
 import { Constructor } from 'awilix';
 
@@ -15,6 +15,7 @@ export class LoggerService extends IkgLogger {
 
   constructor() {
     super();
+    this.initial();
     this.register(this.consoleLogger);
   }
 
@@ -35,5 +36,13 @@ export class LoggerService extends IkgLogger {
 
   private refresh() {
     this['loggers'] = [...this.registers.values()];
+  }
+
+  private initial() {
+    if (process.env.LOG_PRETTY === 'true') {
+      this.append(new PrettyLogger());
+    } else {
+      this.append(new StdoutLogger());
+    }
   }
 }
