@@ -5,7 +5,7 @@ export class HealthcheckService {
   constructor(private readonly appConfigService: AppConfigService) {}
 
   async getStatus(): Promise<HealthcheckType> {
-    const { appName, appEnv } = this.appConfigService.config;
+    const { appName, appEnv, version } = this.appConfigService.config;
 
     return {
       service: appName,
@@ -13,7 +13,7 @@ export class HealthcheckService {
       uptime: process.uptime(),
       timestamp: Date.now(),
       maintenance: false,
-      version: appEnv,
+      version,
     };
   }
 }

@@ -6,6 +6,7 @@ export type AppConfig = {
   port: number;
   appDomain: string;
   appEnv: AppEnvsEnum;
+  version: string;
   logger: {
     level: LogLevelsEnum;
   };

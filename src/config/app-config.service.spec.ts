@@ -8,6 +8,7 @@ describe('AppConfigService', () => {
     process.env.APP_NAME = 'test-app';
     process.env.APP_DOMAIN = 'http://localhost:3000';
     process.env.APP_ENV = 'dev';
+    process.env.VERSION = '';
     process.env.LOG_LEVEL = 'debug';
     process.env.SERVICE_API_SIGNATURE = 'sig';
     process.env.DB_HOST = 'localhost';

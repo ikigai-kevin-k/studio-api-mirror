@@ -6,8 +6,9 @@ describe('HealthcheckService', () => {
   let mockAppConfigService: AppConfigService;
 
   beforeEach(() => {
-    //eslint-disable-next-line @typescript-eslint/no-explicit-any
-    mockAppConfigService = { config: { appName: 'TestApp', appEnv: 'test' } } as any;
+    mockAppConfigService = {
+      config: { appName: 'TestApp', appEnv: 'test', version: 'version' },
+    } as unknown as AppConfigService;
     healthcheckService = new HealthcheckService(mockAppConfigService);
   });
 
@@ -18,7 +19,7 @@ describe('HealthcheckService', () => {
     expect(typeof result.uptime).toBe('number');
     expect(typeof result.timestamp).toBe('number');
     expect(result.maintenance).toBe(false);
-    expect(result.version).toEqual('test');
+    expect(result.version).toEqual('version');
   });
 
   it('should set uptime and timestamp dynamically', async () => {
