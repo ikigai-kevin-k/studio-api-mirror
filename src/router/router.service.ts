@@ -22,24 +22,12 @@ export class RouterService implements ModuleLifecycle {
     readonly appConfigService: AppConfigService,
   ) {
     this.instance = fastify({
-      logger: {
-        transport: {
-          target: 'pino-pretty',
-          options: {
-            translateTime: 'HH:MM:ss Z',
-            ignore: 'pid,hostname',
-          },
-        },
-        level: appConfigService.config.logger.level,
-      },
       genReqId: () => randomUUID(),
       disableRequestLogging: process.env.LOG_FASTIFY_REQUEST !== 'true',
     });
   }
 
   async onInit(): Promise<void> {
-    // await for OTEL instrumentation, see: https://github.com/fastify/otel?tab=readme-ov-file#automatic-plugin-registration
-    await this.instance;
     this.app
       .register(fastifyRequestContext)
       .withTypeProvider<TypeBoxTypeProvider>()
@@ -55,7 +43,6 @@ export class RouterService implements ModuleLifecycle {
       });
 
     this.registerCORS();
-    this.replaceLogger();
 
     setErrorHandler(this.app as ReturnType<typeof fastify>, this.logger);
     setGeneralResponseHook(this.app, ['/v1', '/v2']);
@@ -79,12 +66,6 @@ export class RouterService implements ModuleLifecycle {
       methods: ['GET', 'POST', 'HEAD', 'PUT', 'PATCH', 'DELETE'],
       credentials: true,
     });
-  }
-
-  /** LoggerService is initialized with console in beginning, replace to FastifyLogger for better format */
-  private replaceLogger() {
-    this.logger.unregister(this.logger.consoleLogger);
-    this.logger.append(this.app.log);
   }
 
   private async registerSwagger() {
