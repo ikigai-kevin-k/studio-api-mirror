@@ -84,7 +84,7 @@ ALTER SEQUENCE public."studio_device_ID_seq" OWNED BY public.studio_device."ID";
 CREATE TABLE IF NOT EXISTS public.studio_error_signal_log (
     "ID" integer NOT NULL,
     "DEVICE_ID" character varying(255) NOT NULL,
-    "ERROR_SIGNAL" jsonb DEFAULT '{}'::jsonb NOT NULL,
+    "ERROR_SIGNAL" jsonb DEFAULT '{}'::jsonb,
     "RESOLVED" boolean DEFAULT false NOT NULL,
     "CREATED_AT" timestamp(3) without time zone DEFAULT now() NOT NULL,
     "UPDATED_AT" timestamp(3) without time zone DEFAULT now() NOT NULL
