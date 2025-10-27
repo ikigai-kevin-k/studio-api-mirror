@@ -6,7 +6,6 @@ on:
     branches:
       - main
 
-
   workflow_dispatch:
     inputs:
       environment:
@@ -46,10 +45,10 @@ jobs:
     with:
       app-name: 'studio-api'
       env-name: CIT
+      db-migration: false
       db-name: 'studio'
       region: us-east-1
     secrets: inherit
-
 
   manual_dispatch_CIT:
     if: ${{ github.event_name == 'workflow_dispatch' && inputs.environment == 'CIT' && github.ref == 'refs/heads/main'  }}
@@ -57,10 +56,10 @@ jobs:
     with:
       app-name: 'studio-api'
       env-name: CIT
+      db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
     secrets: inherit
-
 
   manual_dispatch_QAT:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'qat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'QAT' }}
@@ -69,10 +68,11 @@ jobs:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
       app-name: 'studio-api'
       env-name: QAT
+      db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
     secrets: inherit
-      
+
   manual_dispatch_UAT:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'uat-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'UAT' }}
     uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
@@ -80,10 +80,10 @@ jobs:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
       app-name: 'studio-api'
       env-name: UAT
+      db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
     secrets: inherit
-
 
   manual_dispatch_STG:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'stg-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'STG' }}
@@ -92,10 +92,10 @@ jobs:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
       app-name: 'studio-api'
       env-name: STG
+      db-migration: false
       db-name: 'studio'
-      region: ${{ inputs.region }}  
+      region: ${{ inputs.region }}
     secrets: inherit
-
 
   manual_dispatch_PRD:
     if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'prd-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'PRD' }}
@@ -104,7 +104,7 @@ jobs:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
       app-name: 'studio-api'
       env-name: PRD
+      db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
     secrets: inherit
-
