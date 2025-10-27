@@ -4,6 +4,7 @@ import { KafkaLosSignalService } from 'src/kafka/services/kafka-los-signal/kafka
 import { StudioDeviceDataService } from 'src/studio/services/studio-device/studio-device-data.service';
 import { StudioService } from 'src/studio/services/studio/studio.service';
 
+import { StudioApiError } from 'src/global/errors/error';
 import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioErrorSignalLogService } from 'src/studio/services/studio-log/studio-error-signal-log.service';
 import { TableApiQueryService } from 'src/table-api/services/table-api-query/table-api-query.service';
@@ -39,7 +40,7 @@ export class StudioErrorSignalService implements ModuleLifecycle {
     output.metadata.timestamp = log.createdAt.getTime();
 
     await Promise.all([
-      this.kafkaLosSignalService.publish(output),
+      this.kafkaLosSignalService.publishError(output),
       this.tableApiSignalService.forwardSignal(gameId, output),
     ]);
 
@@ -47,8 +48,17 @@ export class StudioErrorSignalService implements ModuleLifecycle {
   }
 
   async forwardResolveSignal(deviceId: string) {
-    const result = await this.studioErrorSignalLogService.updateLog(deviceId);
-    // TODO: forward to LOS
+    const result = await this.resolveErrorSignal(deviceId);
+
+    const timestamp = Date.now();
+    await Promise.all(
+      result.map((item) => {
+        return this.kafkaLosSignalService.publishResolve({
+          signalId: item.id,
+          timestamp: timestamp,
+        });
+      }),
+    );
 
     return result;
   }
@@ -70,5 +80,15 @@ export class StudioErrorSignalService implements ModuleLifecycle {
 
     const tableName = await this.tableApiQueryService.getTableName(gameId);
     return { gameId, tableName };
+  }
+
+  private async resolveErrorSignal(deviceId: string) {
+    try {
+      return await this.studioErrorSignalLogService.updateLog(deviceId);
+    } catch (error) {
+      const { code, message } = error as StudioApiError;
+      this.logger.warn(`resolve error signal fail, code: ${code}, reason: ${message}`);
+      return [];
+    }
   }
 }

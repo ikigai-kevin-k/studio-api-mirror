@@ -5,13 +5,15 @@
 import { LoggerService } from '@ikigaians/logger';
 import { SlackService } from 'src/slack/slack.service';
 
+import { StudioDeviceStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioErrorSignalService } from 'src/studio/services/studio-error-signal/studio-error-signal.service';
 import { WsService } from 'src/ws/ws.service';
-import { StudioErrorSignalObserver } from './studio-error-signal.observer';
-import { StudioErrorSignalObserverInput } from './studio-error-signal.observer.type';
+import { WsResponseType } from 'src/ws/ws.service.enum';
+import { StudioDeviceStatusObserver } from './studio-device-status.observer';
+import { StudioDeviceStatusObserverInput } from './studio-device-status.observer.type';
 
 const mockStudioErrorSignalService = {
-  forwardErrorSignal: jest.fn(),
+  forwardResolveSignal: jest.fn(),
 } as unknown as StudioErrorSignalService;
 
 const mockSlackService = {
@@ -27,11 +29,11 @@ const mockLoggerService = {
   error: jest.fn(),
 } as unknown as LoggerService;
 
-describe('StudioErrorSignalObserver', () => {
-  let observer: StudioErrorSignalObserver;
+describe('StudioDeviceStatusObserver', () => {
+  let observer: StudioDeviceStatusObserver;
 
   beforeEach(() => {
-    observer = new StudioErrorSignalObserver(
+    observer = new StudioDeviceStatusObserver(
       mockStudioErrorSignalService,
       mockSlackService,
       mockWsService,
@@ -56,31 +58,38 @@ describe('StudioErrorSignalObserver', () => {
   });
 
   describe('onServiceStatus', () => {
-    it('should call forwardErrorSignal to forward error signal', async () => {
+    it('should call forwardResolveSignal to forward resolve signal', async () => {
       const query = new URLSearchParams('id=idp');
       const ws = { send: jest.fn() } as any;
-      const input: StudioErrorSignalObserverInput = {
-        signal: { msgId: '', content: '', metadata: {} },
-        cmd: {},
+      const input: StudioDeviceStatusObserverInput = {
+        status: StudioDeviceStatusEnum.UP,
       };
 
-      await (observer as any).onServiceSignal(query, ws, input);
+      const mockResult = [
+        {
+          id: 1,
+        },
+      ];
 
-      expect(mockStudioErrorSignalService.forwardErrorSignal).toHaveBeenCalledWith(
-        'idp',
-        input.signal,
-      );
+      jest.spyOn(observer as any, 'resolveErrorSignal').mockResolvedValueOnce(mockResult);
+
+      await (observer as any).onServiceStatus(query, ws, input);
+
+      expect(ws.send).toHaveBeenCalledWith(WsResponseType.Device, {
+        deviceId: 'idp',
+        status: StudioDeviceStatusEnum.UP,
+        resolves: [1],
+      });
     });
 
     it('should broadcast error if auth fail', async () => {
       const query = new URLSearchParams('');
       const ws = { send: jest.fn(), close: jest.fn(), error: jest.fn() } as any;
-      const input: StudioErrorSignalObserverInput = {
-        signal: { msgId: '', content: '', metadata: {} },
-        cmd: {},
+      const input: StudioDeviceStatusObserverInput = {
+        status: StudioDeviceStatusEnum.UP,
       };
 
-      await (observer as any).onServiceSignal(query, ws, input);
+      await (observer as any).onServiceStatus(query, ws, input);
 
       expect(mockSlackService.broadcast).toHaveBeenCalledTimes(1);
     });
@@ -89,9 +98,33 @@ describe('StudioErrorSignalObserver', () => {
       const query = new URLSearchParams('id=idp');
       const ws = { send: jest.fn(), close: jest.fn(), error: jest.fn() } as any;
 
-      await (observer as any).onServiceSignal(query, ws, undefined);
+      await (observer as any).onServiceStatus(query, ws, undefined);
 
       expect(mockSlackService.broadcast).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('resolveErrorSignal', () => {
+    it('should call forwardResolveSignal to forward resolve signal', async () => {
+      const mockResult = [
+        {
+          signalId: '1',
+        },
+      ];
+
+      (mockStudioErrorSignalService.forwardResolveSignal as jest.Mock).mockResolvedValueOnce(
+        mockResult,
+      );
+
+      const result = await (observer as any).resolveErrorSignal('idp', StudioDeviceStatusEnum.UP);
+
+      expect(mockStudioErrorSignalService.forwardResolveSignal).toHaveBeenCalledWith('idp');
+      expect(result).toBe(mockResult);
+    });
+
+    it('should return [] if status is not up', async () => {
+      const result = await (observer as any).resolveErrorSignal('idp', StudioDeviceStatusEnum.DOWN);
+      expect(result).toEqual([]);
     });
   });
 });

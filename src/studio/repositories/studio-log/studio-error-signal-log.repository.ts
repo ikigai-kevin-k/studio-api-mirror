@@ -4,14 +4,16 @@ import { StudioErrorSignalLog } from 'src/studio/entities/studio-error-signal-lo
 import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
 import {
   DbStudioErrorSignalLog,
-  StudioErrorSignal,
   StudioErrorSignalLogEntity,
+  StudioErrorSignalMetaData,
 } from './studio-error-signal-log.repository.type';
 
 type StudioErrorSignalLogSchema = {
   ID: number;
   DEVICE_ID: string;
-  ERROR_SIGNAL: StudioErrorSignal;
+  MESSAGE_ID: string;
+  CONTENT: string;
+  ERROR_SIGNAL: StudioErrorSignalMetaData;
   RESOLVED: boolean;
   CREATED_AT: Date;
   UPDATED_AT: Date;
@@ -29,6 +31,8 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
       .select([
         'studio."ID" as "id"',
         'studio."DEVICE_ID" as "deviceId"',
+        'studio."MESSAGE_ID" as "msgId"',
+        'studio."CONTENT" as "content"',
         'studio."ERROR_SIGNAL" as "errorSignal"',
         'studio."RESOLVED" as "resolved"',
         'studio."CREATED_AT" as "createdAt"',
@@ -50,13 +54,24 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
       .insert()
       .into(StudioErrorSignalLog)
       .values(entity)
-      .returning(['id', 'deviceId', 'errorSignal', 'resolved', 'createdAt', 'updatedAt'])
+      .returning([
+        'id',
+        'deviceId',
+        'msgId',
+        'content',
+        'errorSignal',
+        'resolved',
+        'createdAt',
+        'updatedAt',
+      ])
       .execute();
 
     const data = result.raw[0] as StudioErrorSignalLogSchema;
     return {
       id: data.ID,
       deviceId: data.DEVICE_ID,
+      msgId: data.MESSAGE_ID,
+      content: data.CONTENT,
       errorSignal: data.ERROR_SIGNAL,
       resolved: data.RESOLVED,
       createdAt: data.CREATED_AT,
@@ -64,7 +79,7 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
     };
   }
 
-  async updateErrorSignalLog(deviceId: string): Promise<DbStudioErrorSignalLog> {
+  async updateErrorSignalLog(deviceId: string): Promise<DbStudioErrorSignalLog[]> {
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
@@ -72,22 +87,36 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
       .set({ resolved: true })
       .where('deviceId = :deviceId', { deviceId: deviceId })
       .andWhere('resolved = :resolved', { resolved: false })
-      .returning(['id', 'deviceId', 'errorSignal', 'resolved', 'createdAt', 'updatedAt'])
+      .returning([
+        'id',
+        'deviceId',
+        'msgId',
+        'content',
+        'errorSignal',
+        'resolved',
+        'createdAt',
+        'updatedAt',
+      ])
       .execute();
 
     if (updateResult.affected === 0) {
       throw new StudioUpdateError(`[studio_error_signal_log] ${deviceId} does not modified`);
     }
 
-    const data = updateResult.raw[0] as StudioErrorSignalLogSchema;
-    return {
-      id: data.ID,
-      deviceId: data.DEVICE_ID,
-      errorSignal: data.ERROR_SIGNAL,
-      resolved: data.RESOLVED,
-      createdAt: data.CREATED_AT,
-      updatedAt: data.UPDATED_AT,
-    };
+    const rawData = updateResult.raw as StudioErrorSignalLogSchema[];
+
+    return rawData.map((data: StudioErrorSignalLogSchema) => {
+      return {
+        id: data.ID,
+        deviceId: data.DEVICE_ID,
+        msgId: data.MESSAGE_ID,
+        content: data.CONTENT,
+        errorSignal: data.ERROR_SIGNAL,
+        resolved: data.RESOLVED,
+        createdAt: data.CREATED_AT,
+        updatedAt: data.UPDATED_AT,
+      };
+    });
   }
 
   async onInit(): Promise<void> {}

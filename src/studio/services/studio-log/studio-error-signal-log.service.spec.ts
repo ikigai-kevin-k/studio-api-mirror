@@ -14,6 +14,7 @@ const mockStudioErrorSignalLogRepository = {
   updateErrorSignalLog: jest.fn(),
   getUnResolvedErrorSignalLogByDeviceId: jest.fn(),
   IsUnResolved: jest.fn(),
+  IsDuplicateSignal: jest.fn(),
 } as unknown as StudioErrorSignalLogRepository;
 
 const mockLoggerService = {
@@ -42,10 +43,21 @@ describe('StudioErrorSignalLogService', () => {
     it('should return a data from db', async () => {
       const currentTime = new Date();
 
-      const mockResult: ErrorSignalLogServiceOutput = {
+      const mockResult = {
         id: 1,
         deviceId: 'idp',
-        errorSignal: { msgId: '', metadata: {} },
+        msgId: '',
+        content: '',
+        errorSignal: {},
+        resolved: false,
+        updatedAt: currentTime,
+        createdAt: currentTime,
+      };
+
+      const mockOutput: ErrorSignalLogServiceOutput = {
+        id: 1,
+        deviceId: 'idp',
+        errorSignal: { msgId: '', content: '', metadata: {} },
         resolved: false,
         updatedAt: currentTime,
         createdAt: currentTime,
@@ -56,7 +68,7 @@ describe('StudioErrorSignalLogService', () => {
       );
 
       const result = await service.getLog(1);
-      expect(result).toBe(mockResult);
+      expect(result).toEqual(mockOutput);
     });
   });
 
@@ -64,9 +76,20 @@ describe('StudioErrorSignalLogService', () => {
     it('should insert a data to db', async () => {
       const currentTime = new Date();
 
-      const mockSignal = { msgId: '', metadata: {} };
+      const mockSignal = { msgId: '', content: '', metadata: {} };
 
-      const mockResult: ErrorSignalLogServiceOutput = {
+      const mockResult = {
+        id: 1,
+        deviceId: 'idp',
+        msgId: mockSignal.msgId,
+        content: mockSignal.content,
+        errorSignal: mockSignal.metadata,
+        resolved: false,
+        updatedAt: currentTime,
+        createdAt: currentTime,
+      };
+
+      const mockOutput: ErrorSignalLogServiceOutput = {
         id: 1,
         deviceId: 'idp',
         errorSignal: mockSignal,
@@ -80,7 +103,7 @@ describe('StudioErrorSignalLogService', () => {
       );
 
       const result = await service.insertLog({ deviceId: 'idp', errorSignal: mockSignal });
-      expect(result).toBe(mockResult);
+      expect(result).toEqual(mockOutput);
     });
   });
 
@@ -88,21 +111,65 @@ describe('StudioErrorSignalLogService', () => {
     it('should modify a data in db', async () => {
       const currentTime = new Date();
 
-      const mockResult: ErrorSignalLogServiceOutput = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: { msgId: '', metadata: {} },
-        resolved: false,
-        updatedAt: currentTime,
-        createdAt: currentTime,
-      };
+      const mockResult = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          msgId: '',
+          content: '',
+          errorSignal: {},
+          resolved: false,
+          updatedAt: currentTime,
+          createdAt: currentTime,
+        },
+      ];
+
+      const mockOutput: ErrorSignalLogServiceOutput[] = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: { msgId: '', content: '', metadata: {} },
+          resolved: false,
+          updatedAt: currentTime,
+          createdAt: currentTime,
+        },
+      ];
 
       (mockStudioErrorSignalLogRepository.updateErrorSignalLog as jest.Mock).mockResolvedValueOnce(
         mockResult,
       );
 
       const result = await service.updateLog('idp');
-      expect(result).toBe(mockResult);
+      expect(result).toEqual(mockOutput);
+    });
+  });
+
+  describe('convert', () => {
+    it('should convert a data format to special one', async () => {
+      const currentTime = new Date();
+
+      const mockResult = {
+        id: 1,
+        deviceId: 'idp',
+        msgId: '',
+        content: '',
+        errorSignal: {},
+        resolved: false,
+        updatedAt: currentTime,
+        createdAt: currentTime,
+      };
+
+      const mockOutput: ErrorSignalLogServiceOutput = {
+        id: 1,
+        deviceId: 'idp',
+        errorSignal: { msgId: '', content: '', metadata: {} },
+        resolved: false,
+        updatedAt: currentTime,
+        createdAt: currentTime,
+      };
+
+      const result = (service as any).convert(mockResult);
+      expect(result).toEqual(mockOutput);
     });
   });
 });
