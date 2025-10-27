@@ -19,10 +19,9 @@
     "test:only": "jest",
     "test:cov": "npm run test:only -- --coverage",
     "typeorm": "node --require ts-node/register ./node_modules/typeorm/cli.js",
-    "migrations:new": "npm run typeorm migration:create",
-    "migrations:auto": "npm run typeorm -- migration:generate -d ./type-orm.config.ts",
-    "migrations:up": "npm run typeorm migration:run -- -d ./type-orm.config.ts",
-    "migrations:revert": "npm run typeorm migration:revert -- -d ./type-orm.config.ts"
+    "migrate:new": "npx @ikigaians/migrate new",
+    "migrate:up": "npx @ikigaians/migrate up",
+    "migrate:down": "npx @ikigaians/migrate down"
   },
   "author": "",
   "license": "UNLICENSED",
