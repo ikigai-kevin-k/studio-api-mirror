@@ -26,7 +26,7 @@ export class AppConfigService {
       appName: String(process.env.APP_NAME),
       appDomain: process.env.APP_DOMAIN || `http://localhost:${Number(process.env.PORT) || 80}`,
       appEnv: process.env.APP_ENV as AppEnvsEnum,
-      version: process.env.VERSION || '',
+      version: process.env.VERSION || 'unknown',
       logger: this.logger,
     };
 
