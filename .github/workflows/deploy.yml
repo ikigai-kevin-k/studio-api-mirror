@@ -45,6 +45,7 @@ jobs:
     with:
       app-name: 'studio-api'
       env-name: CIT
+      db-migration: false
       db-name: 'studio'
       region: us-east-1
     secrets: inherit
