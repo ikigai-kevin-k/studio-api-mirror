@@ -32,6 +32,7 @@ export class StudioErrorSignalLog {
     name: 'MESSAGE_ID',
     type: 'varchar',
     length: 255,
+    nullable: true,
     comment: 'Message ID of Error Signal',
   })
   msgId!: string;
@@ -40,6 +41,7 @@ export class StudioErrorSignalLog {
     name: 'CONTENT',
     type: 'varchar',
     length: 255,
+    nullable: true,
     comment: 'Content of Error Signal',
   })
   content!: string;
