@@ -79,7 +79,7 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
     };
   }
 
-  async updateErrorSignalLog(deviceId: string): Promise<DbStudioErrorSignalLog[]> {
+  async resolveErrorSignalLogsByDeviceId(deviceId: string): Promise<DbStudioErrorSignalLog[]> {
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()

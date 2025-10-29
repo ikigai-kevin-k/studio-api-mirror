@@ -27,7 +27,7 @@ const mockStudioService = {
 
 const mockStudioErrorSignalLogService = {
   insertLog: jest.fn(),
-  updateLog: jest.fn(),
+  resolveErrorSignalLogsByDeviceId: jest.fn(),
 } as unknown as StudioErrorSignalLogService;
 
 const mockKafkaLosSignalService = {
@@ -171,14 +171,18 @@ describe('StudioErrorSignalHandler', () => {
           resolved: false,
         },
       ];
-      (mockStudioErrorSignalLogService.updateLog as jest.Mock).mockResolvedValueOnce(output);
+      (
+        mockStudioErrorSignalLogService.resolveErrorSignalLogsByDeviceId as jest.Mock
+      ).mockResolvedValueOnce(output);
 
       const result = await (service as any).resolveErrorSignal('idp');
       expect(result).toBe(output);
     });
 
     it('should return [] if throw error', async () => {
-      (mockStudioErrorSignalLogService.updateLog as jest.Mock).mockRejectedValueOnce(Error);
+      (
+        mockStudioErrorSignalLogService.resolveErrorSignalLogsByDeviceId as jest.Mock
+      ).mockRejectedValueOnce(Error);
 
       const result = await (service as any).resolveErrorSignal('idp');
       expect(result).toEqual([]);

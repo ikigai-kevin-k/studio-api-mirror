@@ -31,8 +31,11 @@ export class StudioErrorSignalLogService implements ModuleLifecycle {
     return this.convert(result);
   }
 
-  async updateLog(type: UpdateErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput[]> {
-    const result = await this.studioErrorSignalLogRepository.updateErrorSignalLog(type);
+  async resolveErrorSignalLogsByDeviceId(
+    deviceId: UpdateErrorSignalLogServiceInput,
+  ): Promise<ErrorSignalLogServiceOutput[]> {
+    const result =
+      await this.studioErrorSignalLogRepository.resolveErrorSignalLogsByDeviceId(deviceId);
     return result.map((item) => this.convert(item));
   }
 

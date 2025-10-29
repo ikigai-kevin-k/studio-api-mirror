@@ -62,7 +62,7 @@ describe('LosSignalService', () => {
 
   describe('publishResolve', () => {
     const mockData = {
-      signalId: 1,
+      signalIds: [1],
       timestamp: 0,
     };
 

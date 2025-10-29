@@ -51,14 +51,10 @@ export class StudioErrorSignalService implements ModuleLifecycle {
     const result = await this.resolveErrorSignal(deviceId);
 
     const timestamp = Date.now();
-    await Promise.all(
-      result.map((item) => {
-        return this.kafkaLosSignalService.publishResolve({
-          signalId: item.id,
-          timestamp: timestamp,
-        });
-      }),
-    );
+    await this.kafkaLosSignalService.publishResolve({
+      signalIds: result.map((item) => item.id),
+      timestamp,
+    });
 
     return result;
   }
@@ -84,7 +80,7 @@ export class StudioErrorSignalService implements ModuleLifecycle {
 
   private async resolveErrorSignal(deviceId: string) {
     try {
-      return await this.studioErrorSignalLogService.updateLog(deviceId);
+      return await this.studioErrorSignalLogService.resolveErrorSignalLogsByDeviceId(deviceId);
     } catch (error) {
       const { code, message } = error as StudioApiError;
       this.logger.warn(`resolve error signal fail, code: ${code}, reason: ${message}`);

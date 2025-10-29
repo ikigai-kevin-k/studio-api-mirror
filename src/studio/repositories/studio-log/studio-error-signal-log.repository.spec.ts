@@ -139,7 +139,7 @@ describe('StudioErrorSignalLogRepository', () => {
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockInsertResult);
 
-      const result = await repository.updateErrorSignalLog('deviceId');
+      const result = await repository.resolveErrorSignalLogsByDeviceId('deviceId');
       expect(result).toEqual([
         {
           id: 1,
@@ -168,7 +168,9 @@ describe('StudioErrorSignalLogRepository', () => {
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockInsertResult);
 
-      await expect(repository.updateErrorSignalLog('deviceId')).rejects.toThrow(StudioUpdateError);
+      await expect(repository.resolveErrorSignalLogsByDeviceId('deviceId')).rejects.toThrow(
+        StudioUpdateError,
+      );
     });
   });
 });

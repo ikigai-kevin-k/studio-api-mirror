@@ -1,4 +1,4 @@
 export type ResolveSignalInput = {
-  signalId: number;
+  signalIds: number[];
   timestamp: number;
 };

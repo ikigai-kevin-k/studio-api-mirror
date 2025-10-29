@@ -11,7 +11,7 @@ import { ErrorSignalLogServiceOutput } from './studio-error-signal-log.service.t
 const mockStudioErrorSignalLogRepository = {
   getErrorSignalLogById: jest.fn(),
   insertErrorSignalLog: jest.fn(),
-  updateErrorSignalLog: jest.fn(),
+  resolveErrorSignalLogsByDeviceId: jest.fn(),
   getUnResolvedErrorSignalLogByDeviceId: jest.fn(),
   IsUnResolved: jest.fn(),
   IsDuplicateSignal: jest.fn(),
@@ -107,7 +107,7 @@ describe('StudioErrorSignalLogService', () => {
     });
   });
 
-  describe('updateLog', () => {
+  describe('resolveErrorSignalLogsByDeviceId', () => {
     it('should modify a data in db', async () => {
       const currentTime = new Date();
 
@@ -135,11 +135,11 @@ describe('StudioErrorSignalLogService', () => {
         },
       ];
 
-      (mockStudioErrorSignalLogRepository.updateErrorSignalLog as jest.Mock).mockResolvedValueOnce(
-        mockResult,
-      );
+      (
+        mockStudioErrorSignalLogRepository.resolveErrorSignalLogsByDeviceId as jest.Mock
+      ).mockResolvedValueOnce(mockResult);
 
-      const result = await service.updateLog('idp');
+      const result = await service.resolveErrorSignalLogsByDeviceId('idp');
       expect(result).toEqual(mockOutput);
     });
   });
