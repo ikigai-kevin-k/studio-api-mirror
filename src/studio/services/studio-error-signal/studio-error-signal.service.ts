@@ -48,11 +48,13 @@ export class StudioErrorSignalService implements ModuleLifecycle {
   }
 
   async forwardResolveSignal(deviceId: string) {
+    const { gameId } = await this.queryDeviceBelong(deviceId);
     const result = await this.resolveErrorSignal(deviceId);
 
     const timestamp = Date.now();
     await this.kafkaLosSignalService.publishResolve({
       signalIds: result.map((item) => item.id),
+      gameCode: gameId,
       timestamp,
     });
 

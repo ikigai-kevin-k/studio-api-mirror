@@ -64,6 +64,7 @@ describe('LosSignalService', () => {
     const mockData = {
       signalIds: [1],
       timestamp: 0,
+      gameCode: 'gameCode',
     };
 
     it('should publish to Kafka', async () => {

@@ -157,6 +157,12 @@ describe('StudioErrorSignalHandler', () => {
 
       jest.spyOn(service as any, 'resolveErrorSignal').mockResolvedValue(output);
 
+      const spyQueryDeviceBelong = jest.spyOn(service as any, 'queryDeviceBelong');
+      spyQueryDeviceBelong.mockResolvedValueOnce({
+        gameId: 'gameCode',
+        tableName: 'auto roulette',
+      });
+
       await expect(service.forwardResolveSignal('idp')).resolves.toBe(output);
     });
   });
