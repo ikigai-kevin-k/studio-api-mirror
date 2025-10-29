@@ -8,6 +8,7 @@ type WsAck = {
 type WsDeviceStatus = {
   deviceId: string;
   status: string;
+  resolves: number[];
 };
 
 type WsSignal = ErrorSignalInput;

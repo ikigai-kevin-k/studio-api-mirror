@@ -2,6 +2,7 @@
 import { LoggerService } from '@ikigaians/logger';
 import { KafkaHub } from '@ikigaians/queue-pub-sub';
 import { LosSignalErrorTopic } from 'src/kafka/topics/los-signal-error.topic';
+import { LosSignalResolveTopic } from 'src/kafka/topics/los-signal-resolve.topic';
 import { KafkaLosSignalService } from './kafka-los-signal.service';
 
 const mockKafkaHub = {
@@ -37,9 +38,10 @@ describe('LosSignalService', () => {
     });
   });
 
-  describe('publish', () => {
+  describe('publishError', () => {
     const mockData = {
       msgId: '1',
+      content: '',
       metadata: {
         gameCode: 'ARO-001',
         tablename: '',
@@ -51,10 +53,25 @@ describe('LosSignalService', () => {
     };
 
     it('should publish to Kafka', async () => {
-      await service.publish(mockData);
+      await service.publishError(mockData);
 
       expect(mockKafkaHub.publish).toHaveBeenCalledTimes(1);
       expect(mockKafkaHub.publish).toHaveBeenCalledWith(LosSignalErrorTopic, mockData);
+    });
+  });
+
+  describe('publishResolve', () => {
+    const mockData = {
+      signalIds: [1],
+      timestamp: 0,
+      gameCode: 'gameCode',
+    };
+
+    it('should publish to Kafka', async () => {
+      await service.publishResolve(mockData);
+
+      expect(mockKafkaHub.publish).toHaveBeenCalledTimes(1);
+      expect(mockKafkaHub.publish).toHaveBeenCalledWith(LosSignalResolveTopic, mockData);
     });
   });
 });

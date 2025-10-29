@@ -27,11 +27,12 @@ const mockStudioService = {
 
 const mockStudioErrorSignalLogService = {
   insertLog: jest.fn(),
-  updateLog: jest.fn(),
+  resolveErrorSignalLogsByDeviceId: jest.fn(),
 } as unknown as StudioErrorSignalLogService;
 
 const mockKafkaLosSignalService = {
-  publish: jest.fn(),
+  publishError: jest.fn(),
+  publishResolve: jest.fn(),
 } as unknown as KafkaLosSignalService;
 
 const mockTableApiSignalService = {
@@ -41,6 +42,7 @@ const mockTableApiSignalService = {
 const mockLoggerService = {
   info: jest.fn(),
   error: jest.fn(),
+  warn: jest.fn(),
 } as unknown as LoggerService;
 
 describe('StudioErrorSignalHandler', () => {
@@ -69,6 +71,7 @@ describe('StudioErrorSignalHandler', () => {
     it('should return a log from db', async () => {
       const input: StudioErrorSignalServiceInput = {
         msgId: '',
+        content: '',
         metadata: {},
       };
       const result = {
@@ -111,6 +114,7 @@ describe('StudioErrorSignalHandler', () => {
       const currentTime = new Date();
       const input: StudioErrorSignalServiceInput = {
         msgId: '',
+        content: '',
         metadata: {},
       };
       const spyQueryDeviceBelong = jest.spyOn(service as any, 'queryDeviceBelong');
@@ -124,11 +128,12 @@ describe('StudioErrorSignalHandler', () => {
 
       const result = await service.forwardErrorSignal('idp', input);
 
-      expect(mockKafkaLosSignalService.publish).toHaveBeenCalledTimes(1);
+      expect(mockKafkaLosSignalService.publishError).toHaveBeenCalledTimes(1);
       expect(mockTableApiSignalService.forwardSignal).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual({
         msgId: '',
+        content: '',
         metadata: {
           gameCode: 'gameCode',
           tableName: 'auto roulette',
@@ -141,16 +146,52 @@ describe('StudioErrorSignalHandler', () => {
 
   describe('forwardResolveSignal', () => {
     it('should return a log from db', async () => {
-      const output = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: {},
-        resolved: false,
-      };
+      const output = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: {},
+          resolved: false,
+        },
+      ];
 
-      (mockStudioErrorSignalLogService.updateLog as jest.Mock).mockResolvedValueOnce(output);
+      jest.spyOn(service as any, 'resolveErrorSignal').mockResolvedValue(output);
+
+      const spyQueryDeviceBelong = jest.spyOn(service as any, 'queryDeviceBelong');
+      spyQueryDeviceBelong.mockResolvedValueOnce({
+        gameId: 'gameCode',
+        tableName: 'auto roulette',
+      });
 
       await expect(service.forwardResolveSignal('idp')).resolves.toBe(output);
+    });
+  });
+
+  describe('resolveErrorSignal', () => {
+    it('should call updateLog', async () => {
+      const output = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: {},
+          resolved: false,
+        },
+      ];
+      (
+        mockStudioErrorSignalLogService.resolveErrorSignalLogsByDeviceId as jest.Mock
+      ).mockResolvedValueOnce(output);
+
+      const result = await (service as any).resolveErrorSignal('idp');
+      expect(result).toBe(output);
+    });
+
+    it('should return [] if throw error', async () => {
+      (
+        mockStudioErrorSignalLogService.resolveErrorSignalLogsByDeviceId as jest.Mock
+      ).mockRejectedValueOnce(Error);
+
+      const result = await (service as any).resolveErrorSignal('idp');
+      expect(result).toEqual([]);
     });
   });
 });

@@ -2,6 +2,7 @@ import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 
 import { StudioErrorSignalLogRepository } from 'src/studio/repositories/studio-log/studio-error-signal-log.repository';
+import { DbStudioErrorSignalLog } from 'src/studio/repositories/studio-log/studio-error-signal-log.repository.type';
 import {
   ErrorSignalLogServiceOutput,
   GetErrorSignalLogServiceInput,
@@ -16,16 +17,42 @@ export class StudioErrorSignalLogService implements ModuleLifecycle {
   ) {}
 
   async getLog(input: GetErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.getErrorSignalLogById(input);
+    const result = await this.studioErrorSignalLogRepository.getErrorSignalLogById(input);
+    return this.convert(result);
   }
 
   async insertLog(input: InsertErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.insertErrorSignalLog(input);
+    const result = await this.studioErrorSignalLogRepository.insertErrorSignalLog({
+      deviceId: input.deviceId,
+      msgId: input.errorSignal.msgId,
+      content: input.errorSignal.content,
+      errorSignal: input.errorSignal.metadata,
+    });
+    return this.convert(result);
   }
 
-  async updateLog(type: UpdateErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput> {
-    return await this.studioErrorSignalLogRepository.updateErrorSignalLog(type);
+  async resolveErrorSignalLogsByDeviceId(
+    deviceId: UpdateErrorSignalLogServiceInput,
+  ): Promise<ErrorSignalLogServiceOutput[]> {
+    const result =
+      await this.studioErrorSignalLogRepository.resolveErrorSignalLogsByDeviceId(deviceId);
+    return result.map((item) => this.convert(item));
   }
 
   async onInit(): Promise<void> {}
+
+  private convert(input: DbStudioErrorSignalLog) {
+    return {
+      id: input.id,
+      deviceId: input.deviceId,
+      errorSignal: {
+        msgId: input.msgId,
+        content: input.content,
+        metadata: input.errorSignal,
+      },
+      resolved: input.resolved,
+      createdAt: input.createdAt,
+      updatedAt: input.updatedAt,
+    };
+  }
 }

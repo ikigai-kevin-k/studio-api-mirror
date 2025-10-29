@@ -1,4 +1,4 @@
-import { ErrorSignalInput } from 'src/global/types/error-signal.type';
+import { ErrorSignalMetaData } from 'src/global/types/error-signal.type';
 import {
   Column,
   CreateDateColumn,
@@ -24,9 +24,27 @@ export class StudioErrorSignalLog {
     name: 'DEVICE_ID',
     type: 'varchar',
     length: 255,
-    comment: 'Error Signal SourceDevice where the error occurred.',
+    comment: 'Error Signal Source Device where the error occurred.',
   })
   deviceId!: string;
+
+  @Column({
+    name: 'MESSAGE_ID',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: 'Message ID of Error Signal',
+  })
+  msgId!: string;
+
+  @Column({
+    name: 'CONTENT',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+    comment: 'Content of Error Signal',
+  })
+  content!: string;
 
   @Column({
     name: 'ERROR_SIGNAL',
@@ -35,7 +53,7 @@ export class StudioErrorSignalLog {
     default: () => "'{}'",
     comment: 'Error Signal',
   })
-  errorSignal!: ErrorSignalInput;
+  errorSignal!: ErrorSignalMetaData;
 
   @Column({
     name: 'RESOLVED',

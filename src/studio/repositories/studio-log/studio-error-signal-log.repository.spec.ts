@@ -60,7 +60,9 @@ describe('StudioErrorSignalLogRepository', () => {
       const mockStudio: DbStudioErrorSignalLog = {
         id: 1,
         deviceId: 'deviceId',
-        errorSignal: { msgId: '', metadata: {} },
+        msgId: '',
+        content: '',
+        errorSignal: {},
         resolved: false,
         createdAt: currentTime,
         updatedAt: currentTime,
@@ -81,13 +83,15 @@ describe('StudioErrorSignalLogRepository', () => {
 
   describe('insertErrorSignalLog', () => {
     it('should insert a studio object to db', async () => {
-      const mockSignalInput = { msgId: '', metadata: {} };
+      const mockSignalInput = {};
       const currentTime = new Date();
       const mockInsertResult = {
         raw: [
           {
             ID: 1,
             DEVICE_ID: 'deviceId',
+            MESSAGE_ID: '',
+            CONTENT: '',
             ERROR_SIGNAL: mockSignalInput,
             RESOLVED: false,
             CREATED_AT: currentTime,
@@ -100,11 +104,15 @@ describe('StudioErrorSignalLogRepository', () => {
 
       const result = await repository.insertErrorSignalLog({
         deviceId: 'idp',
+        msgId: '',
+        content: '',
         errorSignal: mockSignalInput,
       });
       expect(result).toEqual({
         id: 1,
         deviceId: 'deviceId',
+        msgId: '',
+        content: '',
         errorSignal: mockSignalInput,
         resolved: false,
         createdAt: currentTime,
@@ -131,15 +139,17 @@ describe('StudioErrorSignalLogRepository', () => {
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockInsertResult);
 
-      const result = await repository.updateErrorSignalLog('deviceId');
-      expect(result).toEqual({
-        id: 1,
-        deviceId: 'deviceId',
-        errorSignal: { msgId: '', metadata: {} },
-        resolved: false,
-        createdAt: currentTime,
-        updatedAt: currentTime,
-      });
+      const result = await repository.resolveErrorSignalLogsByDeviceId('deviceId');
+      expect(result).toEqual([
+        {
+          id: 1,
+          deviceId: 'deviceId',
+          errorSignal: { msgId: '', metadata: {} },
+          resolved: false,
+          createdAt: currentTime,
+          updatedAt: currentTime,
+        },
+      ]);
 
       expect(mockQueryBuilder.set).toHaveBeenCalledWith({ resolved: true });
       expect(mockQueryBuilder.where).toHaveBeenCalledWith('deviceId = :deviceId', {
@@ -158,7 +168,9 @@ describe('StudioErrorSignalLogRepository', () => {
 
       (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockInsertResult);
 
-      await expect(repository.updateErrorSignalLog('deviceId')).rejects.toThrow(StudioUpdateError);
+      await expect(repository.resolveErrorSignalLogsByDeviceId('deviceId')).rejects.toThrow(
+        StudioUpdateError,
+      );
     });
   });
 });

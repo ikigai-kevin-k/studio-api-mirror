@@ -1,15 +1,18 @@
+export type ErrorSignalMetaData = {
+  signalId?: number;
+  tableName?: string;
+  gameCode?: string;
+  title?: string;
+  description?: string;
+  code?: string;
+  suggestion?: string;
+  timestamp?: number;
+};
+
 export type ErrorSignalInput = {
   msgId: string;
-  metadata: {
-    signalId?: number;
-    tableName?: string;
-    gameCode?: string;
-    title?: string;
-    description?: string;
-    code?: string;
-    suggestion?: string;
-    timestamp?: number;
-  };
+  content: string;
+  metadata: ErrorSignalMetaData;
 };
 
 export type ActivateBackupInput = object;
