@@ -150,41 +150,31 @@ ALTER TABLE ONLY public.studio_status ALTER COLUMN "ID" SET DEFAULT nextval('pub
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_cdn ADD CONSTRAINT pk_studio_cdn_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
     WHEN duplicate_object THEN NULL;
-    WHEN invalid_table_definition THEN NULL;
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_device ADD CONSTRAINT pk_studio_device_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
     WHEN duplicate_object THEN NULL;
-    WHEN invalid_table_definition THEN NULL;
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_error_signal_log ADD CONSTRAINT pk_studio_error_signal_log_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
     WHEN duplicate_object THEN NULL;
-    WHEN invalid_table_definition THEN NULL;
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_status ADD CONSTRAINT pk_studio_status_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
     WHEN duplicate_object THEN NULL;
-    WHEN invalid_table_definition THEN NULL;
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio ADD CONSTRAINT pk_table_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_table THEN NULL;
     WHEN duplicate_object THEN NULL;
-    WHEN invalid_table_definition THEN NULL;
 END $$;
 
 
