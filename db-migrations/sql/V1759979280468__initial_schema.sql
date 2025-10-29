@@ -150,31 +150,36 @@ ALTER TABLE ONLY public.studio_status ALTER COLUMN "ID" SET DEFAULT nextval('pub
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_cdn ADD CONSTRAINT pk_studio_cdn_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint pk_studio_cdn_id already exists on table studio_cdn.';
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_device ADD CONSTRAINT pk_studio_device_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint pk_studio_device_id already exists on table studio_device.';
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_error_signal_log ADD CONSTRAINT pk_studio_error_signal_log_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint pk_studio_error_signal_log_id already exists on table studio_error_signal_log.';
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio_status ADD CONSTRAINT pk_studio_status_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint pk_studio_status_id already exists on table studio_status.';
 END $$;
 
 DO $$ BEGIN
     ALTER TABLE ONLY public.studio ADD CONSTRAINT pk_table_id PRIMARY KEY ("ID");
 EXCEPTION
-    WHEN duplicate_object THEN NULL;
+    WHEN duplicate_object THEN
+        RAISE NOTICE 'Constraint pk_table_id already exists on table studio.';
 END $$;
 
 
