@@ -40,7 +40,7 @@ export class TableApiForwardService implements ModuleLifecycle {
     const result = (await resp.json()) as TableApiSchema;
     if (!resp.ok || result.error) {
       throw new TableApiConnectFailureError(
-        `[PATCH] ${resp.url} failure ! status: ${resp.status}, code: ${result.error.code}, message: ${result.error.message}`,
+        `[PATCH] ${resp.url} failure ! status: ${resp.status}, code: ${result.error?.code ?? 'unknown'}, message: ${result.error?.message ?? 'No error message provided'}`,
       );
     }
     this.logger.info(`[PATCH] ${resp.url} result = ${JSON.stringify(result)}`);
