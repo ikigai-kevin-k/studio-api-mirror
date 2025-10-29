@@ -1,4 +1,4 @@
-export type ResolveSignalInput = {
+export type ResolvedSignalInput = {
   signalIds: number[];
   timestamp: number;
 };

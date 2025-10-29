@@ -1,8 +1,8 @@
 import { ConsumeStrategy, Topic, TopicNameStrategy } from '@ikigaians/queue-pub-sub';
-import { ResolveSignalInput } from 'src/global/types/resolve-signal.type';
+import { ResolvedSignalInput } from 'src/global/types/resolve-signal.type';
 import { KafkaTopicEnum } from '../enums/kafka.enum';
 
-export type LosSignalResolvePayload = ResolveSignalInput;
+export type LosSignalResolvePayload = ResolvedSignalInput;
 
 export const LosSignalResolveTopic: Topic<LosSignalResolvePayload> = {
   name: KafkaTopicEnum.LOS_RESOLVE_SIGNAL,
