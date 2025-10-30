@@ -168,7 +168,7 @@ describe('StudioGameController', () => {
         currentTableId: 'test-table-1',
       };
 
-      mockStudioGameService.updateGame.mockReturnValue(mockResult);
+      mockStudioGameService.updateGame.mockResolvedValueOnce(mockResult);
 
       await controller.onInit();
       const [, , handler] = mockRouterService.app.patch.mock.calls[0];

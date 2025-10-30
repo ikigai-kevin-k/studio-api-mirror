@@ -36,7 +36,7 @@ export class StudioGameService implements ModuleLifecycle {
     const entity = {
       gameId: gameCode,
       currentTableId:
-        game.currentTableId == game.primaryTableId ? game.secondaryTableId : game.primaryTableId,
+        game.currentTableId === game.primaryTableId ? game.secondaryTableId : game.primaryTableId,
     };
 
     const result = await this.studioGameRepository.updateGame(entity);

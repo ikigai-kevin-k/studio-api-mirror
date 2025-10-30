@@ -182,7 +182,7 @@ describe('StudioGameRepository', () => {
       });
     });
 
-    it('should throw an studio if none modified', async () => {
+    it('should throw an error if none modified', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
         gameId: gameCode,
