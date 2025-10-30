@@ -22,6 +22,10 @@ export const InjectionTokensEnum = {
   STUDIO_DEVICE_DATA_SERVICE: 'studioDeviceDataService',
   STUDIO_DEVICE_DATA_CONTROLLER: 'studioDeviceDataController',
 
+  STUDIO_GAME_REPOSITORY: 'studioGameRepository',
+  STUDIO_GAME_SERVICE: 'studioGameService',
+  STUDIO_GAME_CONTROLLER: 'studioGameController',
+
   STUDIO_ERROR_SIGNAL_LOG_REPOSITORY: 'studioErrorSignalLogRepository',
   STUDIO_ERROR_SIGNAL_LOG_SERVICE: 'studioErrorSignalLogService',
   STUDIO_ERROR_SIGNAL_LOG_CONTROLLER: 'studioErrorSignalLogController',
