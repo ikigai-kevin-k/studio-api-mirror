@@ -1,11 +1,5 @@
-ALTER TABLE "studio_error_signal_log" ALTER COLUMN "ERROR_SIGNAL" DROP NOT NULL;
+ALTER TABLE "studio_error_signal_log" ALTER COLUMN "ERROR_SIGNAL" SET DEFAULT NULL;
+ALTER TABLE "studio_error_signal_log" DROP COLUMN IF EXISTS "CONTENT";
+ALTER TABLE "studio_error_signal_log" DROP COLUMN IF EXISTS "MESSAGE_ID";
 
-COMMENT ON COLUMN "studio_error_signal_log"."CONTENT" IS 'Content of Error Signal';
-
-CREATE INDEX "idx_studio_error_signal_log_resolved" ON "studio_error_signal_log" ("RESOLVED");
-
-ALTER TABLE "studio_error_signal_log" DROP COLUMN "CONTENT";
-
-COMMENT ON COLUMN "studio_error_signal_log"."MESSAGE_ID" IS 'Message ID of Error Signal';
-
-ALTER TABLE "studio_error_signal_log" DROP COLUMN "MESSAGE_ID";
+CREATE INDEX IF NOT EXISTS "idx_studio_error_signal_log_resolved" ON "studio_error_signal_log" ("RESOLVED");
