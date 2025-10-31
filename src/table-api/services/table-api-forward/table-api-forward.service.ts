@@ -1,4 +1,3 @@
-import { ModuleLifecycle } from '@ikigaians/mod';
 import { getLiveTableSessionHeaders } from '@ikigaians/web';
 import { AppConfigService } from 'src/config';
 import { send } from 'src/global/utils/send-utils';
@@ -8,13 +7,11 @@ import { TableApiSchema } from 'src/table-api/schema/table-api.schema';
 import { fetch } from 'undici';
 import { TableApiForwardInput } from './table-api-forward.service.type';
 
-export class TableApiForwardService implements ModuleLifecycle {
+export class TableApiForwardService {
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly logger: LoggerService,
   ) {}
-
-  async onInit() {}
 
   async forwardCDN(gameCode: string, data: TableApiForwardInput): Promise<void> {
     await send<TableApiSchema>(

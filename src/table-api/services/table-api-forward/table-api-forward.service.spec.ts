@@ -36,12 +36,6 @@ describe('TableApiForwardService', () => {
     mockSend = send as jest.Mock;
   });
 
-  describe('onInit', () => {
-    it('should be callable and return without errors', async () => {
-      await expect(service.onInit()).resolves.toBeUndefined();
-    });
-  });
-
   describe('updateCDN', () => {
     it('should call fetch with the correct parameters and return json on success', async () => {
       const mockGameCode = 'gameId';
@@ -79,7 +73,9 @@ describe('TableApiForwardService', () => {
         ok: false,
         status: 400,
         error: { code: 10_001, message: '' },
-        json: () => Promise.resolve(mockResponse),
+        json: () => {
+          Promise.resolve({ ok: false, status: 400, error: { code: 10_001, message: '' } });
+        },
       };
       mockedFetch.mockResolvedValue(mockResponse);
 
