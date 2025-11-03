@@ -64,7 +64,7 @@ describe('StudioGameRepository', () => {
   });
 
   describe('getGameByID', () => {
-    it('should return a studio object from cache', async () => {
+    it('should return a game object from cache', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
         gameId: gameCode,
@@ -81,7 +81,7 @@ describe('StudioGameRepository', () => {
       expect(mockQueryBuilder.getRawOne).not.toHaveBeenCalled();
     });
 
-    it('should return a studio object from db if cache does not hit', async () => {
+    it('should return a game object from db if cache does not hit', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
         gameId: gameCode,
@@ -114,7 +114,7 @@ describe('StudioGameRepository', () => {
   });
 
   describe('insertGame', () => {
-    it('should return a studio object from db', async () => {
+    it('should return a game object from db', async () => {
       const gameCode = 'gameCode';
       const mockEntity: StudioGameEntity = {
         gameId: gameCode,
@@ -151,7 +151,7 @@ describe('StudioGameRepository', () => {
   });
 
   describe('updateGame', () => {
-    it('should update a studio object to db', async () => {
+    it('should update a game object to db', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
         gameId: gameCode,
@@ -208,7 +208,7 @@ describe('StudioGameRepository', () => {
   });
 
   describe('getCache', () => {
-    it('should return a data from cache', async () => {
+    it('should return data from cache', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
         gameId: gameCode,

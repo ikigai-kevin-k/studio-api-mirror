@@ -38,7 +38,7 @@ describe('StudioGameService', () => {
   });
 
   describe('getGame', () => {
-    it('should return a data from cache', async () => {
+    it('should return data from cache', async () => {
       const input: GetStudioGameServiceInput = {
         gameId: 'gameCode',
       };
@@ -58,7 +58,7 @@ describe('StudioGameService', () => {
   });
 
   describe('insertGame', () => {
-    it('should insert a new studio', async () => {
+    it('should insert a new game', async () => {
       const input: InsertStudioGameServiceInput = {
         gameId: 'gameCode',
         primaryTableId: 'tableCode-1',
@@ -81,7 +81,7 @@ describe('StudioGameService', () => {
   });
 
   describe('updateGame', () => {
-    it('should update a studio entity', async () => {
+    it('should update a game entity', async () => {
       const input: UpdateStudioGameServiceInput = {
         gameId: 'gameCode',
         primaryTableId: 'tableCode-1',
