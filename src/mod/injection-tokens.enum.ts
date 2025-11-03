@@ -39,7 +39,7 @@ export const InjectionTokensEnum = {
   WS_CONTROLLER: 'wsController',
 
   TABLE_API_QUERY_SERVICE: 'tableApiQueryService',
-  TABLE_API_CDN_SERVICE: 'tableApiCdnService',
+  TABLE_API_FORWARD_SERVICE: 'tableApiForwardService',
   TABLE_API_SIGNAL_SERVICE: 'tableApiSignalService',
 
   SLACK_SERVICE: 'slackService',

@@ -7,6 +7,7 @@ import { StatusCodes } from 'http-status-codes';
 import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
+import { TableApiForwardService } from 'src/table-api/services/table-api-forward/table-api-forward.service';
 import {
   GetStudioTableCdnRequest,
   GetStudioTableCdnRequestType,
@@ -25,6 +26,7 @@ import {
 export class StudioCdnController implements ModuleLifecycle {
   constructor(
     private readonly studioCdnService: StudioCdnService,
+    private readonly tableApiForwardService: TableApiForwardService,
     private readonly preHandlersService: PreHandlersService,
     private readonly routerService: RouterService,
     private readonly logger: LoggerService,
@@ -100,6 +102,8 @@ export class StudioCdnController implements ModuleLifecycle {
             secondary: cdnDst['secondary'],
           },
         };
+
+        await this.tableApiForwardService.forwardCDN(output.tableId, output.cdnDst);
         return output;
       },
     );
@@ -134,6 +138,8 @@ export class StudioCdnController implements ModuleLifecycle {
             secondary: cdnDst['secondary'],
           },
         };
+
+        await this.tableApiForwardService.forwardCDN(output.tableId, output.cdnDst);
         return output;
       },
     );

@@ -13,6 +13,7 @@ import {
   UpdateStudioTableCdnResponseType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
+import { TableApiForwardService } from 'src/table-api/services/table-api-forward/table-api-forward.service';
 
 const mockFastify = {
   get: jest.fn(),
@@ -26,6 +27,10 @@ const mockStudioCdnService = {
   insertTableCdn: jest.fn(),
   updateTableCdn: jest.fn(),
 } as unknown as StudioCdnService;
+
+const mockTableApiForwardService = {
+  forwardCDN: jest.fn(),
+} as unknown as TableApiForwardService;
 
 const mockPreHandlersService = {
   serviceApisAuthenticator: jest.fn(),
@@ -46,6 +51,7 @@ describe('StudioCdnController', () => {
   beforeEach(() => {
     controller = new StudioCdnController(
       mockStudioCdnService,
+      mockTableApiForwardService,
       mockPreHandlersService,
       mockRouterService,
       mockLoggerService,
