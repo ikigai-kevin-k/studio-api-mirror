@@ -3,37 +3,40 @@ ARG NODE_VERSION
 
 FROM node:${NODE_VERSION}-alpine AS development
 
-ARG NPM_AUTH_TOKEN
-ENV NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN}
-
 WORKDIR /usr/src/app
 
 COPY ./package*.json ./
 
-RUN echo "//npm.pkg.github.com/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc && \
-    npm install
+RUN --mount=type=secret,id=npm_token \
+    NPM_AUTH_TOKEN=$(cat /run/secrets/npm_token) && \
+    npm config set //npm.pkg.github.com/:_authToken "$NPM_AUTH_TOKEN" && \
+    npm ci && \
+    npm config delete //npm.pkg.github.com/:_authToken && \
+    rm -rf /root/.npm/_logs
 
 COPY ../.. .
 
 RUN npm run build
 
-FROM node:20-alpine as production
-
-USER node
+FROM node:${NODE_VERSION}-alpine as production
 
 ARG NODE_ENV=production
 ENV NODE_ENV=${NODE_ENV}
-ARG NPM_AUTH_TOKEN
-ENV NPM_AUTH_TOKEN=${NPM_AUTH_TOKEN}
 ENV NODE_PATH=/usr/src/app/build
 
 WORKDIR /usr/src/app
 
 COPY --chown=node:node package*.json ./
 
-RUN echo "//npm.pkg.github.com/:_authToken=${NPM_AUTH_TOKEN}" > ~/.npmrc && \
-        npm install --omit=dev
+RUN --mount=type=secret,id=npm_token \
+    NPM_AUTH_TOKEN=$(cat /run/secrets/npm_token) && \
+    npm config set //npm.pkg.github.com/:_authToken "$NPM_AUTH_TOKEN" && \
+    npm ci && \
+    npm config delete //npm.pkg.github.com/:_authToken && \
+    rm -rf /root/.npm/_logs
 
 COPY --from=development --chown=node:node /usr/src/app/build ./build
+
+USER node
 
 CMD ["node", "build/index.js"]
