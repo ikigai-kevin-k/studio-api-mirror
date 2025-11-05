@@ -29,6 +29,7 @@ node_modules/
 # Build directories
 build
 dist
+db-migrations/*/sql-out
 
 # TypeScript cache
 *.tsbuildinfo
