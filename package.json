@@ -57,6 +57,7 @@
     "undici": "^7.15.0"
   },
   "devDependencies": {
+    "@ikigaians/migrate": "^2.0.0",
     "@types/jest": "^29.5.11",
     "@types/node": "^20.10.5",
     "@types/ws": "^8.18.1",
