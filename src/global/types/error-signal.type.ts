@@ -7,7 +7,7 @@ export type ErrorSignalMetaData = {
   code?: string;
   suggestion?: string;
   timestamp?: number;
-  signalType?: string;
+  signalType?: 'error' | 'warning';
 };
 
 export type ErrorSignalInput = {
