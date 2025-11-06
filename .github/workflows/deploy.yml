@@ -1,5 +1,5 @@
 name: CD Workflow
-run-name: CD Deploy ${{ inputs.environment || 'CIT' }} ${{ inputs.git-tag || 'cit-latest'}} ${{ inputs.region || 'us-east-1' }}
+run-name: CD Deploy ${{ inputs.environment || 'CIT' }} ${{ inputs.git-tag || 'cit-latest'}} ${{ inputs.region || 'us-east-1' }} ${{ inputs.bg-deploy-side}}
 
 on:
   push:
@@ -28,6 +28,14 @@ on:
           - us-east-1
           - us-west-2
           - eu-central-1
+      bg-deploy-side:
+         required: false
+         default: "OLD"
+         type: choice
+         options:
+           - "OLD"
+           - "PRIMARY"
+           - "SECONDARY"
       git-tag:
         description: 'Git tag (optional, only for QAT and above)'
         required: false
@@ -48,6 +56,7 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: us-east-1
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
 
   manual_dispatch_CIT:
@@ -59,6 +68,7 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
 
   manual_dispatch_QAT:
@@ -71,6 +81,7 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
 
   manual_dispatch_UAT:
@@ -83,6 +94,7 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
 
   manual_dispatch_STG:
@@ -95,6 +107,7 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
 
   manual_dispatch_PRD:
@@ -107,4 +120,5 @@ jobs:
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
     secrets: inherit
