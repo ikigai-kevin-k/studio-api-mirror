@@ -75,12 +75,30 @@ export class StudioGameRepository implements ModuleLifecycle {
   }
 
   async updateGame(entity: StudioGameEntity): Promise<DbStudioGameResult> {
-    const { gameId } = entity;
+    const { gameId, primaryTableId, secondaryTableId, currentTableId } = entity;
+    const updateFields: { [key: string]: string | undefined } = {};
+
+    if (primaryTableId !== undefined) {
+      updateFields.primaryTableId = primaryTableId;
+    }
+
+    if (secondaryTableId !== undefined) {
+      updateFields.secondaryTableId = secondaryTableId;
+    }
+
+    if (currentTableId !== undefined) {
+      updateFields.currentTableId = currentTableId;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      throw new StudioUpdateError(`[studio_game] ${gameId} hasn't been modified`);
+    }
+
     const updateResult = await this.dbService
       .getConnection()
       .createQueryBuilder()
       .update(StudioGame)
-      .set(entity)
+      .set(updateFields)
       .where('gameId = :gameId', { gameId })
       .returning(['gameId', 'primaryTableId', 'secondaryTableId', 'currentTableId'])
       .execute();

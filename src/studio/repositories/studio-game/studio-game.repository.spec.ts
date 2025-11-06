@@ -182,6 +182,15 @@ describe('StudioGameRepository', () => {
       });
     });
 
+    it('should update a game object to db', async () => {
+      const gameCode = 'gameCode';
+      const mockUpdateEntity: StudioGameEntity = {
+        gameId: gameCode,
+      };
+
+      await expect(repository.updateGame(mockUpdateEntity)).rejects.toThrow(StudioUpdateError);
+    });
+
     it('should throw an error if none modified', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
