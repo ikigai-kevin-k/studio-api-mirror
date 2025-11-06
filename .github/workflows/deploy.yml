@@ -9,13 +9,14 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Choose environment: CIT or QAT or UAT or STG or PRD'
+        description: 'Choose environment: CIT or GLC or QAT or UAT or STG or PRD'
         required: true
         default: CIT
         type: choice
         options:
           - CIT
           - QAT
+          - GLC
           - UAT
           - STG
           - PRD
@@ -78,6 +79,19 @@ jobs:
       git-tag: ${{ inputs.git-tag || 'no-tag' }}
       app-name: 'studio-api'
       env-name: QAT
+      db-migration: false
+      db-name: 'studio'
+      region: ${{ inputs.region }}
+      info-json: '{"BG_DEPLOY_SIDE":"${{ inputs.bg-deploy-side }}"}'
+    secrets: inherit
+
+  manual_dispatch_GLC:
+    if: ${{ (contains(inputs.git-tag, 'rel-') || contains(inputs.git-tag, 'glc-')) && github.event_name == 'workflow_dispatch' && inputs.environment == 'GLC' }}
+    uses: Ikigaians/workflow-templates/.github/workflows/deploy-ecr.yml@main
+    with:
+      git-tag: ${{ inputs.git-tag || 'no-tag' }}
+      app-name: 'studio-api'
+      env-name: GLC
       db-migration: false
       db-name: 'studio'
       region: ${{ inputs.region }}
