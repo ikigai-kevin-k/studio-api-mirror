@@ -38,7 +38,7 @@ describe('StudioGameService', () => {
   });
 
   describe('getGame', () => {
-    it('should return data from cache', async () => {
+    it('should return game data by id', async () => {
       const input: GetStudioGameServiceInput = {
         gameId: 'gameCode',
       };

@@ -34,7 +34,7 @@ export class StudioGameRepository implements ModuleLifecycle {
       .getConnection()
       .getRepository(StudioGame)
       .createQueryBuilder('studio')
-      .where('studio.GAME_ID = :gameID', { gameID: gameID })
+      .where('studio.GAME_ID = :gameID', { gameID })
       .select([
         'studio."GAME_ID" as "gameId"',
         'studio."PRIMARY_TABLE_ID" as "primaryTableId"',
