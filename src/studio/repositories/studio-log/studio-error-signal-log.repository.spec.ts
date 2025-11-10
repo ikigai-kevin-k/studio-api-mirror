@@ -2,7 +2,7 @@
 /* eslint-disable unicorn/no-useless-undefined */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { DbService } from 'src/db/db.service';
-import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
+import { StudioUpdateError } from 'src/studio/errors/studio.error';
 import { StudioErrorSignalLogRepository } from './studio-error-signal-log.repository';
 import { DbStudioErrorSignalLog } from './studio-error-signal-log.repository.type';
 
@@ -57,27 +57,23 @@ describe('StudioErrorSignalLogRepository', () => {
   describe('getErrorSignalLogById', () => {
     it('should return a studio object from db', async () => {
       const currentTime = new Date();
-      const mockStudio: DbStudioErrorSignalLog = {
-        id: 1,
-        deviceId: 'deviceId',
-        msgId: '',
-        content: '',
-        errorSignal: {},
-        resolved: false,
-        createdAt: currentTime,
-        updatedAt: currentTime,
-      };
+      const mockStudio: DbStudioErrorSignalLog[] = [
+        {
+          id: 1,
+          deviceId: 'deviceId',
+          msgId: '',
+          content: '',
+          errorSignal: {},
+          resolved: false,
+          createdAt: currentTime,
+          updatedAt: currentTime,
+        },
+      ];
 
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(mockStudio);
+      (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getErrorSignalLogById(1);
+      const result = await repository.getErrorSignalLogById(1, 1);
       expect(result).toBe(mockStudio);
-    });
-
-    it('should throw an error if does not find anything', async () => {
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(undefined);
-
-      await expect(repository.getErrorSignalLogById(1)).rejects.toThrow(StudioNotFoundError);
     });
   });
 

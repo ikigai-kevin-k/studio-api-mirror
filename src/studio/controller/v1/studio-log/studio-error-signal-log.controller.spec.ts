@@ -79,25 +79,29 @@ describe('StudioErrorSignalLogController', () => {
     });
 
     it('should call tableApiSignalService.forwardSignal and return the correct response', async () => {
-      const mockRequestQuery: GetStudioErrorSignalRequestType = { signalId: 1 };
+      const mockRequestQuery: GetStudioErrorSignalRequestType = { signalId: 1, limit: 1 };
       const currentTime = new Date();
-      const mockServiceResponse = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: {},
-        resolved: false,
-        createdAt: currentTime,
-        updatedAt: currentTime,
-      };
+      const mockServiceResponse = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: {},
+          resolved: false,
+          createdAt: currentTime,
+          updatedAt: currentTime,
+        },
+      ];
 
-      const result = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: {},
-        resolved: false,
-        createdAt: currentTime.toISOString(),
-        updatedAt: currentTime.toISOString(),
-      };
+      const result = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: {},
+          resolved: false,
+          createdAt: currentTime.toISOString(),
+          updatedAt: currentTime.toISOString(),
+        },
+      ];
 
       mockStudioErrorSignalService.getLog.mockResolvedValue(mockServiceResponse);
 
