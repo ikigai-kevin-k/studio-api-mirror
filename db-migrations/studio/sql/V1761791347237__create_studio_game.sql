@@ -1,17 +1,14 @@
 CREATE TABLE IF NOT EXISTS "studio_game" (
     "ID" SERIAL NOT NULL, 
-    "GAME_ID" character varying(255) NOT NULL, 
+    "GAME_ID" character varying(255) NOT NULL,    
     "PRIMARY_TABLE_ID" character varying(255), 
     "SECONDARY_TABLE_ID" character varying(255), 
     "CURRENT_TABLE_ID" character varying(255), 
     "CREATED_AT" TIMESTAMP(3) NOT NULL DEFAULT now(), 
     "UPDATED_AT" TIMESTAMP(3) NOT NULL DEFAULT now(), 
-    
-    CONSTRAINT "pk_game_id" PRIMARY KEY ("ID"),
-    
-    CONSTRAINT "uq_game_id" UNIQUE ("GAME_ID") 
+    CONSTRAINT "pk_studio_game_game_id" PRIMARY KEY ("ID"),
+    CONSTRAINT "uq_studio_game_game_id" UNIQUE ("GAME_ID") 
 ); 
-
 COMMENT ON COLUMN "studio_game"."ID" IS 'Auto increase number'; 
 COMMENT ON COLUMN "studio_game"."GAME_ID" IS 'Unique Game Code'; 
 COMMENT ON COLUMN "studio_game"."PRIMARY_TABLE_ID" IS 'Primary Table ID'; 

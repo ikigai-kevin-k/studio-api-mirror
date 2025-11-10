@@ -1,3 +1,1 @@
-COMMENT ON TABLE "studio_game" IS NULL;
-
-DROP TABLE "studio_game";
+DROP TABLE IF EXISTS "studio_game" CASCADE; 
