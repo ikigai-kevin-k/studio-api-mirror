@@ -65,6 +65,7 @@ describe('LosSignalService', () => {
       signalIds: [1],
       timestamp: 0,
       gameCode: 'gameCode',
+      tableCode: 'tableCode',
     };
 
     it('should publish to Kafka', async () => {

@@ -96,6 +96,7 @@ describe('StudioErrorSignalHandler', () => {
       await expect((service as any).queryDeviceBelong('idp')).resolves.toEqual({
         gameId: 'gameCode',
         tableName: 'auto roulette',
+        tableId: 'tableCode',
       });
     });
 
