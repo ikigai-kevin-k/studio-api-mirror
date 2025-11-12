@@ -16,8 +16,10 @@ export class StudioErrorSignalLogService implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  async getLog(input: GetErrorSignalLogServiceInput): Promise<ErrorSignalLogServiceOutput[]> {
-    const result = await this.studioErrorSignalLogRepository.getErrorSignalLogById(
+  async getLogsFromId(
+    input: GetErrorSignalLogServiceInput,
+  ): Promise<ErrorSignalLogServiceOutput[]> {
+    const result = await this.studioErrorSignalLogRepository.getErrorSignalLogFromId(
       input.signalId,
       input.limit,
     );

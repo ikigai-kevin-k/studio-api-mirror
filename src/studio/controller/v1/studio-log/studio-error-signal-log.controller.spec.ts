@@ -8,7 +8,7 @@ import { StudioErrorSignalLogController } from './studio-error-signal-log.contro
 import { GetStudioErrorSignalRequestType } from './studio-error-signal-log.controller.type';
 
 const mockStudioErrorSignalService = {
-  getLog: jest.fn(),
+  getLogsFromId: jest.fn(),
 };
 
 const mockPreHandlersService = {
@@ -103,14 +103,14 @@ describe('StudioErrorSignalLogController', () => {
         },
       ];
 
-      mockStudioErrorSignalService.getLog.mockResolvedValue(mockServiceResponse);
+      mockStudioErrorSignalService.getLogsFromId.mockResolvedValue(mockServiceResponse);
 
       await controller.onInit();
       const [, , handler] = mockRouterService.app.get.mock.calls[0];
 
       const response = await handler({ query: mockRequestQuery } as any);
 
-      expect(mockStudioErrorSignalService.getLog).toHaveBeenCalledTimes(1);
+      expect(mockStudioErrorSignalService.getLogsFromId).toHaveBeenCalledTimes(1);
       expect(response).toEqual(result);
     });
   });

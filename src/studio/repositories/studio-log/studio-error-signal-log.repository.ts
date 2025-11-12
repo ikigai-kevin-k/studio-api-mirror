@@ -22,7 +22,7 @@ type StudioErrorSignalLogSchema = {
 export class StudioErrorSignalLogRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getErrorSignalLogById(id: number, limit: number): Promise<DbStudioErrorSignalLog[]> {
+  async getErrorSignalLogFromId(id: number, limit: number): Promise<DbStudioErrorSignalLog[]> {
     const builder = this.dbService
       .getConnection()
       .getRepository(StudioErrorSignalLog)

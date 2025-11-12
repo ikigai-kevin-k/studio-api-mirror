@@ -72,7 +72,7 @@ describe('StudioErrorSignalLogRepository', () => {
 
       (mockQueryBuilder.getRawMany as jest.Mock).mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getErrorSignalLogById(1, 1);
+      const result = await repository.getErrorSignalLogFromId(1, 1);
       expect(result).toBe(mockStudio);
     });
   });

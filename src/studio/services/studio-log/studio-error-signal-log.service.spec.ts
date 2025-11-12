@@ -9,7 +9,7 @@ import { StudioErrorSignalLogService } from './studio-error-signal-log.service';
 import { ErrorSignalLogServiceOutput } from './studio-error-signal-log.service.type';
 
 const mockStudioErrorSignalLogRepository = {
-  getErrorSignalLogById: jest.fn(),
+  getErrorSignalLogFromId: jest.fn(),
   insertErrorSignalLog: jest.fn(),
   resolveErrorSignalLogsByDeviceId: jest.fn(),
   getUnResolvedErrorSignalLogByDeviceId: jest.fn(),
@@ -69,13 +69,13 @@ describe('StudioErrorSignalLogService', () => {
         },
       ];
 
-      (mockStudioErrorSignalLogRepository.getErrorSignalLogById as jest.Mock).mockResolvedValueOnce(
-        mockResult,
-      );
+      (
+        mockStudioErrorSignalLogRepository.getErrorSignalLogFromId as jest.Mock
+      ).mockResolvedValueOnce(mockResult);
 
-      const result = await service.getLog(mockInput);
+      const result = await service.getLogsFromId(mockInput);
       expect(result).toEqual(mockOutput);
-      expect(mockStudioErrorSignalLogRepository.getErrorSignalLogById).toHaveBeenCalledWith(1, 5);
+      expect(mockStudioErrorSignalLogRepository.getErrorSignalLogFromId).toHaveBeenCalledWith(1, 5);
     });
   });
 
