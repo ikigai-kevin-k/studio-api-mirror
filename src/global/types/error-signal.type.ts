@@ -8,6 +8,7 @@ export type ErrorSignalMetaData = {
   suggestion?: string;
   timestamp?: number;
   signalType?: 'error' | 'warning';
+  tableCode?: string;
 };
 
 export type ErrorSignalInput = {

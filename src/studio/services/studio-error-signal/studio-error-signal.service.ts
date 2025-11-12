@@ -25,15 +25,14 @@ export class StudioErrorSignalService implements ModuleLifecycle {
   async onInit(): Promise<void> {}
 
   async forwardErrorSignal(deviceId: string, signal: StudioErrorSignalServiceInput) {
-    const { gameId, tableName } = await this.queryDeviceBelong(deviceId);
+    const { gameId, tableId, tableName } = await this.queryDeviceBelong(deviceId);
     const output = {
       ...signal,
       metadata: { ...signal.metadata },
     };
     output.metadata.gameCode = gameId;
     output.metadata.tableName = tableName;
-
-    // TODO: check for duplicate signals
+    output.metadata.tableCode = tableId;
 
     const log = await this.insertSignalLog(deviceId, output);
     output.metadata.signalId = log.id;
@@ -48,15 +47,18 @@ export class StudioErrorSignalService implements ModuleLifecycle {
   }
 
   async forwardResolveSignal(deviceId: string) {
-    const { gameId } = await this.queryDeviceBelong(deviceId);
+    const { gameId, tableId } = await this.queryDeviceBelong(deviceId);
     const result = await this.resolveErrorSignal(deviceId);
 
-    const timestamp = Date.now();
-    await this.kafkaLosSignalService.publishResolve({
-      signalIds: result.map((item) => item.id),
-      gameCode: gameId,
-      timestamp,
-    });
+    if (result.length > 0) {
+      const timestamp = Date.now();
+      await this.kafkaLosSignalService.publishResolve({
+        signalIds: result.map((item) => item.id),
+        gameCode: gameId,
+        tableCode: tableId,
+        timestamp,
+      });
+    }
 
     return result;
   }
@@ -77,7 +79,7 @@ export class StudioErrorSignalService implements ModuleLifecycle {
     }
 
     const tableName = await this.tableApiQueryService.getTableName(gameId);
-    return { gameId, tableName };
+    return { gameId, tableId, tableName };
   }
 
   private async resolveErrorSignal(deviceId: string) {
