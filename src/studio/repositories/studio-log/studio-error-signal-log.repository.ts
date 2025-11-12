@@ -1,7 +1,7 @@
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { DbService } from 'src/db/db.service';
 import { StudioErrorSignalLog } from 'src/studio/entities/studio-error-signal-log.entity';
-import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
+import { StudioUpdateError } from 'src/studio/errors/studio.error';
 import {
   DbStudioErrorSignalLog,
   StudioErrorSignalLogEntity,
@@ -22,12 +22,14 @@ type StudioErrorSignalLogSchema = {
 export class StudioErrorSignalLogRepository implements ModuleLifecycle {
   constructor(private readonly dbService: DbService) {}
 
-  async getErrorSignalLogById(id: number): Promise<DbStudioErrorSignalLog> {
+  async getErrorSignalLogFromId(id: number, limit: number): Promise<DbStudioErrorSignalLog[]> {
     const builder = this.dbService
       .getConnection()
       .getRepository(StudioErrorSignalLog)
       .createQueryBuilder('studio')
-      .where('studio.ID = :Id', { Id: id })
+      .where('studio.ID >= :Id', { Id: id })
+      .limit(limit)
+      .orderBy('studio.ID', 'ASC')
       .select([
         'studio."ID" as "id"',
         'studio."DEVICE_ID" as "deviceId"',
@@ -39,12 +41,7 @@ export class StudioErrorSignalLogRepository implements ModuleLifecycle {
         'studio."UPDATED_AT" as "updatedAt"',
       ]);
 
-    const output = await builder.getRawOne<DbStudioErrorSignalLog>();
-    if (!output) {
-      throw new StudioNotFoundError(`[studio_error_signal_log] sn: ${id} does not found`);
-    }
-
-    return output;
+    return await builder.getRawMany<DbStudioErrorSignalLog>();
   }
 
   async insertErrorSignalLog(entity: StudioErrorSignalLogEntity): Promise<DbStudioErrorSignalLog> {

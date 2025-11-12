@@ -9,10 +9,13 @@ const ErrorSignalLogResponseSchema = Type.Object({
   updatedAt: Type.String({ format: 'date-time' }),
 });
 
-export const GetStudioErrorSignalRequest = Type.Object({ signalId: Type.Number() });
+export const GetStudioErrorSignalRequest = Type.Object({
+  signalId: Type.Number(),
+  limit: Type.Number({ minimum: 1 }),
+});
 
 export type GetStudioErrorSignalRequestType = Static<typeof GetStudioErrorSignalRequest>;
 
-export const GetStudioErrorSignalResponse = ErrorSignalLogResponseSchema;
+export const GetStudioErrorSignalResponse = Type.Array(ErrorSignalLogResponseSchema);
 
 export type GetStudioErrorSignalResponseType = Static<typeof GetStudioErrorSignalResponse>;

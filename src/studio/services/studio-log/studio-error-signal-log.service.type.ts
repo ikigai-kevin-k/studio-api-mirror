@@ -1,5 +1,5 @@
 import { ErrorSignalInput } from 'src/global/types/error-signal.type';
-import { DeviceInput, SignalInput } from 'src/global/types/input.type';
+import { DeviceInput } from 'src/global/types/input.type';
 
 export type ErrorSignalLogServiceOutput = {
   id: number;
@@ -10,7 +10,10 @@ export type ErrorSignalLogServiceOutput = {
   updatedAt: Date;
 };
 
-export type GetErrorSignalLogServiceInput = SignalInput;
+export type GetErrorSignalLogServiceInput = {
+  signalId: number;
+  limit: number;
+};
 
 export type InsertErrorSignalLogServiceInput = {
   deviceId: string;

@@ -9,7 +9,7 @@ import { StudioErrorSignalLogService } from './studio-error-signal-log.service';
 import { ErrorSignalLogServiceOutput } from './studio-error-signal-log.service.type';
 
 const mockStudioErrorSignalLogRepository = {
-  getErrorSignalLogById: jest.fn(),
+  getErrorSignalLogFromId: jest.fn(),
   insertErrorSignalLog: jest.fn(),
   resolveErrorSignalLogsByDeviceId: jest.fn(),
   getUnResolvedErrorSignalLogByDeviceId: jest.fn(),
@@ -43,32 +43,39 @@ describe('StudioErrorSignalLogService', () => {
     it('should return a data from db', async () => {
       const currentTime = new Date();
 
-      const mockResult = {
-        id: 1,
-        deviceId: 'idp',
-        msgId: '',
-        content: '',
-        errorSignal: {},
-        resolved: false,
-        updatedAt: currentTime,
-        createdAt: currentTime,
-      };
+      const mockInput = { signalId: 1, limit: 5 };
 
-      const mockOutput: ErrorSignalLogServiceOutput = {
-        id: 1,
-        deviceId: 'idp',
-        errorSignal: { msgId: '', content: '', metadata: {} },
-        resolved: false,
-        updatedAt: currentTime,
-        createdAt: currentTime,
-      };
+      const mockResult = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          msgId: '',
+          content: '',
+          errorSignal: {},
+          resolved: false,
+          updatedAt: currentTime,
+          createdAt: currentTime,
+        },
+      ];
 
-      (mockStudioErrorSignalLogRepository.getErrorSignalLogById as jest.Mock).mockResolvedValueOnce(
-        mockResult,
-      );
+      const mockOutput: ErrorSignalLogServiceOutput[] = [
+        {
+          id: 1,
+          deviceId: 'idp',
+          errorSignal: { msgId: '', content: '', metadata: {} },
+          resolved: false,
+          updatedAt: currentTime,
+          createdAt: currentTime,
+        },
+      ];
 
-      const result = await service.getLog(1);
+      (
+        mockStudioErrorSignalLogRepository.getErrorSignalLogFromId as jest.Mock
+      ).mockResolvedValueOnce(mockResult);
+
+      const result = await service.getLogsFromId(mockInput);
       expect(result).toEqual(mockOutput);
+      expect(mockStudioErrorSignalLogRepository.getErrorSignalLogFromId).toHaveBeenCalledWith(1, 5);
     });
   });
 
