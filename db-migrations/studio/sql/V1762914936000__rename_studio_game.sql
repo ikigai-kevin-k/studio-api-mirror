@@ -1,0 +1,19 @@
+ALTER TABLE "studio_game" 
+    RENAME COLUMN "GAME_ID" TO "PHYSICAL_TABLE_CODE";
+
+ALTER TABLE "studio_game" 
+    RENAME COLUMN "PRIMARY_TABLE_ID" TO "PRIMARY_PHYSICAL_TABLE_ID";
+
+ALTER TABLE "studio_game" 
+    RENAME COLUMN "SECONDARY_TABLE_ID" TO "SECONDARY_PHYSICAL_TABLE_ID";
+
+ALTER TABLE "studio_game" 
+    RENAME COLUMN "CURRENT_TABLE_ID" TO "CURRENT_PHYSICAL_TABLE_ID";
+
+ALTER TABLE "studio_game" 
+    RENAME CONSTRAINT "uq_studio_game_game_id" TO "uq_studio_game_physical_table_code";
+
+COMMENT ON COLUMN "studio_game"."PHYSICAL_TABLE_CODE" IS 'Unique Physical Table Code';
+COMMENT ON COLUMN "studio_game"."PRIMARY_PHYSICAL_TABLE_ID" IS 'Primary Physical Table ID';
+COMMENT ON COLUMN "studio_game"."SECONDARY_PHYSICAL_TABLE_ID" IS 'Secondary Physical Table ID';
+COMMENT ON COLUMN "studio_game"."CURRENT_PHYSICAL_TABLE_ID" IS 'Current Physical Table ID';
