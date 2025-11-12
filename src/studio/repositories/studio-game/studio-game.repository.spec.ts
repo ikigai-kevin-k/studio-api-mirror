@@ -126,10 +126,10 @@ describe('StudioGameRepository', () => {
         affected: 1,
         raw: [
           {
-            GAME_ID: gameCode,
-            PRIMARY_TABLE_ID: 'tableCode-1',
-            SECONDARY_TABLE_ID: 'tableCode-2',
-            CURRENT_TABLE_ID: 'tableCode-1',
+            PHYSICAL_TABLE_CODE: gameCode,
+            PRIMARY_PHYSICAL_TABLE_ID: 'tableCode-1',
+            SECONDARY_PHYSICAL_TABLE_ID: 'tableCode-2',
+            CURRENT_PHYSICAL_TABLE_ID: 'tableCode-1',
           },
         ],
       };
@@ -163,10 +163,10 @@ describe('StudioGameRepository', () => {
         affected: 1,
         raw: [
           {
-            GAME_ID: gameCode,
-            PRIMARY_TABLE_ID: 'tableCode-1',
-            SECONDARY_TABLE_ID: 'tableCode-2',
-            CURRENT_TABLE_ID: 'tableCode-1',
+            PHYSICAL_TABLE_CODE: gameCode,
+            PRIMARY_PHYSICAL_TABLE_ID: 'tableCode-1',
+            SECONDARY_PHYSICAL_TABLE_ID: 'tableCode-2',
+            CURRENT_PHYSICAL_TABLE_ID: 'tableCode-1',
           },
         ],
       };

@@ -20,7 +20,7 @@ export class StudioGame {
   id!: number;
 
   @Column({
-    name: 'GAME_ID',
+    name: 'PHYSICAL_TABLE_CODE',
     type: 'varchar',
     length: 255,
     comment: 'Unique Game Code',
@@ -28,7 +28,7 @@ export class StudioGame {
   gameId!: string;
 
   @Column({
-    name: 'PRIMARY_TABLE_ID',
+    name: 'PRIMARY_PHYSICAL_TABLE_ID',
     type: 'varchar',
     length: 255,
     comment: 'Primary Table ID',
@@ -36,7 +36,7 @@ export class StudioGame {
   primaryTableId!: string;
 
   @Column({
-    name: 'SECONDARY_TABLE_ID',
+    name: 'SECONDARY_PHYSICAL_TABLE_ID',
     type: 'varchar',
     length: 255,
     comment: 'Secondary Table ID',
@@ -44,7 +44,7 @@ export class StudioGame {
   secondaryTableId!: string;
 
   @Column({
-    name: 'CURRENT_TABLE_ID',
+    name: 'CURRENT_PHYSICAL_TABLE_ID',
     type: 'varchar',
     length: 255,
     comment: 'Current Table ID',
