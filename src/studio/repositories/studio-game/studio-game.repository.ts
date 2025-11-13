@@ -7,10 +7,10 @@ import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio
 import { DbStudioGameResult, StudioGameEntity } from './studio-game.repository.type';
 
 type StudioGameSchema = {
-  GAME_ID: string;
-  PRIMARY_TABLE_ID: string;
-  SECONDARY_TABLE_ID: string;
-  CURRENT_TABLE_ID: string;
+  PHYSICAL_TABLE_CODE: string;
+  PRIMARY_PHYSICAL_TABLE_ID: string;
+  SECONDARY_PHYSICAL_TABLE_ID: string;
+  CURRENT_PHYSICAL_TABLE_ID: string;
 };
 
 const schema: Schema<DbStudioGameResult> = {
@@ -34,12 +34,12 @@ export class StudioGameRepository implements ModuleLifecycle {
       .getConnection()
       .getRepository(StudioGame)
       .createQueryBuilder('studio')
-      .where('studio.GAME_ID = :gameID', { gameID })
+      .where('studio.PHYSICAL_TABLE_CODE = :gameID', { gameID })
       .select([
-        'studio."GAME_ID" as "gameId"',
-        'studio."PRIMARY_TABLE_ID" as "primaryTableId"',
-        'studio."SECONDARY_TABLE_ID" as "secondaryTableId"',
-        'studio."CURRENT_TABLE_ID" as "currentTableId"',
+        'studio."PHYSICAL_TABLE_CODE" as "gameId"',
+        'studio."PRIMARY_PHYSICAL_TABLE_ID" as "primaryTableId"',
+        'studio."SECONDARY_PHYSICAL_TABLE_ID" as "secondaryTableId"',
+        'studio."CURRENT_PHYSICAL_TABLE_ID" as "currentTableId"',
       ]);
 
     const output = await builder.getRawOne<DbStudioGameResult>();
@@ -64,10 +64,10 @@ export class StudioGameRepository implements ModuleLifecycle {
 
     const data = result.raw[0] as StudioGameSchema;
     const output = {
-      gameId: data.GAME_ID,
-      primaryTableId: data.PRIMARY_TABLE_ID,
-      secondaryTableId: data.SECONDARY_TABLE_ID,
-      currentTableId: data.CURRENT_TABLE_ID,
+      gameId: data.PHYSICAL_TABLE_CODE,
+      primaryTableId: data.PRIMARY_PHYSICAL_TABLE_ID,
+      secondaryTableId: data.SECONDARY_PHYSICAL_TABLE_ID,
+      currentTableId: data.CURRENT_PHYSICAL_TABLE_ID,
     };
 
     await this.refreshCache(output.gameId, output);
@@ -109,10 +109,10 @@ export class StudioGameRepository implements ModuleLifecycle {
 
     const data = updateResult.raw[0] as StudioGameSchema;
     const output = {
-      gameId: data.GAME_ID,
-      primaryTableId: data.PRIMARY_TABLE_ID,
-      secondaryTableId: data.SECONDARY_TABLE_ID,
-      currentTableId: data.CURRENT_TABLE_ID,
+      gameId: data.PHYSICAL_TABLE_CODE,
+      primaryTableId: data.PRIMARY_PHYSICAL_TABLE_ID,
+      secondaryTableId: data.SECONDARY_PHYSICAL_TABLE_ID,
+      currentTableId: data.CURRENT_PHYSICAL_TABLE_ID,
     };
 
     await this.refreshCache(gameId, output);
