@@ -60,7 +60,7 @@ DO $$ BEGIN
 END $$;
 
 
-DROP INDEX IF EXISTS uq_studio_game_game_id; 
+ALTER TABLE studio_game DROP CONSTRAINT IF EXISTS uq_studio_game_physical_table_code;
 CREATE UNIQUE INDEX IF NOT EXISTS uq_studio_game_physical_table_code ON "studio_game" ("PHYSICAL_TABLE_CODE"); 
 
 COMMENT ON COLUMN "studio_game"."PHYSICAL_TABLE_CODE" IS 'Unique Physical Table Code';
