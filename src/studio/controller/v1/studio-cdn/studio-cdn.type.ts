@@ -12,42 +12,36 @@ export const CdnSet = Type.Object({
   secondary: CdnList,
 });
 
-export const GetStudioTableCdnRequest = Type.Object({
+const QuerySchema = Type.Object({
   tableId: Type.String(),
 });
-export type GetStudioTableCdnRequestType = Static<typeof GetStudioTableCdnRequest>;
 
-export const GetStudioTableCdnResponse = Type.Object({
+const UpsertSchema = Type.Object({
   tableId: Type.String(),
   cdnDst: CdnSet,
 });
 
+const ResponseSchema = Type.Object({
+  tableId: Type.String(),
+  cdnDst: CdnSet,
+});
+
+export const GetStudioTableCdnRequest = QuerySchema;
+export type GetStudioTableCdnRequestType = Static<typeof GetStudioTableCdnRequest>;
+export const GetStudioTableCdnResponse = ResponseSchema;
 export type GetStudioTableCdnResponseType = Static<typeof GetStudioTableCdnResponse>;
 
-export const InsertStudioTableCdnRequest = Type.Object({
-  tableId: Type.String(),
-  cdnDst: CdnSet,
-});
+export const GetStudioTableStreamRequest = QuerySchema;
+export type GetStudioTableStreamRequestType = Static<typeof GetStudioTableStreamRequest>;
+export const GetStudioTableStreamResponse = ResponseSchema;
+export type GetStudioTableStreamResponseType = Static<typeof GetStudioTableStreamResponse>;
 
-export type InsertStudioTableCdnRequestType = Static<typeof InsertStudioTableCdnRequest>;
+export const InsertStudioTableStreamRequest = UpsertSchema;
+export type InsertStudioTableStreamRequestType = Static<typeof InsertStudioTableStreamRequest>;
+export const InsertStudioTableStreamResponse = ResponseSchema;
+export type InsertStudioTableStreamResponseType = Static<typeof InsertStudioTableStreamResponse>;
 
-export const InsertStudioTableCdnResponse = Type.Object({
-  tableId: Type.String(),
-  cdnDst: CdnSet,
-});
-
-export type InsertStudioTableCdnResponseType = Static<typeof InsertStudioTableCdnResponse>;
-
-export const UpdateStudioTableCdnRequest = Type.Object({
-  tableId: Type.String(),
-  cdnDst: CdnSet,
-});
-
-export type UpdateStudioTableCdnRequestType = Static<typeof UpdateStudioTableCdnRequest>;
-
-export const UpdateStudioTableCdnResponse = Type.Object({
-  tableId: Type.String(),
-  cdnDst: CdnSet,
-});
-
-export type UpdateStudioTableCdnResponseType = Static<typeof UpdateStudioTableCdnResponse>;
+export const UpdateStudioTableStreamRequest = UpsertSchema;
+export type UpdateStudioTableStreamRequestType = Static<typeof UpdateStudioTableStreamRequest>;
+export const UpdateStudioTableStreamResponse = ResponseSchema;
+export type UpdateStudioTableStreamResponseType = Static<typeof UpdateStudioTableStreamResponse>;

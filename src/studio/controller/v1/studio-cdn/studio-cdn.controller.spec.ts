@@ -7,12 +7,13 @@ import { StudioCdnController } from 'src/studio/controller/v1/studio-cdn/studio-
 import {
   GetStudioTableCdnRequestType,
   GetStudioTableCdnResponseType,
-  InsertStudioTableCdnRequestType,
-  InsertStudioTableCdnResponseType,
-  UpdateStudioTableCdnRequestType,
-  UpdateStudioTableCdnResponseType,
+  InsertStudioTableStreamRequestType,
+  InsertStudioTableStreamResponseType,
+  UpdateStudioTableStreamRequestType,
+  UpdateStudioTableStreamResponseType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
+import { StudioGameService } from 'src/studio/services/studio-game/studio-game.service';
 import { TableApiForwardService } from 'src/table-api/services/table-api-forward/table-api-forward.service';
 
 const mockFastify = {
@@ -21,6 +22,10 @@ const mockFastify = {
   patch: jest.fn(),
   register: jest.fn((callback) => callback(mockFastify)),
 } as unknown as FastifyInstance;
+
+const mockStudioGameService = {
+  getGame: jest.fn(),
+} as unknown as StudioGameService;
 
 const mockStudioCdnService = {
   getTableCdn: jest.fn(),
@@ -50,6 +55,7 @@ describe('StudioCdnController', () => {
 
   beforeEach(() => {
     controller = new StudioCdnController(
+      mockStudioGameService,
       mockStudioCdnService,
       mockTableApiForwardService,
       mockPreHandlersService,
@@ -64,20 +70,9 @@ describe('StudioCdnController', () => {
       await controller.onInit();
 
       expect(mockRouterService.app.register).toHaveBeenCalledTimes(1);
-      expect(mockFastify.get).toHaveBeenCalledTimes(1);
-      expect(mockFastify.get).toHaveBeenCalledTimes(1);
-
-      expect(mockFastify.get).toHaveBeenCalledWith(
-        RoutesEnum.V1_STUDIO_TABLE_CDN,
-        expect.any(Object),
-        expect.any(Function),
-      );
-
-      expect(mockFastify.post).toHaveBeenCalledWith(
-        RoutesEnum.V1_STUDIO_TABLE_CDN,
-        expect.any(Object),
-        expect.any(Function),
-      );
+      expect(mockFastify.get).toHaveBeenCalledTimes(2);
+      expect(mockFastify.post).toHaveBeenCalledTimes(1);
+      expect(mockFastify.patch).toHaveBeenCalledTimes(1);
     });
 
     it('should handle getTableCdn request and format response correctly', async () => {
@@ -100,11 +95,17 @@ describe('StudioCdnController', () => {
           },
         },
       };
+      const mockStudioGameServiceResult = {
+        currentTableId: 'UniTest',
+      };
       const expectedControllerResponse: GetStudioTableCdnResponseType = {
         tableId: 'UniTest',
         cdnDst: mockServiceResponse.cdnDst,
       };
 
+      (mockStudioGameService.getGame as jest.Mock).mockResolvedValueOnce(
+        mockStudioGameServiceResult,
+      );
       (mockStudioCdnService.getTableCdn as jest.Mock).mockResolvedValue(mockServiceResponse);
 
       const getTableCdnHandler = (mockFastify.get as jest.Mock).mock.calls[0][2];
@@ -116,7 +117,7 @@ describe('StudioCdnController', () => {
 
     it('should handle insertTableCdn request and return the correct response', async () => {
       await controller.onInit();
-      const mockRequestBody: InsertStudioTableCdnRequestType = {
+      const mockRequestBody: InsertStudioTableStreamRequestType = {
         tableId: 'uniTest',
         cdnDst: {
           primary: {
@@ -133,7 +134,7 @@ describe('StudioCdnController', () => {
           },
         },
       };
-      const expectedControllerResponse: InsertStudioTableCdnResponseType = {
+      const expectedControllerResponse: InsertStudioTableStreamResponseType = {
         tableId: 'uniTest',
         cdnDst: mockRequestBody.cdnDst,
       };
@@ -151,7 +152,7 @@ describe('StudioCdnController', () => {
 
     it('should handle updateTableCdn request and return the correct response', async () => {
       await controller.onInit();
-      const mockRequestBody: UpdateStudioTableCdnRequestType = {
+      const mockRequestBody: UpdateStudioTableStreamRequestType = {
         tableId: 'uniTest',
         cdnDst: {
           primary: {
@@ -168,7 +169,7 @@ describe('StudioCdnController', () => {
           },
         },
       };
-      const expectedControllerResponse: UpdateStudioTableCdnResponseType = {
+      const expectedControllerResponse: UpdateStudioTableStreamResponseType = {
         tableId: 'uniTest',
         cdnDst: mockRequestBody.cdnDst,
       };
@@ -187,7 +188,7 @@ describe('StudioCdnController', () => {
 
   describe('getTableCdn', () => {
     it('should register the correct route with schema and preHandler', () => {
-      controller.getTableCdn(mockFastify);
+      controller.getGameCdn(mockFastify);
       expect(mockFastify.get).toHaveBeenCalledWith(
         RoutesEnum.V1_STUDIO_TABLE_CDN,
         expect.objectContaining({
@@ -199,11 +200,25 @@ describe('StudioCdnController', () => {
     });
   });
 
-  describe('insertTableCdn', () => {
+  describe('getTableStream', () => {
     it('should register the correct route with schema and preHandler', () => {
-      controller.insertTableCdn(mockFastify);
+      controller.getTableStream(mockFastify);
+      expect(mockFastify.get).toHaveBeenCalledWith(
+        RoutesEnum.V1_STUDIO_TABLE_STREAM,
+        expect.objectContaining({
+          schema: expect.any(Object),
+          preHandler: [expect.any(Function)],
+        }),
+        expect.any(Function),
+      );
+    });
+  });
+
+  describe('insertTableStream', () => {
+    it('should register the correct route with schema and preHandler', () => {
+      controller.insertTableStream(mockFastify);
       expect(mockFastify.post).toHaveBeenCalledWith(
-        RoutesEnum.V1_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_STREAM,
         expect.objectContaining({
           schema: expect.any(Object),
           preHandler: [expect.any(Function)],
@@ -215,9 +230,9 @@ describe('StudioCdnController', () => {
 
   describe('updateTableCdn', () => {
     it('should register the correct route with schema and preHandler', () => {
-      controller.updateTableCdn(mockFastify);
+      controller.updateTableStream(mockFastify);
       expect(mockFastify.patch).toHaveBeenCalledWith(
-        RoutesEnum.V1_STUDIO_TABLE_CDN,
+        RoutesEnum.V1_STUDIO_TABLE_STREAM,
         expect.objectContaining({
           schema: expect.any(Object),
           preHandler: [expect.any(Function)],

@@ -2,9 +2,9 @@ import { LoggerService } from '@ikigaians/logger';
 import { ModuleLifecycle } from '@ikigaians/mod';
 import { CacheService } from 'src/cache/cache.service';
 import {
-  GetStudioTableCdnRequestType,
-  InsertStudioTableCdnRequestType,
-  UpdateStudioTableCdnRequestType,
+  GetStudioTableStreamRequestType,
+  InsertStudioTableStreamRequestType,
+  UpdateStudioTableStreamRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
 import { StudioNotFoundError } from 'src/studio/errors/studio.error';
@@ -27,7 +27,7 @@ export class StudioCdnService implements ModuleLifecycle {
     private readonly logger: LoggerService,
   ) {}
 
-  async getTableCdn(type: GetStudioTableCdnRequestType): Promise<GetStudioCdnServiceOutput> {
+  async getTableCdn(type: GetStudioTableStreamRequestType): Promise<GetStudioCdnServiceOutput> {
     const output = await this.getCache(type.tableId);
     if (!output) {
       throw new StudioNotFoundError(`table ${type.tableId} not found`);
@@ -36,7 +36,7 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   async insertTableCdn(
-    type: InsertStudioTableCdnRequestType,
+    type: InsertStudioTableStreamRequestType,
   ): Promise<InsertStudioCdnServiceOutput> {
     const studio: StudioCdn = new StudioCdn();
     studio.tableId = type.tableId;
@@ -49,7 +49,7 @@ export class StudioCdnService implements ModuleLifecycle {
   }
 
   async updateTableCdn(
-    type: UpdateStudioTableCdnRequestType,
+    type: UpdateStudioTableStreamRequestType,
   ): Promise<UpdateStudioCdnServiceOutput> {
     const entity: UpdateTableCdnEntity = {
       tableId: type.tableId,

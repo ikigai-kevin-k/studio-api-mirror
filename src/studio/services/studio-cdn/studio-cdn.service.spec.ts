@@ -6,9 +6,9 @@
 import { LoggerService } from '@ikigaians/logger';
 import { CacheService } from 'src/cache/cache.service';
 import {
-  GetStudioTableCdnRequestType,
-  InsertStudioTableCdnRequestType,
-  UpdateStudioTableCdnRequestType,
+  GetStudioTableStreamRequestType,
+  InsertStudioTableStreamRequestType,
+  UpdateStudioTableStreamRequestType,
 } from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
 import { StudioNotFoundError } from 'src/studio/errors/studio.error';
 import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
@@ -152,7 +152,7 @@ describe('StudioCdnService', () => {
       };
       spyGetCache.mockResolvedValue(mockCacheOutput);
 
-      const request: GetStudioTableCdnRequestType = { tableId: 'cdn1' };
+      const request: GetStudioTableStreamRequestType = { tableId: 'cdn1' };
       const result = await service.getTableCdn(request);
 
       expect(spyGetCache).toHaveBeenCalledWith('cdn1');
@@ -163,7 +163,7 @@ describe('StudioCdnService', () => {
       const spyGetCache = jest.spyOn(service, 'getCache');
       spyGetCache.mockResolvedValue(undefined);
 
-      const request: GetStudioTableCdnRequestType = { tableId: 'non-existent' };
+      const request: GetStudioTableStreamRequestType = { tableId: 'non-existent' };
       await expect(service.getTableCdn(request)).rejects.toThrow(StudioNotFoundError);
       expect(spyGetCache).toHaveBeenCalledWith('non-existent');
     });
@@ -171,7 +171,7 @@ describe('StudioCdnService', () => {
 
   describe('insertTableCdn', () => {
     it('should insert a new CDN entry and refresh cache', async () => {
-      const request: InsertStudioTableCdnRequestType = {
+      const request: InsertStudioTableStreamRequestType = {
         tableId: 'cdn-new',
         cdnDst: {
           primary: {
@@ -219,7 +219,7 @@ describe('StudioCdnService', () => {
 
   describe('updateTableCdn', () => {
     it('should update an existing CDN entry and refresh cache', async () => {
-      const request: UpdateStudioTableCdnRequestType = {
+      const request: UpdateStudioTableStreamRequestType = {
         tableId: 'test',
         cdnDst: {
           primary: {
@@ -250,7 +250,7 @@ describe('StudioCdnService', () => {
     });
 
     it('should throw StudioNotFoundError if no entry is updated', async () => {
-      const request: UpdateStudioTableCdnRequestType = {
+      const request: UpdateStudioTableStreamRequestType = {
         tableId: 'non-existent',
         cdnDst: {
           primary: {
