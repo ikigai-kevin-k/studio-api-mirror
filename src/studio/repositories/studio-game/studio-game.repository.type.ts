@@ -1,12 +1,12 @@
 export type DbStudioGameResult = {
-  gameId: string;
+  physicalTableCode: string;
   primaryTableId: string;
   secondaryTableId: string;
   currentTableId: string;
 };
 
 export type StudioGameEntity = {
-  gameId: string;
+  physicalTableCode: string;
   primaryTableId?: string;
   secondaryTableId?: string;
   currentTableId?: string;

@@ -1,21 +1,13 @@
-interface TableCdnSet {
-  lo: string;
-  me: string;
-  hi: string;
-  hd: string;
-}
+import { CdnSet } from 'src/global/types/cdn.type';
 
-export type TableCdnSchema = {
-  TABLE_ID: string;
-  CDN: Record<string, TableCdnSet>;
-};
+export type TableCdnSet = CdnSet;
 
-export type TableCdnResult = {
+export type DbStudioCdnResult = {
   tableId: string;
   cdnDst: Record<string, TableCdnSet>;
 };
 
-export type UpdateTableCdnEntity = {
+export type StudioCdnEntity = {
   tableId: string;
   cdnDst: Record<string, TableCdnSet>;
 };

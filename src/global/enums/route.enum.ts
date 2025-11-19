@@ -8,6 +8,8 @@ export enum RoutesEnum {
   V1_STUDIO_GAME = '/v1/service/game',
   V1_STUDIO_ERROR_SIGNAL_LOG = '/v1/service/signal',
 
+  V2_STUDIO_TABLE_CDN = '/v2/service/cdn',
+
   // ws
   V1_WS_CONNECT = '/v1/ws',
 }

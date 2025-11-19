@@ -63,12 +63,12 @@ export class TableApiForwardService {
   }
 
   private async queryForwardGameCode(tableCode: string) {
-    const gameId = await this.studioService.getStudioTableBelongTo(tableCode);
-    if (!gameId) {
+    const physicalTableCode = await this.studioService.getStudioTableBelongTo(tableCode);
+    if (!physicalTableCode) {
       throw new StudioNotFoundError(`tableCode ${tableCode} does not belong to any gameCode`);
     }
 
-    const game = await this.studioGameService.getGame({ gameId });
-    return game.currentTableId === tableCode ? gameId : '';
+    const game = await this.studioGameService.getGame({ physicalTableCode: physicalTableCode });
+    return game.currentTableId === tableCode ? physicalTableCode : '';
   }
 }

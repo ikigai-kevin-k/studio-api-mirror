@@ -35,6 +35,9 @@ export const InjectionTokensEnum = {
 
   STUDIO_DEVICE_STATUS_OBSERVER: 'studioDeviceStatusObserver',
 
+  STUDIO_STREAM_CONTROLLER: 'studioStreamController',
+  STUDIO_CDN_CONTROLLER_V2: 'studioCdnControllerV2',
+
   GLOBAL_QUEUE_SERVICE: 'globalQueueService',
   GLOBAL_KAFKA_HUB: 'globalKafkaHub',
   KAFKA_LOS_SIGNAL_SERVICE: 'kafkaLosSignalService',

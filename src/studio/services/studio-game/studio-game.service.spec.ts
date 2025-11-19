@@ -13,7 +13,7 @@ import {
 } from './studio-game.service.type';
 
 const mockStudioGameRepository = {
-  getGameByID: jest.fn(),
+  getGameByPhysicalTableCode: jest.fn(),
   insertGame: jest.fn(),
   updateGame: jest.fn(),
 } as unknown as StudioGameRepository;
@@ -40,17 +40,19 @@ describe('StudioGameService', () => {
   describe('getGame', () => {
     it('should return game data by id', async () => {
       const input: GetStudioGameServiceInput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
       };
 
       const output: StudioGameServiceOutput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
       };
 
-      (mockStudioGameRepository.getGameByID as jest.Mock).mockResolvedValueOnce(output);
+      (mockStudioGameRepository.getGameByPhysicalTableCode as jest.Mock).mockResolvedValueOnce(
+        output,
+      );
 
       const result = await service.getGame(input);
       expect(result).toBe(output);
@@ -60,14 +62,14 @@ describe('StudioGameService', () => {
   describe('insertGame', () => {
     it('should insert a new game', async () => {
       const input: InsertStudioGameServiceInput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
       };
 
       const output: StudioGameServiceOutput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -83,14 +85,14 @@ describe('StudioGameService', () => {
   describe('updateGame', () => {
     it('should update a game entity', async () => {
       const input: UpdateStudioGameServiceInput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
       };
 
       const output: StudioGameServiceOutput = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -108,26 +110,28 @@ describe('StudioGameService', () => {
     it('should switch to secondary if input is primary', async () => {
       const gameCode = 'gameCode';
       const mockResultBefore = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
       };
 
       const mockResultAfter = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-2',
       };
 
-      (mockStudioGameRepository.getGameByID as jest.Mock).mockResolvedValueOnce(mockResultBefore);
+      (mockStudioGameRepository.getGameByPhysicalTableCode as jest.Mock).mockResolvedValueOnce(
+        mockResultBefore,
+      );
       (mockStudioGameRepository.updateGame as jest.Mock).mockResolvedValueOnce(mockResultAfter);
 
       const result = await service.switchCurrentTable(gameCode);
       expect(result).toEqual('tableCode-2');
       expect(mockStudioGameRepository.updateGame).toHaveBeenLastCalledWith({
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         currentTableId: 'tableCode-2',
       });
     });
@@ -135,26 +139,28 @@ describe('StudioGameService', () => {
     it('should switch to primary if input is secondary', async () => {
       const gameCode = 'gameCode';
       const mockResultBefore = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-2',
         secondaryTableId: 'tableCode-1',
         currentTableId: 'tableCode-1',
       };
 
       const mockResultAfter = {
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         primaryTableId: 'tableCode-2',
         secondaryTableId: 'tableCode-1',
         currentTableId: 'tableCode-2',
       };
 
-      (mockStudioGameRepository.getGameByID as jest.Mock).mockResolvedValueOnce(mockResultBefore);
+      (mockStudioGameRepository.getGameByPhysicalTableCode as jest.Mock).mockResolvedValueOnce(
+        mockResultBefore,
+      );
       (mockStudioGameRepository.updateGame as jest.Mock).mockResolvedValueOnce(mockResultAfter);
 
       const result = await service.switchCurrentTable(gameCode);
       expect(result).toEqual('tableCode-2');
       expect(mockStudioGameRepository.updateGame).toHaveBeenLastCalledWith({
-        gameId: 'gameCode',
+        physicalTableCode: 'gameCode',
         currentTableId: 'tableCode-2',
       });
     });

@@ -1,11 +1,3 @@
-type CdnSet = {
-  lo: string;
-  me: string;
-  hi: string;
-  hd: string;
-};
+import { CdnOutput } from 'src/global/types/cdn.type';
 
-export type TableApiForwardInput = {
-  primary: CdnSet;
-  secondary: CdnSet;
-};
+export type TableApiForwardInput = CdnOutput;
