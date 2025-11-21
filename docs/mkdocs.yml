@@ -1,0 +1,79 @@
+site_name: Studio API Documentation
+site_description: Studio API 完整文檔 - WebSocket 和 HTTP API 使用指南
+site_author: Studio API Team
+site_url: https://ikigai-kevin-k.github.io/studio-api-mirror/
+
+repo_name: studio-api-mirror
+repo_url: https://github.com/ikigai-kevin-k/studio-api-mirror
+edit_uri: edit/main/docs/docs/
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+    - content.code.annotate
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+
+plugins:
+  - search
+  - mermaid2
+
+nav:
+  - 首頁: index.md
+  - 快速開始: getting-started.md
+  - API 文檔:
+    - 概述: api/overview.md
+    - 認證: api/authentication.md
+    - HTTP API:
+      - 設備管理: api/http/device.md
+      - 狀態管理: api/http/status.md
+    - WebSocket API:
+      - 連接設置: api/websocket/connection.md
+      - 設備註冊: api/websocket/device-registration.md
+      - 狀態更新: api/websocket/status-update.md
+      - 錯誤信號: api/websocket/error-signal.md
+  - 範例:
+    - JavaScript/TypeScript: examples/javascript.md
+    - Python: examples/python.md
+    - cURL: examples/curl.md
+  - 參考資料:
+    - 錯誤碼: reference/error-codes.md
+    - 狀態枚舉: reference/status-enums.md
+    - WebSocket 事件: reference/websocket-events.md
