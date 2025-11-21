@@ -39,6 +39,7 @@ db-migrations/*/sql-out
 
 # dotenv environment variable files
 .env
+.env.example
 .env.development.local
 .env.test.local
 .env.production.local
