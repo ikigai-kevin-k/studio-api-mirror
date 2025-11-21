@@ -16,7 +16,7 @@ export class StudioGameService implements ModuleLifecycle {
   ) {}
 
   async getGame(input: GetStudioGameServiceInput): Promise<StudioGameServiceOutput> {
-    return await this.studioGameRepository.getGameByID(input.gameId);
+    return await this.studioGameRepository.getGameByPhysicalTableCode(input.physicalTableCode);
   }
 
   async insertGame(input: InsertStudioGameServiceInput): Promise<StudioGameServiceOutput> {
@@ -27,14 +27,14 @@ export class StudioGameService implements ModuleLifecycle {
     return await this.studioGameRepository.updateGame(input);
   }
 
-  async switchCurrentTable(gameCode: string) {
-    const game = await this.studioGameRepository.getGameByID(gameCode);
+  async switchCurrentTable(physicalTableCode: string) {
+    const game = await this.studioGameRepository.getGameByPhysicalTableCode(physicalTableCode);
     if (!game) {
-      throw new StudioNotFoundError(`[studio_game] gameCode ${gameCode} doesn't exist`);
+      throw new StudioNotFoundError(`[studio_game] gameCode ${physicalTableCode} doesn't exist`);
     }
 
     const entity = {
-      gameId: gameCode,
+      physicalTableCode: physicalTableCode,
       currentTableId:
         game.currentTableId === game.primaryTableId ? game.secondaryTableId : game.primaryTableId,
     };

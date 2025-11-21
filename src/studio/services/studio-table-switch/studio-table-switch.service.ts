@@ -35,17 +35,17 @@ export class StudioTableSwitchService implements ModuleLifecycle {
     const deviceId = input.deviceId;
     const tableId = await this.studioDeviceDataService.getDeviceBelongTo(deviceId);
 
-    const gameId = await this.studioService.getStudioTableBelongTo(tableId);
-    if (!gameId) {
+    const physicalTableCode = await this.studioService.getStudioTableBelongTo(tableId);
+    if (!physicalTableCode) {
       throw new StudioInvalidStateError(`table ${tableId} does not belong to any game !`);
     }
 
-    const game = await this.studioGameService.getGame({ gameId });
+    const game = await this.studioGameService.getGame({ physicalTableCode });
     const targetTableId =
       game.primaryTableId === tableId ? game.secondaryTableId : game.primaryTableId;
 
     if (targetTableId !== game.currentTableId) {
-      await this.studioGameService.switchCurrentTable(gameId);
+      await this.studioGameService.switchCurrentTable(physicalTableCode);
     }
 
     const targetDevice = await this.studioDeviceDataRepository.getDeviceByTableID(targetTableId);
@@ -53,7 +53,7 @@ export class StudioTableSwitchService implements ModuleLifecycle {
     await this.kafkaStudioSwitchService.publish(targetDevice.deviceId);
 
     const cdn = await this.studioCdnService.getTableCdn({ tableId: targetTableId });
-    await this.tableApiForwardService.forwardCDN(gameId, {
+    await this.tableApiForwardService.forwardCDN(physicalTableCode, {
       primary: cdn.cdnDst['primary'],
       secondary: cdn.cdnDst['secondary'],
     });

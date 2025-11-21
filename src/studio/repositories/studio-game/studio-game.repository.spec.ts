@@ -63,11 +63,11 @@ describe('StudioGameRepository', () => {
     });
   });
 
-  describe('getGameByID', () => {
+  describe('physicalTableCode', () => {
     it('should return a game object from cache', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -76,7 +76,7 @@ describe('StudioGameRepository', () => {
       const spyGetCache = jest.spyOn(repository as any, 'getCache');
       spyGetCache.mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getGameByID('gameCode');
+      const result = await repository.getGameByPhysicalTableCode('gameCode');
       expect(result).toBe(mockStudio);
       expect(mockQueryBuilder.getRawOne).not.toHaveBeenCalled();
     });
@@ -84,7 +84,7 @@ describe('StudioGameRepository', () => {
     it('should return a game object from db if cache does not hit', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -97,7 +97,7 @@ describe('StudioGameRepository', () => {
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getGameByID('gameCode');
+      const result = await repository.getGameByPhysicalTableCode('gameCode');
       expect(result).toBe(mockStudio);
       expect(spyRefreshCache).toHaveBeenCalledWith(gameCode, mockStudio);
     });
@@ -109,7 +109,9 @@ describe('StudioGameRepository', () => {
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(undefined);
 
-      await expect(repository.getGameByID(gameCode)).rejects.toThrow(StudioNotFoundError);
+      await expect(repository.getGameByPhysicalTableCode(gameCode)).rejects.toThrow(
+        StudioNotFoundError,
+      );
     });
   });
 
@@ -117,7 +119,7 @@ describe('StudioGameRepository', () => {
     it('should return a game object from db', async () => {
       const gameCode = 'gameCode';
       const mockEntity: StudioGameEntity = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -140,7 +142,7 @@ describe('StudioGameRepository', () => {
 
       const result = await repository.insertGame(mockEntity);
       expect(result).toEqual({
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -154,7 +156,7 @@ describe('StudioGameRepository', () => {
     it('should update a game object to db', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -175,7 +177,7 @@ describe('StudioGameRepository', () => {
 
       const result = await repository.updateGame(mockUpdateEntity);
       expect(result).toEqual({
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -185,7 +187,7 @@ describe('StudioGameRepository', () => {
     it('should update a game object to db', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
       };
 
       await expect(repository.updateGame(mockUpdateEntity)).rejects.toThrow(StudioUpdateError);
@@ -194,7 +196,7 @@ describe('StudioGameRepository', () => {
     it('should throw an error if none modified', async () => {
       const gameCode = 'gameCode';
       const mockUpdateEntity: StudioGameEntity = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -220,7 +222,7 @@ describe('StudioGameRepository', () => {
     it('should return data from cache', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',
@@ -235,7 +237,7 @@ describe('StudioGameRepository', () => {
     it('should call cacheService.setHash', async () => {
       const gameCode = 'gameCode';
       const mockStudio: DbStudioGameResult = {
-        gameId: gameCode,
+        physicalTableCode: gameCode,
         primaryTableId: 'tableCode-1',
         secondaryTableId: 'tableCode-2',
         currentTableId: 'tableCode-1',

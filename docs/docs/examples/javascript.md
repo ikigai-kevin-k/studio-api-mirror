@@ -142,6 +142,38 @@ class StudioApiClient {
     }));
   }
 
+  // 更新 Table 狀態（包含新的 SDP 狀態值）
+  updateTableStatus(tableId: string, status: {
+    sdp?: 'up' | 'up_running' | 'up_idle' | 'up_resume' | 'down' | 'down_pause' | 'down_cancel' | 'standby' | 'calibration' | 'exception';
+    idp?: 'up' | 'down' | 'standby' | 'calibration' | 'exception';
+    broker?: 'up' | 'down';
+    zCam?: 'up' | 'down';
+    roulette?: 'up' | 'down';
+    shaker?: 'up' | 'down';
+    barcodeScanner?: 'up' | 'down';
+    nfcScanner?: 'up' | 'down';
+    maintenance?: boolean;
+    uptime?: number;
+  }) {
+    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      throw new Error('WebSocket 未連接');
+    }
+
+    this.ws.send(JSON.stringify({
+      event: 'tableStatus',
+      data: {
+        tableId,
+        ...status,
+        timestamp: Date.now()
+      }
+    }));
+  }
+
+  // 更新 SDP 狀態（使用新的擴展狀態值）
+  updateSdpStatus(tableId: string, sdpStatus: 'up_running' | 'up_idle' | 'up_resume' | 'down_pause' | 'down_cancel') {
+    this.updateTableStatus(tableId, { sdp: sdpStatus });
+  }
+
   // 發送錯誤信號
   sendErrorSignal(signal: {
     msgId: string;
@@ -211,6 +243,21 @@ try {
 
 // 更新設備狀態
 client.updateDeviceStatus('up');
+
+// 更新 SDP 狀態為運行中
+client.updateSdpStatus('ARO-001-2', 'up_running');
+
+// 更新 SDP 狀態為暫停
+client.updateSdpStatus('ARO-001-2', 'down_pause');
+
+// 更新完整的 Table 狀態
+client.updateTableStatus('ARO-001-2', {
+  sdp: 'up_running',
+  idp: 'up',
+  broker: 'up',
+  zCam: 'up',
+  maintenance: false
+});
 
 // 發送錯誤信號
 client.sendErrorSignal({

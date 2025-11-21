@@ -14,7 +14,7 @@ type StudioGameSchema = {
 };
 
 const schema: Schema<DbStudioGameResult> = {
-  gameId: 'string',
+  physicalTableCode: 'string',
   primaryTableId: 'string',
   secondaryTableId: 'string',
   currentTableId: 'string',
@@ -26,17 +26,17 @@ export class StudioGameRepository implements ModuleLifecycle {
     private readonly dbService: DbService,
   ) {}
 
-  async getGameByID(gameID: string): Promise<DbStudioGameResult> {
-    const cache = await this.getCache(gameID);
+  async getGameByPhysicalTableCode(physicalTableCode: string): Promise<DbStudioGameResult> {
+    const cache = await this.getCache(physicalTableCode);
     if (cache) return cache;
 
     const builder = this.dbService
       .getConnection()
       .getRepository(StudioGame)
       .createQueryBuilder('studio')
-      .where('studio.PHYSICAL_TABLE_CODE = :gameID', { gameID })
+      .where('studio.PHYSICAL_TABLE_CODE = :physicalTableCode', { physicalTableCode })
       .select([
-        'studio."PHYSICAL_TABLE_CODE" as "gameId"',
+        'studio."PHYSICAL_TABLE_CODE" as "physicalTableCode"',
         'studio."PRIMARY_PHYSICAL_TABLE_ID" as "primaryTableId"',
         'studio."SECONDARY_PHYSICAL_TABLE_ID" as "secondaryTableId"',
         'studio."CURRENT_PHYSICAL_TABLE_ID" as "currentTableId"',
@@ -44,10 +44,10 @@ export class StudioGameRepository implements ModuleLifecycle {
 
     const output = await builder.getRawOne<DbStudioGameResult>();
     if (!output) {
-      throw new StudioNotFoundError(`[studio_game] ${gameID} not found`);
+      throw new StudioNotFoundError(`[studio_game] ${physicalTableCode} not found`);
     }
 
-    await this.refreshCache(gameID, output);
+    await this.refreshCache(physicalTableCode, output);
 
     return output;
   }
@@ -59,23 +59,23 @@ export class StudioGameRepository implements ModuleLifecycle {
       .insert()
       .into(StudioGame)
       .values(entity)
-      .returning(['gameId', 'primaryTableId', 'secondaryTableId', 'currentTableId'])
+      .returning(['physicalTableCode', 'primaryTableId', 'secondaryTableId', 'currentTableId'])
       .execute();
 
     const data = result.raw[0] as StudioGameSchema;
     const output = {
-      gameId: data.PHYSICAL_TABLE_CODE,
+      physicalTableCode: data.PHYSICAL_TABLE_CODE,
       primaryTableId: data.PRIMARY_PHYSICAL_TABLE_ID,
       secondaryTableId: data.SECONDARY_PHYSICAL_TABLE_ID,
       currentTableId: data.CURRENT_PHYSICAL_TABLE_ID,
     };
 
-    await this.refreshCache(output.gameId, output);
+    await this.refreshCache(output.physicalTableCode, output);
     return output;
   }
 
   async updateGame(entity: StudioGameEntity): Promise<DbStudioGameResult> {
-    const { gameId, primaryTableId, secondaryTableId, currentTableId } = entity;
+    const { physicalTableCode, primaryTableId, secondaryTableId, currentTableId } = entity;
     const updateFields: { [key: string]: string | undefined } = {};
 
     if (primaryTableId !== undefined) {
@@ -91,7 +91,7 @@ export class StudioGameRepository implements ModuleLifecycle {
     }
 
     if (Object.keys(updateFields).length === 0) {
-      throw new StudioUpdateError(`[studio_game] ${gameId} hasn't been modified`);
+      throw new StudioUpdateError(`[studio_game] ${physicalTableCode} hasn't been modified`);
     }
 
     const updateResult = await this.dbService
@@ -99,29 +99,29 @@ export class StudioGameRepository implements ModuleLifecycle {
       .createQueryBuilder()
       .update(StudioGame)
       .set(updateFields)
-      .where('gameId = :gameId', { gameId })
-      .returning(['gameId', 'primaryTableId', 'secondaryTableId', 'currentTableId'])
+      .where('physicalTableCode = :physicalTableCode', { physicalTableCode })
+      .returning(['physicalTableCode', 'primaryTableId', 'secondaryTableId', 'currentTableId'])
       .execute();
 
     if (updateResult.affected === 0) {
-      throw new StudioUpdateError(`[studio_game] ${gameId} hasn't been modified`);
+      throw new StudioUpdateError(`[studio_game] ${physicalTableCode} hasn't been modified`);
     }
 
     const data = updateResult.raw[0] as StudioGameSchema;
     const output = {
-      gameId: data.PHYSICAL_TABLE_CODE,
+      physicalTableCode: data.PHYSICAL_TABLE_CODE,
       primaryTableId: data.PRIMARY_PHYSICAL_TABLE_ID,
       secondaryTableId: data.SECONDARY_PHYSICAL_TABLE_ID,
       currentTableId: data.CURRENT_PHYSICAL_TABLE_ID,
     };
 
-    await this.refreshCache(gameId, output);
+    await this.refreshCache(physicalTableCode, output);
 
     return output;
   }
 
-  private getCacheKey(gameCode: string) {
-    return `studio-game-${gameCode}`;
+  private getCacheKey(physicalTableCode: string) {
+    return `studio-game-${physicalTableCode}`;
   }
 
   private async getCache(key: string): Promise<DbStudioGameResult | undefined> {
@@ -129,8 +129,8 @@ export class StudioGameRepository implements ModuleLifecycle {
     return await this.cacheService.getHashAs<DbStudioGameResult>(tag, schema);
   }
 
-  private async refreshCache(gameCode: string, data: DbStudioGameResult) {
-    const cacheKey = this.getCacheKey(gameCode);
+  private async refreshCache(physicalTableCode: string, data: DbStudioGameResult) {
+    const cacheKey = this.getCacheKey(physicalTableCode);
     await this.cacheService.setHash(cacheKey, data);
   }
 

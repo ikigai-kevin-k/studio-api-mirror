@@ -95,6 +95,7 @@ await websocket.send(json.dumps(status_update))
 - `timestamp` (number, 可選): 時間戳（毫秒）
 - `maintenance` (boolean, 可選): 是否在維護模式
 - `sdp`, `idp` (string, 可選): 服務狀態 (`up`, `down`, `standby`, `calibration`, `exception`)
+  - SDP 擴展狀態: `up_running`, `up_idle`, `up_resume`, `down_pause`, `down_cancel`
 - `broker`, `zCam`, `roulette`, `shaker`, `barcodeScanner`, `nfcScanner` (string, 可選): 設備狀態 (`up`, `down`)
 
 ### 範例
@@ -130,6 +131,33 @@ ws.send(JSON.stringify({
     zCam: 'up'
   }
 }));
+
+// 更新 SDP 狀態為運行中
+ws.send(JSON.stringify({
+  event: 'tableStatus',
+  data: {
+    tableId: 'ARO-001-2',
+    sdp: 'up_running'
+  }
+}));
+
+// 更新 SDP 狀態為暫停
+ws.send(JSON.stringify({
+  event: 'tableStatus',
+  data: {
+    tableId: 'ARO-001-2',
+    sdp: 'down_pause'
+  }
+}));
+
+// 更新 SDP 狀態為恢復運行
+ws.send(JSON.stringify({
+  event: 'tableStatus',
+  data: {
+    tableId: 'ARO-001-2',
+    sdp: 'up_resume'
+  }
+}));
 ```
 
 ## 狀態值說明
@@ -141,11 +169,21 @@ ws.send(JSON.stringify({
 
 ### 服務狀態 (sdp, idp)
 
+**基本狀態**:
 - `up` - 服務正常運行
 - `down` - 服務停止
 - `standby` - 服務待機
 - `calibration` - 服務校準中
 - `exception` - 服務異常
+
+**SDP 擴展狀態** (僅用於 SDP):
+- `up` - 服務正常運行
+- `up_running` - 服務運行中
+- `up_idle` - 服務空閒中
+- `up_resume` - 服務恢復運行
+- `down` - 服務停止
+- `down_pause` - 服務暫停
+- `down_cancel` - 服務取消
 
 ### 設備狀態 (broker, zCam, roulette, shaker, barcodeScanner, nfcScanner)
 
@@ -240,8 +278,13 @@ setInterval(() => {
 4. **狀態一致性**: 確保發送的狀態值與實際設備狀態一致
 5. **批量更新**: 對於多個設備，可以分別發送更新消息
 
+## SDP 狀態管理範例
+
+詳細的 SDP 狀態管理範例請參考 [SDP 狀態管理範例](../../examples/sdp-status.md)。
+
 ## 下一步
 
+- [SDP 狀態管理範例](../../examples/sdp-status.md) - 學習如何使用新的 SDP 擴展狀態值
 - [錯誤信號](error-signal.md) - 學習如何發送錯誤信號
 - [HTTP API - 狀態管理](../http/status.md) - 了解 HTTP API 的狀態管理功能
 

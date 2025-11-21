@@ -38,6 +38,9 @@ export const InjectionTokensEnum = {
   STUDIO_TABLE_SWITCH_CONSUMER: 'studioTableSwitchConsumer',
   STUDIO_TABLE_SWITCH_SERVICE: 'studioTableSwitchService',
 
+  STUDIO_STREAM_CONTROLLER: 'studioStreamController',
+  STUDIO_CDN_CONTROLLER_V2: 'studioCdnControllerV2',
+
   GLOBAL_QUEUE_SERVICE: 'globalQueueService',
   GLOBAL_KAFKA_HUB: 'globalKafkaHub',
   KAFKA_LOS_SIGNAL_SERVICE: 'kafkaLosSignalService',

@@ -1,19 +1,19 @@
 type StudioGameServiceInput = {
-  gameId: string;
+  physicalTableCode: string;
   primaryTableId?: string;
   secondaryTableId?: string;
   currentTableId?: string;
 };
 
 export type StudioGameServiceOutput = {
-  gameId: string;
+  physicalTableCode: string;
   primaryTableId: string;
   secondaryTableId: string;
   currentTableId: string;
 };
 
 export type GetStudioGameServiceInput = {
-  gameId: string;
+  physicalTableCode: string;
 };
 
 export type InsertStudioGameServiceInput = StudioGameServiceInput;

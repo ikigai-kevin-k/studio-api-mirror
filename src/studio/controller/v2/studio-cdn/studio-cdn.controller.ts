@@ -13,9 +13,9 @@ import {
   GetStudioTableCdnRequestType,
   GetStudioTableCdnResponse,
   GetStudioTableCdnResponseType,
-} from './studio-cdn.type';
+} from './studio-cdn.controller.type';
 
-export class StudioCdnController implements ModuleLifecycle {
+export class StudioCdnController_V2 implements ModuleLifecycle {
   constructor(
     private readonly studioGameService: StudioGameService,
     private readonly studioCdnService: StudioCdnService,
@@ -36,7 +36,7 @@ export class StudioCdnController implements ModuleLifecycle {
     );
 
     return app.get<{ Querystring: GetStudioTableCdnRequestType }>(
-      RoutesEnum.V1_STUDIO_TABLE_CDN,
+      RoutesEnum.V2_STUDIO_TABLE_CDN,
       {
         schema: {
           querystring: GetStudioTableCdnRequest,
@@ -51,12 +51,12 @@ export class StudioCdnController implements ModuleLifecycle {
         preHandler: [serviceAuth],
       },
       async (req): Promise<GetStudioTableCdnResponseType> => {
-        const game = await this.studioGameService.getGame({ physicalTableCode: req.query.tableId });
+        const game = await this.studioGameService.getGame(req.query);
         const { cdnDst } = await this.studioCdnService.getTableCdn({
           tableId: game.currentTableId,
         });
         return {
-          tableId: req.query.tableId,
+          physicalTableCode: req.query.physicalTableCode,
           cdnDst: {
             primary: cdnDst['primary'],
             secondary: cdnDst['secondary'],

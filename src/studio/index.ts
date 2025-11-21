@@ -6,7 +6,9 @@ import { StudioDeviceDataController } from './controller/v1/studio-device/studio
 import { StudioGameController } from './controller/v1/studio-game/studio-game.controller';
 import { StudioErrorSignalLogController } from './controller/v1/studio-log/studio-error-signal-log.controller';
 import { StudioStatusController } from './controller/v1/studio-status/studio-status.controller';
+import { StudioStreamController } from './controller/v1/studio-stream/studio-stream.controller';
 import { StudioController } from './controller/v1/studio/studio.controller';
+import { StudioCdnController_V2 } from './controller/v2/studio-cdn/studio-cdn.controller';
 import { StudioDeviceStatusObserver } from './observers/studio-device-status/studio-device-status.observer';
 import { StudioErrorSignalObserver } from './observers/studio-error-signal/studio-error-signal.observer';
 import { StudioCdnRepository } from './repositories/studio-cdn/studio-cdn.repository';
@@ -55,4 +57,7 @@ export const StudioModule: ModuleProfile[] = [
 
   [InjectionTokensEnum.STUDIO_TABLE_SWITCH_CONSUMER, StudioTableSwitchConsumer],
   [InjectionTokensEnum.STUDIO_TABLE_SWITCH_SERVICE, StudioTableSwitchService],
+
+  [InjectionTokensEnum.STUDIO_STREAM_CONTROLLER, StudioStreamController],
+  [InjectionTokensEnum.STUDIO_CDN_CONTROLLER_V2, StudioCdnController_V2],
 ] as const;
