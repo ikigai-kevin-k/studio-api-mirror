@@ -6,6 +6,8 @@ on:
       - '**'  # Trigger on push to any branch
     tags:
       - '**'  # Trigger on push of any tag
+    paths-ignore:
+      - 'docs/**'  # Ignore docs changes (docs deployment happens in mirror repo)
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -34,14 +36,23 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.MIRROR_SSH_PRIVATE_KEY }}
+        continue-on-error: true
 
       - name: Push all branches to mirror
         run: |
-          git push --all mirror --force
+          if [ -n "$SSH_AUTH_SOCK" ]; then
+            git push --all mirror --force
+          else
+            echo "⚠️  SSH not configured, skipping mirror sync. Please set MIRROR_SSH_PRIVATE_KEY secret."
+          fi
 
       - name: Push all tags to mirror
         run: |
-          git push --tags mirror --force
+          if [ -n "$SSH_AUTH_SOCK" ]; then
+            git push --tags mirror --force
+          else
+            echo "⚠️  SSH not configured, skipping tag sync."
+          fi
 
       - name: Sync completed
         run: |
