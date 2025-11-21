@@ -41,6 +41,70 @@
          <lastmod>2025-11-21</lastmod>
     </url>
     <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/getting-started/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/authentication/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/overview/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/http/device/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/http/status/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/websocket/connection/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/websocket/device-registration/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/websocket/error-signal/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/api/websocket/status-update/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/examples/curl/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/examples/javascript/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/examples/python/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/reference/error-codes/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/reference/status-enums/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
+         <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/en/reference/websocket-events/</loc>
+         <lastmod>2025-11-21</lastmod>
+    </url>
+    <url>
          <loc>https://ikigai-kevin-k.github.io/studio-api-mirror/examples/curl/</loc>
          <lastmod>2025-11-21</lastmod>
     </url>

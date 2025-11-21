@@ -2,4 +2,4 @@
 
 This is a placeholder. Full English translation needed.
 
-[View Chinese version](../reference/error-codes.md)
+[View Chinese version](../../reference/error-codes.md)

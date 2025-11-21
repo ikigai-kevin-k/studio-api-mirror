@@ -2,4 +2,4 @@
 
 This is a placeholder. Full English translation needed.
 
-[View Chinese version](../api/http/status.md)
+[View Chinese version](../../api/http/status.md)

@@ -2,4 +2,4 @@
 
 This is a placeholder. Full English translation needed.
 
-[View Chinese version](../api/websocket/status-update.md)
+[View Chinese version](../../api/websocket/status-update.md)

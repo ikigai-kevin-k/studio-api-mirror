@@ -2,4 +2,4 @@
 
 This is a placeholder. Full English translation needed.
 
-[View Chinese version](../examples/javascript.md)
+[View Chinese version](../../examples/javascript.md)

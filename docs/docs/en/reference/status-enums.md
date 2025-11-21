@@ -2,4 +2,4 @@
 
 This is a placeholder. Full English translation needed.
 
-[View Chinese version](../reference/status-enums.md)
+[View Chinese version](../../reference/status-enums.md)
