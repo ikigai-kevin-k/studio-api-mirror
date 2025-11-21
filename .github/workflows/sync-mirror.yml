@@ -1,0 +1,49 @@
+name: Sync to Mirror Repository
+
+on:
+  push:
+    branches:
+      - '**'  # Trigger on push to any branch
+    tags:
+      - '**'  # Trigger on push of any tag
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  sync-to-mirror:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Required to push to mirror
+    
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Fetch all history for all branches and tags
+
+      - name: Setup Git
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+
+      - name: Add mirror remote
+        run: |
+          git remote add mirror git@github.com:ikigai-kevin-k/studio-api-mirror.git || true
+          git remote set-url mirror git@github.com:ikigai-kevin-k/studio-api-mirror.git
+
+      - name: Setup SSH for mirror push
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.MIRROR_SSH_PRIVATE_KEY }}
+
+      - name: Push all branches to mirror
+        run: |
+          git push --all mirror --force
+
+      - name: Push all tags to mirror
+        run: |
+          git push --tags mirror --force
+
+      - name: Sync completed
+        run: |
+          echo "✅ Successfully synced to mirror repository"
+
