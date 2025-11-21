@@ -1,8 +1,46 @@
 # GitHub Pages 設置指南
 
+## 問題診斷
+
+### 為什麼另一個 repository 可以使用 GitHub Pages？
+
+如果 `studio-sdp-mirror` 可以使用 GitHub Pages，但 `studio-api-mirror` 不能，通常是因為：
+
+1. **Repository 可見性不同**
+   - `studio-sdp-mirror`: 公開 (Public)
+   - `studio-api-mirror`: 私有 (Private) ❌
+
+2. **GitHub 計劃限制**
+   - 免費計劃：只支援公開 repository 使用 GitHub Pages
+   - Pro/Team/Enterprise：支援私有 repository 使用 GitHub Pages
+
+### 解決方案
+
+**選項 1: 將 repository 設為公開（推薦，如果允許）**
+
+```bash
+# 使用 GitHub CLI 將 repository 設為公開
+gh repo edit ikigai-kevin-k/studio-api-mirror --visibility public
+```
+
+然後啟用 GitHub Pages：
+```bash
+gh api repos/ikigai-kevin-k/studio-api-mirror/pages \
+  -X POST \
+  -f source='{"type":"workflow"}' \
+  -f build_type="workflow"
+```
+
+**選項 2: 升級 GitHub 計劃**
+
+如果必須保持 repository 私有，需要升級到：
+- GitHub Pro ($4/月)
+- GitHub Team ($4/用戶/月)
+- GitHub Enterprise
+
 ## 錯誤解決
 
-如果遇到 "Get Pages site failed" 錯誤，請按照以下步驟手動啟用 GitHub Pages。
+如果遇到 "Get Pages site failed" 或 "Your current plan does not support GitHub Pages" 錯誤，請按照以下步驟解決。
 
 ## 手動啟用步驟
 
