@@ -35,9 +35,6 @@ export const InjectionTokensEnum = {
 
   STUDIO_DEVICE_STATUS_OBSERVER: 'studioDeviceStatusObserver',
 
-  STUDIO_ACTIVATE_BACKUP_CONSUMER: 'studioActivateBackupConsumer',
-  STUDIO_ACTIVATE_BACKUP_SERVICE: 'studioActivateBackupService',
-
   STUDIO_TABLE_SWITCH_CONSUMER: 'studioTableSwitchConsumer',
   STUDIO_TABLE_SWITCH_SERVICE: 'studioTableSwitchService',
 
