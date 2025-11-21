@@ -23,7 +23,12 @@ export enum StudioMachineStatusEnum {
 
 export enum StudioServiceStatusEnum {
   UP = 'up',
+  UP_RUNNING = 'up_running',
+  UP_IDLE = 'up_idle',
+  UP_RESUME = 'up_resume',
   DOWN = 'down',
+  DOWN_PAUSE = 'down_pause',
+  DOWN_CANCEL = 'down_cancel',
   STANDBY = 'standby',
   CALIBRATION = 'calibration',
   EXCEPTION = 'exception',

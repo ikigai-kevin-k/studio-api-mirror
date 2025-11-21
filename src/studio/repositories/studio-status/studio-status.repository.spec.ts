@@ -102,7 +102,7 @@ describe('StudioStatusRepository', () => {
       const mockRawResult: TableStatusSchema = {
         TABLE_ID: mockTableId,
         UPTIME: 0,
-        TIMESTAMP: timestamp,
+        UPDATED_AT: timestamp,
         MAINTENANCE: false,
         SDP: '',
         IDP: '',
@@ -152,7 +152,7 @@ describe('StudioStatusRepository', () => {
           {
             TABLE_ID: tableId,
             UPTIME: 0,
-            TIMESTAMP: timestamp,
+            UPDATED_AT: timestamp,
             MAINTENANCE: false,
             SDP: '',
             IDP: '',

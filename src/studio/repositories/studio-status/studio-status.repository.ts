@@ -18,7 +18,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .select([
         'studio."TABLE_ID" as "tableId"',
         'studio."UPTIME" as "uptime"',
-        '(EXTRACT(EPOCH FROM studio."TIMESTAMP") * 1000)::bigint as "timestamp"',
+        '(EXTRACT(EPOCH FROM studio."UPDATED_AT") * 1000)::bigint as "timestamp"',
         'studio."MAINTENANCE" as "maintenance"',
         'studio."SDP" as "sdp"',
         'studio."IDP" as "idp"',
@@ -47,7 +47,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
     return {
       tableId: data.TABLE_ID,
       uptime: data.UPTIME,
-      timestamp: data.TIMESTAMP.getTime(),
+      timestamp: data.UPDATED_AT.getTime(),
       maintenance: data.MAINTENANCE,
       sdp: data.SDP,
       idp: data.IDP,
@@ -64,7 +64,9 @@ export class StudioStatusRepository implements ModuleLifecycle {
     tableId: string,
     entity: UpdateTableStatusEntity,
   ): Promise<TableStatusResult | undefined> {
-    const whereClause = Object.keys(entity)
+    // Exclude timestamp from update as it's not a database column
+    const { timestamp, ...updateEntity } = entity;
+    const whereClause = Object.keys(updateEntity)
       .map((key) => `${key} = :${key}`)
       .join(' AND ');
 
@@ -72,10 +74,10 @@ export class StudioStatusRepository implements ModuleLifecycle {
       .getConnection()
       .createQueryBuilder()
       .update(StudioStatus)
-      .set(entity)
+      .set(updateEntity)
       .where('tableId = :tableId', { tableId })
       .andWhere(`NOT (${whereClause})`)
-      .setParameters(entity)
+      .setParameters(updateEntity)
       .returning('*')
       .execute();
 
@@ -85,7 +87,7 @@ export class StudioStatusRepository implements ModuleLifecycle {
     return {
       tableId: data.TABLE_ID,
       uptime: data.UPTIME,
-      timestamp: data.TIMESTAMP.getTime(),
+      timestamp: data.UPDATED_AT.getTime(),
       maintenance: data.MAINTENANCE,
       sdp: data.SDP,
       idp: data.IDP,

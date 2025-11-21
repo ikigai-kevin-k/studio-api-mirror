@@ -31,11 +31,21 @@ Studio API 使用的所有狀態枚舉值。
 
 用於表示服務的運行狀態。
 
+**基本狀態**:
 - `up` - 服務正常運行
 - `down` - 服務停止
 - `standby` - 服務待機
 - `calibration` - 服務校準中
 - `exception` - 服務異常
+
+**SDP 擴展狀態** (用於 WebSocket):
+- `up` - 服務正常運行
+- `up_running` - 服務運行中
+- `up_idle` - 服務空閒中
+- `up_resume` - 服務恢復運行
+- `down` - 服務停止
+- `down_pause` - 服務暫停
+- `down_cancel` - 服務取消
 
 **使用場景**:
 - Table 狀態中的 `sdp` 和 `idp` 欄位

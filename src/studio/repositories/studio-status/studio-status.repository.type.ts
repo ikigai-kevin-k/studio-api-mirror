@@ -16,7 +16,7 @@ export type TableStatusResult = {
 export type TableStatusSchema = {
   TABLE_ID: string;
   UPTIME: number;
-  TIMESTAMP: Date;
+  UPDATED_AT: Date;
   MAINTENANCE: boolean;
   SDP: string;
   IDP: string;
