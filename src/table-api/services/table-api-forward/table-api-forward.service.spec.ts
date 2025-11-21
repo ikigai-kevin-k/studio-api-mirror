@@ -3,6 +3,10 @@
 import { AppConfigService } from 'src/config';
 import { send } from 'src/global/utils/send-utils';
 import { LoggerService } from 'src/log';
+import { SlackService } from 'src/slack/slack.service';
+import { StudioNotFoundError } from 'src/studio/errors/studio.error';
+import { StudioGameService } from 'src/studio/services/studio-game/studio-game.service';
+import { StudioService } from 'src/studio/services/studio/studio.service';
 import { fetch } from 'undici';
 import { TableApiForwardService } from './table-api-forward.service';
 
@@ -16,6 +20,18 @@ jest.mock('@ikigaians/web', () => ({
 jest.mock('src/global/utils/send-utils', () => ({
   send: jest.fn(),
 }));
+
+const mockStudioService = {
+  getStudioTableBelongTo: jest.fn(),
+} as unknown as StudioService;
+
+const mockStudioGameService = {
+  getGame: jest.fn(),
+} as unknown as StudioGameService;
+
+const mockSlackService = {
+  broadcast: jest.fn(),
+} as unknown as SlackService;
 
 const mockAppConfigService = {
   tableApiConfig: { url: 'http://tableapi.test.com', maxRetry: 3 },
@@ -31,7 +47,13 @@ describe('TableApiForwardService', () => {
   let mockSend: jest.Mock;
 
   beforeEach(() => {
-    service = new TableApiForwardService(mockAppConfigService, mockLoggerService);
+    service = new TableApiForwardService(
+      mockStudioService,
+      mockStudioGameService,
+      mockAppConfigService,
+      mockSlackService,
+      mockLoggerService,
+    );
     jest.clearAllMocks();
     mockSend = send as jest.Mock;
   });
@@ -84,7 +106,10 @@ describe('TableApiForwardService', () => {
   });
 
   describe('forwardCDN', () => {
-    it('should return the response if send is successful', async () => {
+    it('should call send function if gameCode exists', async () => {
+      const spyQueryForwardGameCode = jest.spyOn(service as any, 'queryForwardGameCode');
+      spyQueryForwardGameCode.mockResolvedValueOnce('gameId');
+
       await (service as any).forwardCDN('gameId', {
         primary: { lo: '', me: '', hi: '', hd: '' },
         secondary: { lo: '', me: '', hi: '', hd: '' },
@@ -94,6 +119,43 @@ describe('TableApiForwardService', () => {
         expect.any(Function),
         mockAppConfigService.tableApiConfig.maxRetry,
         mockLoggerService,
+      );
+    });
+
+    it('should not call send function if gameCode exists', async () => {
+      const spyQueryForwardGameCode = jest.spyOn(service as any, 'queryForwardGameCode');
+      spyQueryForwardGameCode.mockResolvedValueOnce('');
+
+      await (service as any).forwardCDN('gameId', {
+        primary: { lo: '', me: '', hi: '', hd: '' },
+        secondary: { lo: '', me: '', hi: '', hd: '' },
+      });
+
+      expect(mockSend).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('queryForwardGameCode', () => {
+    it('should return gameCode if gameCode is current used', async () => {
+      (mockStudioService.getStudioTableBelongTo as jest.Mock).mockResolvedValueOnce('gameCode');
+      (mockStudioGameService.getGame as jest.Mock).mockResolvedValueOnce({
+        currentTableId: 'tableCode',
+      });
+      await expect((service as any).queryForwardGameCode('tableCode')).resolves.toEqual('gameCode');
+    });
+
+    it('should return empty string if gameCode is not current used', async () => {
+      (mockStudioService.getStudioTableBelongTo as jest.Mock).mockResolvedValueOnce('gameCode');
+      (mockStudioGameService.getGame as jest.Mock).mockResolvedValueOnce({
+        currentTableId: 'NoTable',
+      });
+      await expect((service as any).queryForwardGameCode('tableCode')).resolves.toEqual('');
+    });
+
+    it('should throw an error if tableCode does not belong to any game', async () => {
+      (mockStudioService.getStudioTableBelongTo as jest.Mock).mockResolvedValueOnce('');
+      await expect((service as any).queryForwardGameCode('tableCode')).rejects.toThrow(
+        StudioNotFoundError,
       );
     });
   });

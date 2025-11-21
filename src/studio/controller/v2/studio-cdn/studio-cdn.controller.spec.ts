@@ -3,13 +3,13 @@ import { LoggerService } from '@ikigaians/logger';
 import { FastifyInstance } from 'fastify';
 import { RoutesEnum } from 'src/global/enums/route.enum';
 import { PreHandlersService, RouterService } from 'src/router';
-import { StudioCdnController } from 'src/studio/controller/v1/studio-cdn/studio-cdn.controller';
+import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
+import { StudioGameService } from 'src/studio/services/studio-game/studio-game.service';
+import { StudioCdnController_V2 } from './studio-cdn.controller';
 import {
   GetStudioTableCdnRequestType,
   GetStudioTableCdnResponseType,
-} from 'src/studio/controller/v1/studio-cdn/studio-cdn.type';
-import { StudioCdnService } from 'src/studio/services/studio-cdn/studio-cdn.service';
-import { StudioGameService } from 'src/studio/services/studio-game/studio-game.service';
+} from './studio-cdn.controller.type';
 
 const mockFastify = {
   get: jest.fn(),
@@ -41,11 +41,11 @@ const mockLoggerService = {
   error: jest.fn(),
 } as unknown as LoggerService;
 
-describe('StudioCdnController', () => {
-  let controller: StudioCdnController;
+describe('StudioCdnController_V2', () => {
+  let controller: StudioCdnController_V2;
 
   beforeEach(() => {
-    controller = new StudioCdnController(
+    controller = new StudioCdnController_V2(
       mockStudioGameService,
       mockStudioCdnService,
       mockPreHandlersService,
@@ -65,7 +65,7 @@ describe('StudioCdnController', () => {
 
     it('should handle getTableCdn request and format response correctly', async () => {
       await controller.onInit();
-      const mockRequestBody: GetStudioTableCdnRequestType = { tableId: 'UniTest' };
+      const mockRequestBody: GetStudioTableCdnRequestType = { physicalTableCode: 'UniTest' };
       const mockServiceResponse = {
         tableId: 'UniTest',
         cdnDst: {
@@ -87,7 +87,7 @@ describe('StudioCdnController', () => {
         currentTableId: 'UniTest',
       };
       const expectedControllerResponse: GetStudioTableCdnResponseType = {
-        tableId: 'UniTest',
+        physicalTableCode: 'UniTest',
         cdnDst: mockServiceResponse.cdnDst,
       };
 
@@ -110,7 +110,7 @@ describe('StudioCdnController', () => {
     it('should register the correct route with schema and preHandler', () => {
       controller.getGameCdn(mockFastify);
       expect(mockFastify.get).toHaveBeenCalledWith(
-        RoutesEnum.V1_STUDIO_TABLE_CDN,
+        RoutesEnum.V2_STUDIO_TABLE_CDN,
         expect.objectContaining({
           schema: expect.any(Object),
           preHandler: [expect.any(Function)],

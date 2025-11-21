@@ -10,7 +10,7 @@ import {
 @Entity('studio_game', {
   comment: 'The game table.',
 })
-@Index('idx_game_id', ['gameId'], { unique: true })
+@Index('idx_game_id', ['physicalTableCode'], { unique: true })
 export class StudioGame {
   @PrimaryGeneratedColumn({
     name: 'ID',
@@ -25,7 +25,7 @@ export class StudioGame {
     length: 255,
     comment: 'Unique Game Code',
   })
-  gameId!: string;
+  physicalTableCode!: string;
 
   @Column({
     name: 'PRIMARY_PHYSICAL_TABLE_ID',

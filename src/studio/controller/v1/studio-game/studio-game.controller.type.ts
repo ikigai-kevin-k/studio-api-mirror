@@ -2,21 +2,21 @@ import { GameCode } from '@ikigaians/type/build/type/lib/';
 import { Static, Type } from '@sinclair/typebox';
 
 const GameRequestSchema = Type.Object({
-  gameId: GameCode,
+  physicalTableCode: GameCode,
   primaryTableId: Type.Optional(Type.String()),
   secondaryTableId: Type.Optional(Type.String()),
   currentTableId: Type.Optional(Type.String()),
 });
 
 const GameResponseSchema = Type.Object({
-  gameId: GameCode,
+  physicalTableCode: GameCode,
   primaryTableId: Type.String(),
   secondaryTableId: Type.String(),
   currentTableId: Type.String(),
 });
 
 export const GetGameRequest = Type.Object({
-  gameId: Type.String({ minLength: 1, maxLength: 255 }),
+  physicalTableCode: Type.String({ minLength: 1, maxLength: 255 }),
 });
 
 export type GetGameRequestType = Static<typeof GetGameRequest>;

@@ -1,28 +1,22 @@
-import { Schema } from 'src/cache/cache.service.type';
+import { CdnSet } from 'src/global/types/cdn.type';
 
-interface StudioCdnSet {
-  lo: string;
-  me: string;
-  hi: string;
-  hd: string;
-}
+type StudioCdnSet = CdnSet;
 
-export interface GetStudioCdnServiceOutput {
+export type StudioCdnServiceOutput = {
   tableId: string;
   cdnDst: Record<string, StudioCdnSet>;
-}
-
-export const schema: Schema<GetStudioCdnServiceOutput> = {
-  tableId: 'string',
-  cdnDst: 'object',
 };
 
-export interface InsertStudioCdnServiceOutput {
+export type GetStudioCdnServiceInput = {
   tableId: string;
-  cdnDst: Record<string, StudioCdnSet>;
-}
+};
 
-export interface UpdateStudioCdnServiceOutput {
+export type InsertStudioCdnServiceInput = {
   tableId: string;
   cdnDst: Record<string, StudioCdnSet>;
-}
+};
+
+export type UpdateStudioCdnServiceInput = {
+  tableId: string;
+  cdnDst: Record<string, StudioCdnSet>;
+};

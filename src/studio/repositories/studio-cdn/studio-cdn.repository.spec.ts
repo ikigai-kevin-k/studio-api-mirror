@@ -1,15 +1,12 @@
 // studio-cdn.repository.spec.ts
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable unicorn/no-null */
 /* eslint-disable unicorn/no-useless-undefined */
+import { CacheService } from 'src/cache/cache.service';
 import { DbService } from 'src/db/db.service';
-import { StudioCdn } from 'src/studio/entities/studio-cdn.entity';
-import { StudioCdnRepository } from 'src/studio/repositories/studio-cdn/studio-cdn.repository';
-import {
-  TableCdnResult,
-  TableCdnSchema,
-  UpdateTableCdnEntity,
-} from 'src/studio/repositories/studio-cdn/studio-cdn.repository.type';
-import { UpdateResult } from 'typeorm';
+import { StudioNotFoundError, StudioUpdateError } from 'src/studio/errors/studio.error';
+import { StudioCdnRepository } from './studio-cdn.repository';
+import { DbStudioCdnResult, StudioCdnEntity } from './studio-cdn.repository.type';
 
 const mockQueryBuilder = {
   select: jest.fn().mockReturnThis(),
@@ -36,6 +33,11 @@ const mockConnection = {
   createQueryBuilder: jest.fn(() => mockQueryBuilder),
 };
 
+const mockCacheService = {
+  setHash: jest.fn(),
+  getHashAs: jest.fn(),
+} as unknown as CacheService;
+
 const mockDbService = {
   getConnection: jest.fn(() => mockConnection),
 } as unknown as DbService;
@@ -44,8 +46,12 @@ describe('StudioCdnRepository', () => {
   let repository: StudioCdnRepository;
 
   beforeEach(() => {
-    repository = new StudioCdnRepository(mockDbService);
+    repository = new StudioCdnRepository(mockCacheService, mockDbService);
     jest.clearAllMocks();
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   describe('onInit', () => {
@@ -55,108 +61,153 @@ describe('StudioCdnRepository', () => {
   });
 
   describe('getTableCdnByTableID', () => {
-    it('should return a StudioCdn object when found', async () => {
-      const mockCdn: TableCdnResult = {
-        tableId: 'cdn-table-1',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
+    it('should return a studio object from cache', async () => {
+      const tableId = 'tableCode';
+      const mockStudio: DbStudioCdnResult = {
+        tableId: tableId,
+        cdnDst: {},
       };
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(mockCdn);
 
-      const result = await repository.getTableCdnByTableID('cdn-table-1');
+      const spyGetCache = jest.spyOn(repository as any, 'getCache');
+      spyGetCache.mockResolvedValueOnce(mockStudio);
 
-      expect(mockConnection.getRepository).toHaveBeenCalledWith(StudioCdn);
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('studio.TABLE_ID = :tableID', {
-        tableID: 'cdn-table-1',
-      });
-      expect(result).toEqual(mockCdn);
+      const result = await repository.getTableCdnByTableID(tableId);
+      expect(result).toBe(mockStudio);
+      expect(mockQueryBuilder.getRawOne).not.toHaveBeenCalled();
     });
 
-    it('should return null when no StudioCdn is found', async () => {
-      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValue(null);
-      const result = await repository.getTableCdnByTableID('non-existent');
-      expect(result).toBeNull();
+    it('should return a studio object from db if cache does not hit', async () => {
+      const tableId = 'tableCode';
+      const mockStudio: DbStudioCdnResult = {
+        tableId: tableId,
+        cdnDst: {},
+      };
+
+      const spyGetCache = jest.spyOn(repository as any, 'getCache');
+      spyGetCache.mockResolvedValueOnce(undefined);
+
+      const spyRefreshCache = jest.spyOn(repository as any, 'refreshCache');
+
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(mockStudio);
+
+      const result = await repository.getTableCdnByTableID(tableId);
+      expect(result).toBe(mockStudio);
+      expect(spyRefreshCache).toHaveBeenCalledWith(tableId, mockStudio);
+    });
+
+    it('should throw an error if does not find anything', async () => {
+      const tableId = 'tableCode';
+      const spyGetCache = jest.spyOn(repository as any, 'getCache');
+      spyGetCache.mockResolvedValueOnce(undefined);
+
+      (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(undefined);
+
+      await expect(repository.getTableCdnByTableID(tableId)).rejects.toThrow(StudioNotFoundError);
     });
   });
 
   describe('insertTableCdn', () => {
-    it('should insert a StudioCdn and return the result', async () => {
-      const currentData = new Date();
-      const mockCdn: StudioCdn = {
-        id: 1,
-        tableId: 'cdn-table-1',
-        cdnDst: { primary: {} },
-        createdAt: currentData,
-        updatedAt: currentData,
+    it('should return a game object from db', async () => {
+      const tableId = 'tableCode';
+      const mockEntity: StudioCdnEntity = {
+        tableId: tableId,
+        cdnDst: {},
       };
-      const mockRawResult: TableCdnSchema = {
-        TABLE_ID: 'cdn-table-1',
-        CDN: { primary: { lo: '', me: '', hi: '', hd: '' } },
-      };
-      const mockExecuteResult = { raw: [mockRawResult] };
-      const mocResult: TableCdnResult = {
-        tableId: 'cdn-table-1',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
+      const mockResult = {
+        affected: 1,
+        raw: [
+          {
+            TABLE_ID: tableId,
+            CDN: {},
+          },
+        ],
       };
 
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockExecuteResult);
+      const spyRefreshCache = jest.spyOn(repository as any, 'refreshCache');
 
-      const result = await repository.insertTableCdn(mockCdn);
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockResult);
 
-      expect(mockQueryBuilder.insert).toHaveBeenCalledTimes(1);
-      expect(mockQueryBuilder.into).toHaveBeenCalledWith(StudioCdn);
-      expect(mockQueryBuilder.values).toHaveBeenCalledWith(mockCdn);
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
-      expect(result).toEqual(mocResult);
+      const result = await repository.insertTableCdn(mockEntity);
+      expect(result).toEqual({
+        tableId: tableId,
+        cdnDst: {},
+      });
+
+      expect(spyRefreshCache).toHaveBeenCalledTimes(1);
     });
   });
 
   describe('updateTableCdn', () => {
-    it('should update the cdn and return affected rows count', async () => {
-      const updateEntity: UpdateTableCdnEntity = {
-        tableId: 'cdn-table-1',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
+    it('should update a studio object to db', async () => {
+      const tableId = 'tableCode';
+      const mockUpdateEntity: StudioCdnEntity = {
+        tableId: tableId,
+        cdnDst: {},
       };
-      const mockUpdateResult: UpdateResult = {
-        generatedMaps: [],
+      const mockUpdateResult = {
+        affected: 1,
         raw: [
           {
-            TABLE_ID: 'cdn-table-1',
-            CDN: { primary: { lo: '', me: '', hi: '', hd: '' } },
+            TABLE_ID: tableId,
+            CDN: {},
           },
         ],
-        affected: 1,
-      };
-      const mockResult: UpdateTableCdnEntity = {
-        tableId: 'cdn-table-1',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
       };
 
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockUpdateResult);
 
-      const result = await repository.updateTableCdn(updateEntity);
-
-      expect(mockQueryBuilder.update).toHaveBeenCalledWith(StudioCdn);
-      expect(mockQueryBuilder.set).toHaveBeenCalledWith({ cdnDst: updateEntity.cdnDst });
-      expect(mockQueryBuilder.where).toHaveBeenCalledWith('tableId = :tableId', {
-        tableId: 'cdn-table-1',
+      const result = await repository.updateTableCdn(mockUpdateEntity);
+      expect(result).toEqual({
+        tableId: tableId,
+        cdnDst: {},
       });
-      expect(mockQueryBuilder.returning).toHaveBeenCalledWith('*');
-      expect(result).toEqual(mockResult);
     });
 
-    it('should return undefined if no rows are affected', async () => {
-      const updateEntity: UpdateTableCdnEntity = {
-        tableId: 'non-existent',
-        cdnDst: { primary: { lo: '', me: '', hi: '', hd: '' } },
+    it('should throw an error if none modified', async () => {
+      const tableId = 'tableCode';
+      const mockUpdateEntity: StudioCdnEntity = {
+        tableId: tableId,
+        cdnDst: {},
       };
-      const mockUpdateResult: UpdateResult = {
-        generatedMaps: [],
+      const mockUpdateResult = {
         raw: [],
         affected: 0,
       };
-      (mockQueryBuilder.execute as jest.Mock).mockResolvedValue(mockUpdateResult);
-      const result = await repository.updateTableCdn(updateEntity);
-      expect(result).toBeUndefined();
+
+      (mockQueryBuilder.execute as jest.Mock).mockResolvedValueOnce(mockUpdateResult);
+
+      await expect(repository.updateTableCdn(mockUpdateEntity)).rejects.toThrow(StudioUpdateError);
+    });
+  });
+
+  describe('getCacheKey', () => {
+    it('should return a key', async () => {
+      expect((repository as any).getCacheKey('ARO-001')).toEqual('studio-cdn-ARO-001');
+    });
+  });
+
+  describe('getCache', () => {
+    it('should return data from cache', async () => {
+      const tableId = 'gameCode';
+      const mockStudio: DbStudioCdnResult = {
+        tableId: tableId,
+        cdnDst: {},
+      };
+      (mockCacheService.getHashAs as jest.Mock).mockResolvedValueOnce(mockStudio);
+      const result = await (repository as any).getCache(tableId);
+      expect(result).toBe(mockStudio);
+    });
+  });
+
+  describe('refreshCache', () => {
+    it('should call cacheService.setHash', async () => {
+      const tableId = 'gameCode';
+      const mockStudio: DbStudioCdnResult = {
+        tableId: tableId,
+        cdnDst: {},
+      };
+      await (repository as any).refreshCache(tableId, mockStudio);
+      expect(mockCacheService.setHash).toHaveBeenCalledWith(`studio-cdn-${tableId}`, mockStudio);
     });
   });
 });

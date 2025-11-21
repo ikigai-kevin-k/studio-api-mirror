@@ -13,11 +13,11 @@ export const CdnSet = Type.Object({
 });
 
 const QuerySchema = Type.Object({
-  tableId: Type.String(),
+  physicalTableCode: Type.String(),
 });
 
 const ResponseSchema = Type.Object({
-  tableId: Type.String(),
+  physicalTableCode: Type.String(),
   cdnDst: CdnSet,
 });
 
