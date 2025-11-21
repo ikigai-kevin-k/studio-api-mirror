@@ -1,5 +1,5 @@
 site_name: Studio API Documentation
-site_description: Studio API 完整文檔 - WebSocket 和 HTTP API 使用指南
+site_description: Studio API Complete Documentation - WebSocket and HTTP API Guide
 site_author: Studio API Team
 site_url: https://ikigai-kevin-k.github.io/studio-api-mirror/
 
@@ -9,6 +9,7 @@ edit_uri: edit/main/docs/docs/
 
 theme:
   name: material
+  language: zh-TW
   palette:
     - scheme: default
       primary: indigo
@@ -31,6 +32,17 @@ theme:
     - search.highlight
     - content.code.copy
     - content.code.annotate
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  alternate:
+    - name: English
+      link: /en/
+      lang: en
+    - name: 繁體中文
+      link: /
+      lang: zh-TW
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -52,28 +64,37 @@ markdown_extensions:
   - md_in_html
 
 plugins:
-  - search
+  - search:
+      lang:
+        - en
+        - zh-TW
   - mermaid2
 
 nav:
-  - 首頁: index.md
-  - 快速開始: getting-started.md
-  - API 文檔:
-    - 概述: api/overview.md
-    - 認證: api/authentication.md
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - API Documentation:
+    - Overview: api/overview.md
+    - Authentication: api/authentication.md
     - HTTP API:
-      - 設備管理: api/http/device.md
-      - 狀態管理: api/http/status.md
+      - Device Management: api/http/device.md
+      - Status Management: api/http/status.md
     - WebSocket API:
-      - 連接設置: api/websocket/connection.md
-      - 設備註冊: api/websocket/device-registration.md
-      - 狀態更新: api/websocket/status-update.md
-      - 錯誤信號: api/websocket/error-signal.md
-  - 範例:
+      - Connection Setup: api/websocket/connection.md
+      - Device Registration: api/websocket/device-registration.md
+      - Status Update: api/websocket/status-update.md
+      - Error Signal: api/websocket/error-signal.md
+  - Examples:
     - JavaScript/TypeScript: examples/javascript.md
     - Python: examples/python.md
     - cURL: examples/curl.md
-  - 參考資料:
-    - 錯誤碼: reference/error-codes.md
-    - 狀態枚舉: reference/status-enums.md
-    - WebSocket 事件: reference/websocket-events.md
+  - Reference:
+    - Error Codes: reference/error-codes.md
+    - Status Enums: reference/status-enums.md
+    - WebSocket Events: reference/websocket-events.md
+  - English:
+    - Home: en/index.md
+    - Getting Started: en/getting-started.md
+    - API Documentation:
+      - Overview: en/api/overview.md
+      - Authentication: en/api/authentication.md
