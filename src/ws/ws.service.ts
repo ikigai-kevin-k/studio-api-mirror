@@ -103,6 +103,14 @@ export class WsService implements ModuleLifecycle {
     }
   }
 
+  send(id: string, type: WsResponseType, output: WsOutput) {
+    const client = this.listeners.get(id);
+    if (!client?.isOpen) return false;
+
+    client.send(type, output);
+    return true;
+  }
+
   private ack() {
     this.broadcast(WsResponseType.Ack, { timestamp: new Date().toISOString() });
   }

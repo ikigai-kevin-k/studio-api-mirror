@@ -15,7 +15,7 @@ export class StudioDeviceDataService implements ModuleLifecycle {
   ) {}
 
   async getDevice(input: GetDeviceDataServiceInput): Promise<DeviceDataServiceOutput> {
-    return await this.studioDeviceDataRepository.getDeviceByID(input.deviceId);
+    return await this.studioDeviceDataRepository.getDeviceByDeviceID(input.deviceId);
   }
 
   async insertDevice(input: InsertDeviceDataServiceInput): Promise<DeviceDataServiceOutput> {
@@ -28,7 +28,7 @@ export class StudioDeviceDataService implements ModuleLifecycle {
   }
 
   async getDeviceBelongTo(deviceId: string) {
-    const result = await this.studioDeviceDataRepository.getDeviceByID(deviceId);
+    const result = await this.studioDeviceDataRepository.getDeviceByDeviceID(deviceId);
     return result.tableId;
   }
 

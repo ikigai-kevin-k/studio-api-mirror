@@ -161,6 +161,32 @@ describe('WsService', () => {
     });
   });
 
+  describe('send', () => {
+    it('should send message to special open clients', async () => {
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: true, send: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+
+      const mockInput = { timestamp: '' };
+
+      service.send('mockClient1', WsResponseType.Ack, mockInput);
+
+      expect(mockClient1.send).toHaveBeenCalledWith(WsResponseType.Ack, mockInput);
+    });
+
+    it('should not send message to special open clients', async () => {
+      const listeners = (service as any).listeners;
+      const mockClient1 = { isOpen: false, send: jest.fn() } as any;
+      listeners.set('mockClient1', mockClient1);
+
+      const mockInput = { timestamp: '' };
+
+      service.send('mockClient1', WsResponseType.Ack, mockInput);
+
+      expect(mockClient1.send).not.toHaveBeenCalled();
+    });
+  });
+
   describe('ack', () => {
     it('should send message to all open clients', async () => {
       const spyBroadcast = jest.spyOn(service as any, 'broadcast');

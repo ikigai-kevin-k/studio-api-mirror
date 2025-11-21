@@ -6,8 +6,8 @@ import { StudioApiError } from 'src/global/errors/error';
 import { StudioDeviceStatusEnum } from 'src/studio/enums/studio.enums';
 import { StudioWsAuthError } from 'src/studio/errors/studio.error';
 import { StudioErrorSignalService } from 'src/studio/services/studio-error-signal/studio-error-signal.service';
+import { StudioTableSwitchService } from 'src/studio/services/studio-table-switch/studio-table-switch.service';
 import { WsService } from 'src/ws/ws.service';
-import { WsResponseType } from 'src/ws/ws.service.enum';
 import { Unsubscribe, WsInstance } from 'src/ws/ws.service.type';
 import { StudioDeviceStatusObserverInput } from './studio-device-status.observer.type';
 
@@ -15,6 +15,7 @@ export class StudioDeviceStatusObserver implements ModuleLifecycle {
   private unSubscribes: Unsubscribe[] = [];
   constructor(
     private readonly studioErrorSignalService: StudioErrorSignalService,
+    private readonly studioTableSwitchService: StudioTableSwitchService,
     private readonly slackService: SlackService,
     private readonly wsService: WsService,
     private readonly logger: LoggerService,
@@ -28,13 +29,17 @@ export class StudioDeviceStatusObserver implements ModuleLifecycle {
       const input = data as StudioDeviceStatusObserverInput;
       if (!input) throw new StudioWsAuthError(`Ws connect without status info !!`);
 
-      const result = await this.resolveErrorSignal(deviceId, input.status);
+      switch (input.status) {
+        case StudioDeviceStatusEnum.UP: {
+          await this.studioErrorSignalService.forwardResolveSignal(deviceId);
+          break;
+        }
 
-      ws.send(WsResponseType.Device, {
-        deviceId: deviceId,
-        status: input.status,
-        resolves: result.map((item) => item.id),
-      });
+        case StudioDeviceStatusEnum.DOWN: {
+          await this.studioTableSwitchService.publish({ deviceId });
+          break;
+        }
+      }
     } catch (error) {
       const { code, message } = error as StudioApiError;
       const msg = `forward resolve signal to Los and tableApi fail, code: ${code}, reason: ${message}`;
@@ -42,13 +47,6 @@ export class StudioDeviceStatusObserver implements ModuleLifecycle {
       this.slackService.broadcast(msg);
       ws.error({ message: message, code: code });
     }
-  }
-
-  private async resolveErrorSignal(deviceId: string, status: StudioDeviceStatusEnum) {
-    if (status === StudioDeviceStatusEnum.UP) {
-      return await this.studioErrorSignalService.forwardResolveSignal(deviceId);
-    }
-    return [];
   }
 
   async onInit(): Promise<void> {
