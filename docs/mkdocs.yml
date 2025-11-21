@@ -90,6 +90,7 @@ nav:
     - cURL: examples/curl.md
   - Reference:
     - Error Codes: reference/error-codes.md
+    - Error Signals: reference/error-signals.md
     - Status Enums: reference/status-enums.md
     - WebSocket Events: reference/websocket-events.md
   - English:
