@@ -119,6 +119,33 @@ class StudioApiClient:
         }
         await self.ws.send(json.dumps(message))
 
+    # 更新 Table 狀態（包含新的 SDP 狀態值）
+    async def update_table_status(
+        self,
+        table_id: str,
+        status: Dict[str, Any]
+    ):
+        if not self.ws:
+            raise Exception('WebSocket 未連接')
+        
+        message = {
+            'event': 'tableStatus',
+            'data': {
+                'tableId': table_id,
+                **status,
+                'timestamp': int(asyncio.get_event_loop().time() * 1000)
+            }
+        }
+        await self.ws.send(json.dumps(message))
+
+    # 更新 SDP 狀態（使用新的擴展狀態值）
+    async def update_sdp_status(
+        self,
+        table_id: str,
+        sdp_status: str
+    ):
+        await self.update_table_status(table_id, {'sdp': sdp_status})
+
     # 發送錯誤信號
     async def send_error_signal(
         self,
@@ -178,6 +205,21 @@ async def main():
 
         # 更新設備狀態
         await client.update_device_status('up')
+
+        # 更新 SDP 狀態為運行中
+        await client.update_sdp_status('ARO-001-2', 'up_running')
+
+        # 更新 SDP 狀態為暫停
+        await client.update_sdp_status('ARO-001-2', 'down_pause')
+
+        # 更新完整的 Table 狀態
+        await client.update_table_status('ARO-001-2', {
+            'sdp': 'up_running',
+            'idp': 'up',
+            'broker': 'up',
+            'zCam': 'up',
+            'maintenance': False
+        })
 
         # 發送錯誤信號
         await client.send_error_signal(
