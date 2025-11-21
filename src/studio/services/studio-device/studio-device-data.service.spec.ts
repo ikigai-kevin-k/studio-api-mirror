@@ -14,7 +14,7 @@ import {
 } from './studio-device-data.service.type';
 
 const mockStudioDeviceDataRepository = {
-  getDeviceByID: jest.fn(),
+  getDeviceByDeviceID: jest.fn(),
   insertDevice: jest.fn(),
   updateDevice: jest.fn(),
 } as unknown as StudioDeviceDataRepository;
@@ -58,7 +58,9 @@ describe('StudioDeviceDataService', () => {
         tableId: 'tableId',
       };
 
-      (mockStudioDeviceDataRepository.getDeviceByID as jest.Mock).mockResolvedValueOnce(output);
+      (mockStudioDeviceDataRepository.getDeviceByDeviceID as jest.Mock).mockResolvedValueOnce(
+        output,
+      );
 
       const result = await service.getDevice(input);
       expect(result).toBe(output);
@@ -110,7 +112,9 @@ describe('StudioDeviceDataService', () => {
         deviceId: 'deviceId',
       };
 
-      (mockStudioDeviceDataRepository.getDeviceByID as jest.Mock).mockResolvedValueOnce(mockResult);
+      (mockStudioDeviceDataRepository.getDeviceByDeviceID as jest.Mock).mockResolvedValueOnce(
+        mockResult,
+      );
 
       const result = await service.getDeviceBelongTo('deviceId');
 

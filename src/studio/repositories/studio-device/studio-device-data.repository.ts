@@ -19,7 +19,7 @@ export class StudioDeviceDataRepository implements ModuleLifecycle {
     private readonly dbService: DbService,
   ) {}
 
-  async getDeviceByID(deviceID: string): Promise<DbStudioDeviceResult> {
+  async getDeviceByDeviceID(deviceID: string): Promise<DbStudioDeviceResult> {
     const cache = await this.getCache(deviceID);
     if (cache) return cache;
 
@@ -36,6 +36,22 @@ export class StudioDeviceDataRepository implements ModuleLifecycle {
     }
 
     await this.refreshCache(output);
+
+    return output;
+  }
+
+  async getDeviceByTableID(tableID: string): Promise<DbStudioDeviceResult> {
+    const builder = this.dbService
+      .getConnection()
+      .getRepository(StudioDevice)
+      .createQueryBuilder('studio')
+      .where('studio.TABLE_ID = :tableID', { tableID: tableID })
+      .select(['studio."DEVICE_ID" as "deviceId"']);
+
+    const output = await builder.getRawOne<DbStudioDeviceResult>();
+    if (!output) {
+      throw new StudioNotFoundError(`[studio_device] ${tableID} not found`);
+    }
 
     return output;
   }

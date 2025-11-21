@@ -1,4 +1,4 @@
-import { ErrorSignalInput } from 'src/global/types/error-signal.type';
+import { ActivateBackupInput, ErrorSignalInput } from 'src/global/types/error-signal.type';
 import { WsConnection } from './ws.connection';
 
 type WsAck = {
@@ -13,11 +13,13 @@ type WsDeviceStatus = {
 
 type WsSignal = ErrorSignalInput;
 
+type WsActiveBackup = ActivateBackupInput;
+
 export type Unsubscribe = () => void;
 
 export type WsInput = { event: string; data: object };
 
-export type WsOutput = WsAck | WsDeviceStatus | WsSignal;
+export type WsOutput = WsAck | WsDeviceStatus | WsSignal | WsActiveBackup;
 
 export type WsErrorOutput = { code: number; message: string };
 

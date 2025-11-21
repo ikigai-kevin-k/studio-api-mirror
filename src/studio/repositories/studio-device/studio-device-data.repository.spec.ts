@@ -64,7 +64,7 @@ describe('StudioDeviceDataRepository', () => {
     });
   });
 
-  describe('getDeviceByID', () => {
+  describe('getDeviceByDeviceID', () => {
     it('should return a studio object from cache', async () => {
       const mockStudio: DbStudioDeviceResult = {
         deviceId: 'deviceId',
@@ -73,7 +73,7 @@ describe('StudioDeviceDataRepository', () => {
 
       jest.spyOn(repository as any, 'getCache').mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getDeviceByID('deviceId');
+      const result = await repository.getDeviceByDeviceID('deviceId');
       expect(result).toBe(mockStudio);
     });
 
@@ -88,7 +88,7 @@ describe('StudioDeviceDataRepository', () => {
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(mockStudio);
 
-      const result = await repository.getDeviceByID('deviceId');
+      const result = await repository.getDeviceByDeviceID('deviceId');
       expect(spyRefreshCache).toHaveBeenCalledTimes(1);
       expect(result).toEqual(mockStudio);
     });
@@ -98,7 +98,7 @@ describe('StudioDeviceDataRepository', () => {
 
       (mockQueryBuilder.getRawOne as jest.Mock).mockResolvedValueOnce(undefined);
 
-      await expect(repository.getDeviceByID('non-existent-table')).rejects.toThrow(
+      await expect(repository.getDeviceByDeviceID('non-existent-table')).rejects.toThrow(
         StudioNotFoundError,
       );
     });

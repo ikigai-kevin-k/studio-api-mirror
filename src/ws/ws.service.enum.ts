@@ -26,4 +26,5 @@ export enum WsResponseType {
   Kick = 'kick',
   Device = 'deviceStatus',
   Signal = 'errorSignal',
+  Activate = 'activateBackup',
 }

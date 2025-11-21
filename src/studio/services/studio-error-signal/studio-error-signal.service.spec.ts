@@ -130,7 +130,6 @@ describe('StudioErrorSignalHandler', () => {
       const result = await service.forwardErrorSignal('idp', input);
 
       expect(mockKafkaLosSignalService.publishError).toHaveBeenCalledTimes(1);
-      expect(mockTableApiSignalService.forwardSignal).toHaveBeenCalledTimes(1);
 
       expect(result).toEqual({
         msgId: '',
@@ -146,7 +145,7 @@ describe('StudioErrorSignalHandler', () => {
   });
 
   describe('forwardResolveSignal', () => {
-    it('should return a log from db', async () => {
+    it('should publish to kafka if returning more than one', async () => {
       const output = [
         {
           id: 1,
@@ -165,6 +164,22 @@ describe('StudioErrorSignalHandler', () => {
       });
 
       await expect(service.forwardResolveSignal('idp')).resolves.toBe(output);
+      expect(mockKafkaLosSignalService.publishResolve).toHaveBeenCalled();
+    });
+
+    it('should not publish to kafka if no data', async () => {
+      const output: any[] = [];
+
+      jest.spyOn(service as any, 'resolveErrorSignal').mockResolvedValue(output);
+
+      const spyQueryDeviceBelong = jest.spyOn(service as any, 'queryDeviceBelong');
+      spyQueryDeviceBelong.mockResolvedValueOnce({
+        gameId: 'gameCode',
+        tableName: 'auto roulette',
+      });
+
+      await expect(service.forwardResolveSignal('idp')).resolves.toBe(output);
+      expect(mockKafkaLosSignalService.publishResolve).not.toHaveBeenCalled();
     });
   });
 

@@ -1,5 +1,6 @@
 import { ModuleProfile } from '@ikigaians/mod';
 import { InjectionTokensEnum } from 'src/mod/injection-tokens.enum';
+import { StudioTableSwitchConsumer } from './consumers/studio-table-switch/studio-table-switch.consumer';
 import { StudioCdnController } from './controller/v1/studio-cdn/studio-cdn.controller';
 import { StudioDeviceDataController } from './controller/v1/studio-device/studio-device.controller';
 import { StudioGameController } from './controller/v1/studio-game/studio-game.controller';
@@ -20,6 +21,7 @@ import { StudioErrorSignalService } from './services/studio-error-signal/studio-
 import { StudioGameService } from './services/studio-game/studio-game.service';
 import { StudioErrorSignalLogService } from './services/studio-log/studio-error-signal-log.service';
 import { StudioStatusService } from './services/studio-status/studio-status.service';
+import { StudioTableSwitchService } from './services/studio-table-switch/studio-table-switch.service';
 import { StudioService } from './services/studio/studio.service';
 export const StudioModule: ModuleProfile[] = [
   [InjectionTokensEnum.STUDIO_REPOSITORY, StudioRepository],
@@ -50,4 +52,7 @@ export const StudioModule: ModuleProfile[] = [
   [InjectionTokensEnum.STUDIO_ERROR_SIGNAL_OBSERVER, StudioErrorSignalObserver],
 
   [InjectionTokensEnum.STUDIO_DEVICE_STATUS_OBSERVER, StudioDeviceStatusObserver],
+
+  [InjectionTokensEnum.STUDIO_TABLE_SWITCH_CONSUMER, StudioTableSwitchConsumer],
+  [InjectionTokensEnum.STUDIO_TABLE_SWITCH_SERVICE, StudioTableSwitchService],
 ] as const;

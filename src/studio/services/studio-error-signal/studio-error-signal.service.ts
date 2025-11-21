@@ -38,10 +38,7 @@ export class StudioErrorSignalService implements ModuleLifecycle {
     output.metadata.signalId = log.id;
     output.metadata.timestamp = log.createdAt.getTime();
 
-    await Promise.all([
-      this.kafkaLosSignalService.publishError(output),
-      this.tableApiSignalService.forwardSignal(gameId, output),
-    ]);
+    await Promise.all([this.kafkaLosSignalService.publishError(output)]);
 
     return output;
   }
